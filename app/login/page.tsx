@@ -42,7 +42,7 @@ export default function LoginPage() {
     try {
       // TODO: استبدال هذا بطلب تسجيل الدخول الفعلي عند جهوزية الـ API
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.push("/dashboard");
+      router.push("/");
     } catch {
       setServerError("فشل تسجيل الدخول، يرجى التأكد من البيانات");
     } finally {
