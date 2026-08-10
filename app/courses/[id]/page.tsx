@@ -1,26 +1,5 @@
 import { notFound } from "next/navigation";
-
-// Local fallback mock data to avoid unresolved import for @/lib/mock-courses
-const courses = [
-  {
-    id: 1,
-    image: '/images/course-1.jpg',
-    title: 'مقدمة في التعليم الإلكتروني',
-    category: 'تطوير مهني',
-    instructor: 'أ. أحمد',
-    lessons: 12,
-    description: 'دورة تمهيدية تغطي الأساسيات في التعليم الإلكتروني وتطوير المحتوى.'
-  },
-  {
-    id: 2,
-    image: '/images/course-2.jpg',
-    title: 'تصميم المحتوى التعليمي',
-    category: 'تصميم',
-    instructor: 'د. سارة',
-    lessons: 8,
-    description: 'مبادئ تصميم المحتوى التعليمي الفعّال والتفاعلي.'
-  }
-];
+import { courses } from "../lib/mock-courses";
 
 export default async function CourseDetailPage({
   params,
@@ -35,7 +14,11 @@ export default async function CourseDetailPage({
   return (
     <div className="min-h-screen bg-[#f4f7f6] p-6" dir="rtl">
       <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <img src={course.image} alt={course.title} className="w-full h-64 object-cover" />
+        <img
+          src={course.image}
+          alt={course.title}
+          className="w-full h-64 object-cover"
+        />
 
         <div className="p-6 text-right space-y-4">
           {course.category && (
@@ -44,12 +27,22 @@ export default async function CourseDetailPage({
             </span>
           )}
 
-          <h1 className="text-2xl font-bold text-slate-800">{course.title}</h1>
-          <p className="text-sm text-slate-500">المدرب: {course.instructor}</p>
-          <p className="text-sm text-slate-500">عدد الدروس: {course.lessons}</p>
+          <h1 className="text-2xl font-bold text-slate-800">
+            {course.title}
+          </h1>
+
+          <p className="text-sm text-slate-500">
+            المدرب: {course.instructor}
+          </p>
+
+          <p className="text-sm text-slate-500">
+            عدد الدروس: {course.lessons}
+          </p>
 
           {course.description && (
-            <p className="text-sm text-slate-600 leading-relaxed">{course.description}</p>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {course.description}
+            </p>
           )}
 
           <button className="mt-4 px-6 py-3 bg-[#087a54] hover:bg-[#066b49] text-white font-bold rounded-xl transition-all">
