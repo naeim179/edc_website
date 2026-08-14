@@ -4,18 +4,18 @@ export default function HeroBanner() {
   return (
     <section className="relative w-full rounded-[20px] p-6 text-white overflow-hidden bg-[radial-gradient(circle_at_70%_30%,rgba(20,130,90,0.8),transparent_50%),linear-gradient(135deg,#05402b_0%,#086b48_50%,#043322_100%)] shadow-lg">
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-        
+
         {/* Right Side: Welcome Text & CTA */}
         <div className="flex flex-col items-start text-right space-y-3 max-w-lg">
           <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
             <span>👋</span>
             <span>مرحباً بعودتك يا خالد</span>
           </h2>
-          
+
           <p className="text-emerald-100 text-sm md:text-base font-medium">
             أنت في الصف الثاني الثانوي
           </p>
-          
+
           <p className="text-emerald-200/80 text-xs md:text-sm">
             استمر في التعلم اليوم، كل خطوة تقربك من هدفك.
           </p>
