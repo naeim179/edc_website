@@ -1,5 +1,7 @@
 'use client';
 
+import Link from "next/link";
+
 export default function Sidebar() {
   return (
     <aside className="rtl flex flex-col h-[970px] p-[15px_16px_17px] rounded-[16px] text-white bg-[radial-gradient(circle_at_70%_35%,rgba(26,154,111,0.32),transparent_42%),linear-gradient(180deg,#076b4a_0%,#087a54_54%,#066b49_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.09)]">
@@ -18,12 +20,12 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex flex-col gap-[2px]">
-        <button className="h-[46px] border-0 rounded-[10px] bg-white/20 text-white flex ltr items-center gap-[14px] px-[13px] text-[15.5px] text-right transition-all">
+        <Link href="/" className="h-[46px] border-0 rounded-[10px] bg-white/20 text-white flex ltr items-center gap-[14px] px-[13px] text-[15.5px] text-right transition-all">
           <span className="rtl w-full">الرئيسية</span>
-        </button>
-        <button className="h-[46px] border-0 rounded-[10px] bg-transparent text-white flex ltr items-center gap-[14px] px-[13px] text-[15.5px] text-right hover:bg-white/10 transition-all">
+        </Link>
+        <Link href="/my-courses" className="h-[46px] border-0 rounded-[10px] bg-transparent text-white flex ltr items-center gap-[14px] px-[13px] text-[15.5px] text-right hover:bg-white/10 transition-all">
           <span className="rtl w-full">موادي</span>
-        </button>
+        </Link>
         <button className="h-[46px] border-0 rounded-[10px] bg-transparent text-white flex ltr items-center gap-[14px] px-[13px] text-[15.5px] text-right hover:bg-white/10 transition-all">
           <span className="rtl w-full">الحصص المباشرة</span>
         </button>
