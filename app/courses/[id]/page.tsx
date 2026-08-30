@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import AppShell from "@/components/AppShell";
 import { courses } from "../lib/mock-courses";
 
 export default async function CourseDetailPage({
@@ -12,8 +13,8 @@ export default async function CourseDetailPage({
   if (!course) return notFound();
 
   return (
-    <div className="min-h-screen bg-[#f4f7f6] p-6" dir="rtl">
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <AppShell>
+      <div className="max-w-3xl mx-auto w-full bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <img
           src={course.image}
           alt={course.title}
@@ -50,6 +51,6 @@ export default async function CourseDetailPage({
           </button>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }

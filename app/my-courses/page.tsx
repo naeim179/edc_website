@@ -1,7 +1,9 @@
+import AppShell from "@/components/AppShell";
+
 export default function MyCoursesPage() {
   return (
-    <div className="min-h-screen bg-[#f4f7f6] p-6" dir="rtl">
-      <div className="max-w-6xl mx-auto">
+    <AppShell>
+      <div className="max-w-6xl mx-auto w-full">
         <h1 className="text-2xl font-bold text-slate-800 mb-2">
           موادي
         </h1>
@@ -10,6 +12,6 @@ export default function MyCoursesPage() {
           ستظهر هنا الدورات المسجل بها الطالب.
         </p>
       </div>
-    </div>
+    </AppShell>
   );
 }
