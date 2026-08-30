@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 
 interface CourseCardProps {
-  id: number;
+  id: string | number;
   title: string;
-  category: string;
+  category?: string | null;
   progress: number;
   completedLessons: number;
   totalLessons: number;
-  image: string;
+  image?: string | null;
 }
 
 export default function CourseCard({
@@ -23,16 +23,24 @@ export default function CourseCard({
 }: CourseCardProps) {
   return (
     <div className="flex items-center justify-between p-3 bg-white rounded-2xl border border-slate-100 shadow-sm gap-4">
-      <img
-        src={image}
-        alt={title}
-        className="w-20 h-20 rounded-xl object-cover shrink-0"
-      />
+      {image ? (
+        <img
+          src={image}
+          alt={title}
+          className="w-20 h-20 rounded-xl object-cover shrink-0"
+        />
+      ) : (
+        <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-xs text-slate-400 shrink-0">
+          لا توجد صورة
+        </div>
+      )}
 
       <div className="flex-1 text-right space-y-1">
-        <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-          {category}
-        </span>
+        {category && (
+          <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+            {category}
+          </span>
+        )}
 
         <h4 className="text-sm font-bold text-slate-800">
           {title}
