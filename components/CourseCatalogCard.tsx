@@ -1,13 +1,13 @@
 import Link from "next/link";
 
 interface CourseCatalogCardProps {
-  id: number;
+  id: string;
   title: string;
-  instructor: string;
-  category?: string;
+  instructor?: string;
+  category?: string | null;
   lessons: number;
   progress: number;
-  image: string;
+  image?: string | null;
 }
 
 export default function CourseCatalogCard({
@@ -24,11 +24,17 @@ export default function CourseCatalogCard({
       href={`/courses/${id}`}
       className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
     >
-      <img
-        src={image}
-        alt={title}
-        className="w-full h-40 object-cover"
-      />
+      {image ? (
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-40 object-cover"
+        />
+      ) : (
+        <div className="w-full h-40 bg-slate-100 flex items-center justify-center text-sm text-slate-400">
+          لا توجد صورة
+        </div>
+      )}
 
       <div className="p-4 text-right space-y-2">
         {category && (
@@ -37,11 +43,15 @@ export default function CourseCatalogCard({
           </span>
         )}
 
-        <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+        <h3 className="text-sm font-bold text-slate-800">
+          {title}
+        </h3>
 
-        <p className="text-xs text-slate-400">
-          المدرب: {instructor}
-        </p>
+        {instructor && (
+          <p className="text-xs text-slate-400">
+            المدرب: {instructor}
+          </p>
+        )}
 
         <p className="text-xs text-slate-400">
           {lessons} درس
