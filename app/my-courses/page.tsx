@@ -110,6 +110,8 @@ export default async function MyCoursesPage() {
       ];
     }) ?? [];
 
+  console.log(JSON.stringify(courses, null, 2));
+
   return (
     <AppShell>
       <div className="max-w-6xl mx-auto w-full">

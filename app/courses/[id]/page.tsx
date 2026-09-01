@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import EnrollButton from "@/components/EnrollButton";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function CourseDetailPage({
@@ -89,9 +91,7 @@ export default async function CourseDetailPage({
               </p>
             )}
 
-            <button className="mt-4 px-6 py-3 bg-[#087a54] hover:bg-[#066b49] text-white font-bold rounded-xl transition-all">
-              التسجيل في الدورة
-            </button>
+            <EnrollButton courseId={course.id} />
           </div>
         </div>
 
@@ -119,9 +119,10 @@ export default async function CourseDetailPage({
                     {lessons.length > 0 ? (
                       <div className="space-y-2">
                         {lessons.map((lesson) => (
-                          <div
+                          <Link
                             key={lesson.id}
-                            className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3"
+                            href={`/courses/${course.id}/lessons/${lesson.id}`}
+                            className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3 hover:bg-slate-100 transition"
                           >
                             <span className="text-sm text-slate-700">
                               {lesson.title}
@@ -132,7 +133,7 @@ export default async function CourseDetailPage({
                                 {lesson.duration}
                               </span>
                             )}
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     ) : (
