@@ -61,6 +61,12 @@ export default async function LessonPage({
     return notFound();
   }
 
+  const { data: course } = await supabase
+    .from("courses")
+    .select("title")
+    .eq("id", id)
+    .maybeSingle();
+
   const { data: courseLessons } = await supabase
     .from("sections")
     .select(`
@@ -104,6 +110,24 @@ export default async function LessonPage({
     <AppShell>
       <div className="max-w-4xl mx-auto w-full space-y-6">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-right">
+
+          <Link
+            href={`/courses/${id}`}
+            className="text-sm text-[#087a54] font-bold"
+          >
+            ← العودة إلى محتوى الدورة
+          </Link>
+
+          <div className="mt-4 mb-4 text-sm text-slate-500">
+            <p>
+              الدورة: {course?.title}
+            </p>
+
+            <p>
+              القسم: {lesson.section?.[0]?.title}
+            </p>
+          </div>
+
           <h1 className="text-2xl font-bold text-slate-800 mb-3">
             {lesson.title}
           </h1>
@@ -155,6 +179,7 @@ export default async function LessonPage({
               </Link>
             )}
           </div>
+
         </div>
       </div>
     </AppShell>
