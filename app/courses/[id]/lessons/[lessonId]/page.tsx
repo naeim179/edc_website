@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import CompleteLessonButton from "@/components/CompleteLessonButton";
 import { createClient } from "@/lib/supabase/server";
@@ -22,9 +23,11 @@ export default async function LessonPage({
       title,
       content_url,
       duration,
+      order_index,
       section:sections (
         id,
         title,
+        order_index,
         course_id
       )
     `)
@@ -57,6 +60,38 @@ export default async function LessonPage({
   if (!enrollment) {
     return notFound();
   }
+
+  const { data: courseLessons } = await supabase
+    .from("sections")
+    .select(`
+      order_index,
+      lessons (
+        id,
+        title,
+        order_index
+      )
+    `)
+    .eq("course_id", id);
+
+  const allLessons =
+    courseLessons
+      ?.sort((a, b) => a.order_index - b.order_index)
+      .flatMap((section) =>
+        (section.lessons ?? [])
+          .sort((a, b) => a.order_index - b.order_index)
+      ) ?? [];
+
+  const currentIndex = allLessons.findIndex(
+    (item) => item.id === lesson.id
+  );
+
+  const previousLesson =
+    currentIndex > 0 ? allLessons[currentIndex - 1] : null;
+
+  const nextLesson =
+    currentIndex < allLessons.length - 1
+      ? allLessons[currentIndex + 1]
+      : null;
 
   const { data: progress } = await supabase
     .from("lesson_progress")
@@ -98,6 +133,28 @@ export default async function LessonPage({
             lessonId={lesson.id}
             initialCompleted={progress?.is_completed ?? false}
           />
+
+          <div className="flex justify-between mt-8">
+            {previousLesson ? (
+              <Link
+                href={`/courses/${id}/lessons/${previousLesson.id}`}
+                className="px-4 py-2 bg-slate-100 rounded-lg text-sm"
+              >
+                ⬅️ الدرس السابق
+              </Link>
+            ) : (
+              <span />
+            )}
+
+            {nextLesson && (
+              <Link
+                href={`/courses/${id}/lessons/${nextLesson.id}`}
+                className="px-4 py-2 bg-[#087a54] text-white rounded-lg text-sm"
+              >
+                الدرس التالي ➡️
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </AppShell>
