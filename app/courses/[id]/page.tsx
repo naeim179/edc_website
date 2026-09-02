@@ -45,6 +45,35 @@ export default async function CourseDetailPage({
     return notFound();
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let enrollmentId: string | null = null;
+  let completedLessonIds: string[] = [];
+
+  if (user) {
+    const { data: enrollment } = await supabase
+      .from("enrollments")
+      .select("id")
+      .eq("student_id", user.id)
+      .eq("course_id", id)
+      .maybeSingle();
+
+    if (enrollment) {
+      enrollmentId = enrollment.id;
+
+      const { data: progress } = await supabase
+        .from("lesson_progress")
+        .select("lesson_id")
+        .eq("enrollment_id", enrollment.id)
+        .eq("is_completed", true);
+
+      completedLessonIds =
+        progress?.map((item) => item.lesson_id) ?? [];
+    }
+  }
+
   const sections = [...(course.sections ?? [])].sort(
     (a, b) => a.order_index - b.order_index
   );
@@ -118,23 +147,47 @@ export default async function CourseDetailPage({
 
                     {lessons.length > 0 ? (
                       <div className="space-y-2">
-                        {lessons.map((lesson) => (
-                          <Link
-                            key={lesson.id}
-                            href={`/courses/${course.id}/lessons/${lesson.id}`}
-                            className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3 hover:bg-slate-100 transition"
-                          >
-                            <span className="text-sm text-slate-700">
-                              {lesson.title}
-                            </span>
+                        {lessons.map((lesson) => {
+                          const completed = completedLessonIds.includes(
+                            lesson.id
+                          );
 
-                            {lesson.duration && (
-                              <span className="text-xs text-slate-400 shrink-0">
-                                {lesson.duration}
+                          if (!enrollmentId) {
+                            return (
+                              <div
+                                key={lesson.id}
+                                className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3"
+                              >
+                                <span className="text-sm text-slate-700">
+                                  {lesson.title}
+                                </span>
+
+                                <span className="text-xs text-slate-400">
+                                  يجب التسجيل أولاً
+                                </span>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <Link
+                              key={lesson.id}
+                              href={`/courses/${course.id}/lessons/${lesson.id}`}
+                              className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3 hover:bg-slate-100 transition"
+                            >
+                              <span className="text-sm text-slate-700">
+                                {completed ? "✅ " : "⬜ "}
+                                {lesson.title}
                               </span>
-                            )}
-                          </Link>
-                        ))}
+
+                              {lesson.duration && (
+                                <span className="text-xs text-slate-400 shrink-0">
+                                  {lesson.duration}
+                                </span>
+                              )}
+                            </Link>
+                          );
+                        })}
                       </div>
                     ) : (
                       <p className="text-sm text-slate-400">
