@@ -21,6 +21,9 @@ export default async function EditCoursePage({
       title,
       description,
       category,
+      price,
+      currency,
+      is_free,
       is_published
     `)
     .eq("id", id)

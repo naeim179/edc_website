@@ -13,11 +13,10 @@ export async function createCourse(formData: FormData) {
   const title = String(formData.get("title") ?? "");
   const description = String(formData.get("description") ?? "");
   const category = String(formData.get("category") ?? "");
+  const price = Number(formData.get("price") ?? 0);
+  const currency = String(formData.get("currency") ?? "JOD");
+  const isFree = formData.get("is_free") === "on";
   const isPublished = formData.get("is_published") === "on";
-
-  if (!title.trim()) {
-    throw new Error("Course title is required");
-  }
 
   const {
     data: { user },
@@ -33,6 +32,9 @@ export async function createCourse(formData: FormData) {
       title,
       description,
       category,
+      price: isFree ? 0 : price,
+      currency,
+      is_free: isFree,
       is_published: isPublished,
       instructor_id: user.id,
     });
@@ -44,6 +46,7 @@ export async function createCourse(formData: FormData) {
   revalidatePath("/admin/courses");
   redirect("/admin/courses");
 }
+
 
 export async function deleteCourse(courseId: string) {
   await requireAdmin();
@@ -62,6 +65,7 @@ export async function deleteCourse(courseId: string) {
   revalidatePath("/admin/courses");
 }
 
+
 export async function updateCourse(
   courseId: string,
   formData: FormData
@@ -73,7 +77,11 @@ export async function updateCourse(
   const title = String(formData.get("title") ?? "");
   const description = String(formData.get("description") ?? "");
   const category = String(formData.get("category") ?? "");
+  const price = Number(formData.get("price") ?? 0);
+  const currency = String(formData.get("currency") ?? "JOD");
+  const isFree = formData.get("is_free") === "on";
   const isPublished = formData.get("is_published") === "on";
+
 
   const { error } = await supabase
     .from("courses")
@@ -81,13 +89,18 @@ export async function updateCourse(
       title,
       description,
       category,
+      price: isFree ? 0 : price,
+      currency,
+      is_free: isFree,
       is_published: isPublished,
     })
     .eq("id", courseId);
 
+
   if (error) {
     throw new Error(error.message);
   }
+
 
   revalidatePath("/admin/courses");
   redirect("/admin/courses");

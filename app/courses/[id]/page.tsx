@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import EnrollButton from "@/components/EnrollButton";
+import BuyCourseButton from "@/components/BuyCourseButton";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function CourseDetailPage({
@@ -20,6 +21,9 @@ export default async function CourseDetailPage({
       description,
       category,
       image_url,
+      price,
+      currency,
+      is_free,
       sections (
         id,
         title,
@@ -79,14 +83,17 @@ export default async function CourseDetailPage({
   );
 
   const totalLessons = sections.reduce(
-    (total, section) => total + (section.lessons?.length ?? 0),
+    (total, section) =>
+      total + (section.lessons?.length ?? 0),
     0
   );
 
   return (
     <AppShell>
       <div className="max-w-4xl mx-auto w-full space-y-6">
+
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
           {course.image_url ? (
             <img
               src={course.image_url}
@@ -100,6 +107,7 @@ export default async function CourseDetailPage({
           )}
 
           <div className="p-6 text-right space-y-4">
+
             {course.category && (
               <span className="inline-block text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                 {course.category}
@@ -110,9 +118,22 @@ export default async function CourseDetailPage({
               {course.title}
             </h1>
 
+
             <p className="text-sm text-slate-500">
               عدد الدروس: {totalLessons}
             </p>
+
+
+            {course.is_free ? (
+              <p className="text-green-600 font-bold">
+                دورة مجانية
+              </p>
+            ) : (
+              <p className="text-lg font-bold text-slate-700">
+                السعر: {course.price} {course.currency}
+              </p>
+            )}
+
 
             {course.description && (
               <p className="text-sm text-slate-600 leading-relaxed">
@@ -120,90 +141,111 @@ export default async function CourseDetailPage({
               </p>
             )}
 
-            <EnrollButton courseId={course.id} />
+
+            {enrollmentId ? (
+              <Link
+                href={`/courses/${course.id}`}
+                className="inline-block bg-slate-200 px-6 py-3 rounded-xl font-bold"
+              >
+                أنت مسجل بالدورة
+              </Link>
+            ) : course.is_free ? (
+              <EnrollButton courseId={course.id} />
+            ) : (
+              <BuyCourseButton courseId={course.id} />
+            )}
+
           </div>
         </div>
 
+
         <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+
           <h2 className="text-xl font-bold text-slate-800 mb-5">
             محتوى الدورة
           </h2>
 
+
           {sections.length > 0 ? (
             <div className="space-y-5">
+
               {sections.map((section) => {
+
                 const lessons = [...(section.lessons ?? [])].sort(
-                  (a, b) => a.order_index - b.order_index
+                  (a,b)=>a.order_index-b.order_index
                 );
+
 
                 return (
                   <div
                     key={section.id}
                     className="border border-slate-100 rounded-xl p-4"
                   >
+
                     <h3 className="font-bold text-slate-700 mb-3">
                       {section.title}
                     </h3>
 
-                    {lessons.length > 0 ? (
-                      <div className="space-y-2">
-                        {lessons.map((lesson) => {
-                          const completed = completedLessonIds.includes(
+
+                    <div className="space-y-2">
+
+                      {lessons.map((lesson)=>{
+
+                        const completed =
+                          completedLessonIds.includes(
                             lesson.id
                           );
 
-                          if (!enrollmentId) {
-                            return (
-                              <div
-                                key={lesson.id}
-                                className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3"
-                              >
-                                <span className="text-sm text-slate-700">
-                                  {lesson.title}
-                                </span>
 
-                                <span className="text-xs text-slate-400">
-                                  يجب التسجيل أولاً
-                                </span>
-                              </div>
-                            );
-                          }
-
+                        if(!enrollmentId){
                           return (
-                            <Link
+                            <div
                               key={lesson.id}
-                              href={`/courses/${course.id}/lessons/${lesson.id}`}
-                              className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3 hover:bg-slate-100 transition"
+                              className="flex justify-between bg-slate-50 rounded-lg px-4 py-3"
                             >
-                              <span className="text-sm text-slate-700">
-                                {completed ? "✅ " : "⬜ "}
+                              <span>
                                 {lesson.title}
                               </span>
 
-                              {lesson.duration && (
-                                <span className="text-xs text-slate-400 shrink-0">
-                                  {lesson.duration}
-                                </span>
-                              )}
-                            </Link>
+                              <span className="text-xs text-slate-400">
+                                سجل أولاً
+                              </span>
+                            </div>
                           );
-                        })}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-slate-400">
-                        لا توجد دروس في هذا القسم حاليًا.
-                      </p>
-                    )}
+                        }
+
+
+                        return (
+                          <Link
+                            key={lesson.id}
+                            href={`/courses/${course.id}/lessons/${lesson.id}`}
+                            className="flex justify-between bg-slate-50 rounded-lg px-4 py-3"
+                          >
+                            <span>
+                              {completed ? "✅ " : "⬜ "}
+                              {lesson.title}
+                            </span>
+                          </Link>
+                        );
+
+                      })}
+
+                    </div>
+
                   </div>
                 );
+
               })}
+
             </div>
           ) : (
-            <p className="text-sm text-slate-500">
-              لا يوجد محتوى منشور لهذه الدورة حاليًا.
+            <p className="text-slate-500">
+              لا يوجد محتوى
             </p>
           )}
+
         </section>
+
       </div>
     </AppShell>
   );
