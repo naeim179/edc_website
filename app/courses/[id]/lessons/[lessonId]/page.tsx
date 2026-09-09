@@ -24,6 +24,7 @@ export default async function LessonPage({
       content_url,
       duration,
       order_index,
+      is_free_preview,
       section:sections (
         id,
         title,
@@ -57,7 +58,7 @@ export default async function LessonPage({
     .eq("course_id", id)
     .maybeSingle();
 
-  if (!enrollment) {
+  if (!enrollment && !lesson.is_free_preview) {
     return notFound();
   }
 
@@ -99,12 +100,19 @@ export default async function LessonPage({
       ? allLessons[currentIndex + 1]
       : null;
 
-  const { data: progress } = await supabase
-    .from("lesson_progress")
-    .select("is_completed")
-    .eq("enrollment_id", enrollment.id)
-    .eq("lesson_id", lesson.id)
-    .maybeSingle();
+  const youtubeId = lesson.content_url
+    ?.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/
+    )?.[1];
+
+  const { data: progress } = enrollment
+    ? await supabase
+        .from("lesson_progress")
+        .select("is_completed")
+        .eq("enrollment_id", enrollment.id)
+        .eq("lesson_id", lesson.id)
+        .maybeSingle()
+    : { data: null };
 
   return (
     <AppShell>
@@ -139,24 +147,38 @@ export default async function LessonPage({
           )}
 
           {lesson.content_url ? (
-            <a
-              href={lesson.content_url}
-              target="_blank"
-              className="inline-block px-5 py-3 bg-[#087a54] text-white rounded-xl font-bold"
-            >
-              فتح محتوى الدرس
-            </a>
+            lesson.content_url.includes("youtube.com") ||
+            lesson.content_url.includes("youtu.be") ? (
+              <div className="aspect-video rounded-xl overflow-hidden border">
+                <iframe
+                  src={`https://www.youtube.com/embed/${youtubeId}`}
+                  title={lesson.title}
+                  className="w-full h-full"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <a
+                href={lesson.content_url}
+                target="_blank"
+                className="inline-block px-5 py-3 bg-[#087a54] text-white rounded-xl font-bold"
+              >
+                فتح محتوى الدرس
+              </a>
+            )
           ) : (
             <p className="text-sm text-slate-500">
               لا يوجد محتوى لهذا الدرس حاليًا.
             </p>
           )}
 
-          <CompleteLessonButton
-            enrollmentId={enrollment.id}
-            lessonId={lesson.id}
-            initialCompleted={progress?.is_completed ?? false}
-          />
+          {enrollment && (
+            <CompleteLessonButton
+              enrollmentId={enrollment.id}
+              lessonId={lesson.id}
+              initialCompleted={progress?.is_completed ?? false}
+            />
+          )}
 
           <div className="flex justify-between mt-8">
             {previousLesson ? (

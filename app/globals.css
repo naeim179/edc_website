@@ -192,3 +192,218 @@ button{cursor:pointer}
   body{padding-top:18px}
   .app{transform-origin:top center}
 }
+
+/* ===== APP THEMES ===== */
+
+html,
+body,
+.bg-white,
+input,
+textarea,
+select {
+  transition:
+    background-color .2s ease,
+    color .2s ease,
+    border-color .2s ease;
+}
+
+/* DARK MODE */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(30, 41, 59, .9),
+      transparent 46%
+    ),
+    linear-gradient(
+      180deg,
+      #0f172a 0%,
+      #111827 60%,
+      #0b1220 100%
+    ) !important;
+
+  color: #e5e7eb !important;
+}
+
+html[data-theme="dark"] .app {
+  background: rgba(15, 23, 42, .94) !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .bg-white {
+  background-color: #182231 !important;
+}
+
+html[data-theme="dark"] .bg-slate-50 {
+  background-color: #111827 !important;
+}
+
+html[data-theme="dark"] .bg-slate-100 {
+  background-color: #243244 !important;
+}
+
+html[data-theme="dark"] .text-slate-900,
+html[data-theme="dark"] .text-slate-800,
+html[data-theme="dark"] .text-slate-700 {
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .text-slate-600,
+html[data-theme="dark"] .text-slate-500,
+html[data-theme="dark"] .text-slate-400 {
+  color: #b7c3d4 !important;
+}
+
+html[data-theme="dark"] .border-slate-100,
+html[data-theme="dark"] .border-slate-200,
+html[data-theme="dark"] .border-slate-300 {
+  border-color: #3b4a5e !important;
+}
+
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: #101927 !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #8290a4 !important;
+}
+
+html[data-theme="dark"] .bg-emerald-50 {
+  background-color: #14372e !important;
+}
+
+html[data-theme="dark"] .text-emerald-700 {
+  color: #6ee7b7 !important;
+}
+
+
+/* EYE COMFORT MODE */
+
+html[data-theme="eye"] {
+  color-scheme: light;
+}
+
+html[data-theme="eye"] body {
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 250, 235, .95),
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      #eee4cf 0%,
+      #f5ecd9 60%,
+      #eadfc8 100%
+    ) !important;
+
+  color: #40372d !important;
+}
+
+html[data-theme="eye"] .app {
+  background: rgba(255, 249, 235, .93) !important;
+  border-color: #ddd0b7 !important;
+}
+
+html[data-theme="eye"] .bg-white {
+  background-color: #fff9eb !important;
+}
+
+html[data-theme="eye"] .bg-slate-50 {
+  background-color: #f8f0df !important;
+}
+
+html[data-theme="eye"] .bg-slate-100 {
+  background-color: #eee3ce !important;
+}
+
+html[data-theme="eye"] .text-slate-900,
+html[data-theme="eye"] .text-slate-800,
+html[data-theme="eye"] .text-slate-700 {
+  color: #40372d !important;
+}
+
+html[data-theme="eye"] .text-slate-600,
+html[data-theme="eye"] .text-slate-500,
+html[data-theme="eye"] .text-slate-400 {
+  color: #766957 !important;
+}
+
+html[data-theme="eye"] .border-slate-100,
+html[data-theme="eye"] .border-slate-200,
+html[data-theme="eye"] .border-slate-300 {
+  border-color: #d9ccb3 !important;
+}
+
+html[data-theme="eye"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="eye"] textarea,
+html[data-theme="eye"] select {
+  background-color: #fffaf0 !important;
+  color: #40372d !important;
+  border-color: #cdbfa4 !important;
+}
+
+html[data-theme="eye"] input::placeholder,
+html[data-theme="eye"] textarea::placeholder {
+  color: #94866f !important;
+}
+
+
+/* ===== FULL APP THEME ===== */
+
+.app-shell {
+  background: #f4f7f6;
+  color: #171b1a;
+  transition:
+    background-color .2s ease,
+    color .2s ease;
+}
+
+.app-main {
+  color: inherit;
+}
+
+
+/* DARK */
+
+html[data-theme="dark"] .app-shell {
+  background: #0b1220 !important;
+  color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] .app-main {
+  background: transparent !important;
+}
+
+
+/* EYE COMFORT */
+
+html[data-theme="eye"] .app-shell {
+  background: #eee4cf !important;
+  color: #40372d !important;
+}
+
+html[data-theme="eye"] .app-main {
+  background: transparent !important;
+}
+
+
+/* LANGUAGE DIRECTION */
+
+html[data-lang="ar"] .app-shell {
+  direction: rtl;
+}
+
+html[data-lang="en"] .app-shell {
+  direction: ltr;
+}

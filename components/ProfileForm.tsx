@@ -12,32 +12,57 @@ export default function ProfileForm({
   return (
     <form
       action={updateProfile}
-      className="bg-white rounded-2xl border p-6 space-y-4 text-right"
+      className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5 text-right"
     >
-      <input
-        name="full_name"
-        defaultValue={profile.full_name ?? ""}
-        placeholder="الاسم"
-        className="w-full border rounded-lg p-3"
-      />
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">
+          الاسم
+        </label>
 
-      <input
-        name="phone"
-        defaultValue={profile.phone ?? ""}
-        placeholder="رقم الهاتف"
-        className="w-full border rounded-lg p-3"
-      />
+        <input
+          name="full_name"
+          defaultValue={profile.full_name ?? ""}
+          placeholder="اكتب اسمك"
+          className="w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#087a54]/20"
+        />
+      </div>
 
-      <input
-        name="avatar_url"
-        defaultValue={profile.avatar_url ?? ""}
-        placeholder="رابط الصورة"
-        className="w-full border rounded-lg p-3"
-      />
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">
+          رقم الهاتف
+        </label>
 
-      <button className="bg-[#087a54] text-white px-5 py-3 rounded-lg">
-        حفظ
-      </button>
+        <input
+          name="phone"
+          type="tel"
+          defaultValue={profile.phone ?? ""}
+          placeholder="رقم الهاتف"
+          className="w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#087a54]/20"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">
+          رابط الصورة الشخصية
+        </label>
+
+        <input
+          name="avatar_url"
+          type="url"
+          defaultValue={profile.avatar_url ?? ""}
+          placeholder="https://..."
+          className="w-full border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#087a54]/20"
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          className="bg-[#087a54] hover:bg-[#066b49] text-white px-6 py-3 rounded-xl font-bold transition"
+        >
+          حفظ التغييرات
+        </button>
+      </div>
     </form>
   );
 }

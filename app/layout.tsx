@@ -7,9 +7,56 @@ export const metadata: Metadata = {
   description: "منصة تعليمية عربية",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+const settingsScript = `
+(function () {
+  try {
+    var language =
+      localStorage.getItem("app-language") || "ar";
+
+    var theme =
+      localStorage.getItem("app-theme") || "light";
+
+    if (
+      theme !== "light" &&
+      theme !== "dark" &&
+      theme !== "eye"
+    ) {
+      theme = "light";
+    }
+
+    var root = document.documentElement;
+
+    root.lang = language;
+    root.dir =
+      language === "en" ? "ltr" : "rtl";
+
+    root.dataset.lang = language;
+    root.dataset.theme = theme;
+  } catch (error) {}
+})();
+`;
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: ReactNode;
+}>) {
   return (
-    <html lang="ar" dir="rtl">
+    <html
+      lang="ar"
+      dir="rtl"
+      data-lang="ar"
+      data-theme="light"
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: settingsScript,
+          }}
+        />
+      </head>
+
       <body>{children}</body>
     </html>
   );

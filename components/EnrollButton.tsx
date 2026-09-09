@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   enrollInCourse,
   checkEnrollmentStatus,
@@ -11,6 +12,7 @@ export default function EnrollButton({
 }: {
   courseId: string;
 }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [enrolled, setEnrolled] = useState(false);
@@ -43,6 +45,7 @@ export default function EnrollButton({
       const result = await enrollInCourse(courseId);
 
       setEnrolled(true);
+      router.refresh();
 
       if (result.alreadyEnrolled) {
         setMessage("أنت مسجل في هذه الدورة مسبقًا");

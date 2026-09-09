@@ -32,8 +32,8 @@ export default async function CourseDetailPage({
           id,
           title,
           content_url,
-          duration,
-          order_index
+          order_index,
+          is_free_preview
         )
       )
     `)
@@ -199,18 +199,34 @@ export default async function CourseDetailPage({
 
                         if(!enrollmentId){
                           return (
-                            <div
-                              key={lesson.id}
-                              className="flex justify-between bg-slate-50 rounded-lg px-4 py-3"
-                            >
-                              <span>
-                                {lesson.title}
-                              </span>
+                            lesson.is_free_preview ? (
+                              <Link
+                                key={lesson.id}
+                                href={`/courses/${course.id}/lessons/${lesson.id}`}
+                                className="flex justify-between bg-emerald-50 rounded-lg px-4 py-3"
+                              >
+                                <span>
+                                  🎬 {lesson.title}
+                                </span>
 
-                              <span className="text-xs text-slate-400">
-                                سجل أولاً
-                              </span>
-                            </div>
+                                <span className="text-xs text-emerald-600">
+                                  معاينة مجانية
+                                </span>
+                              </Link>
+                            ) : (
+                              <div
+                                key={lesson.id}
+                                className="flex justify-between bg-slate-50 rounded-lg px-4 py-3"
+                              >
+                                <span>
+                                  {lesson.title}
+                                </span>
+
+                                <span className="text-xs text-slate-400">
+                                  🔒 سجل أولاً
+                                </span>
+                              </div>
+                            )
                           );
                         }
 

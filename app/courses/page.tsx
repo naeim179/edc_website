@@ -25,6 +25,7 @@ export default async function CoursesPage({
       image_url,
       instructor_id,
       sections (
+        id,
         lessons (
           id
         )

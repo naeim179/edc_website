@@ -1,111 +1,186 @@
-import { createCourse, updateCourse } from "@/app/actions/admin-courses";
+"use client";
 
-type Props = {
-  course?: {
-    id: string;
-    title: string;
-    description: string | null;
-    category: string | null;
-    price: number | null;
-    currency: string | null;
-    is_free: boolean;
-    is_published: boolean;
-  };
+import { useState } from "react";
+import {
+  createCourse,
+  updateCourse,
+} from "@/app/actions/admin-courses";
+
+type Course = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  price?: number | null;
+  currency?: string | null;
+  is_free?: boolean;
+  is_published: boolean;
 };
 
-export default function CourseForm({ course }: Props) {
+export default function CourseForm({
+  course,
+}: {
+  course?: Course;
+}) {
+  const isEditing = Boolean(course);
+  const [isFree, setIsFree] = useState(course?.is_free ?? false);
 
   const action = course
     ? updateCourse.bind(null, course.id)
     : createCourse;
 
-
   return (
     <form
       action={action}
-      className="bg-white rounded-2xl border p-6 space-y-4 text-right"
+      className="space-y-6"
+      dir="rtl"
     >
-
-      <input
-        name="title"
-        defaultValue={course?.title}
-        placeholder="عنوان الدورة"
-        className="w-full border rounded-lg p-3"
-        required
-      />
-
-
-      <textarea
-        name="description"
-        defaultValue={course?.description ?? ""}
-        placeholder="الوصف"
-        className="w-full border rounded-lg p-3"
-      />
-
-
-      <input
-        name="category"
-        defaultValue={course?.category ?? ""}
-        placeholder="التصنيف"
-        className="w-full border rounded-lg p-3"
-      />
-
-
-      <label className="flex gap-2 justify-end items-center">
-        <span>
-          دورة مجانية
-        </span>
+      <div>
+        <label
+          htmlFor="title"
+          className="block mb-2 font-bold text-slate-700"
+        >
+          اسم الدورة
+        </label>
 
         <input
-          type="checkbox"
-          name="is_free"
-          defaultChecked={course?.is_free}
+          id="title"
+          name="title"
+          type="text"
+          required
+          defaultValue={course?.title ?? ""}
+          placeholder="مثال: أساسيات البرمجة"
+          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600"
         />
-      </label>
+      </div>
 
+      <div>
+        <label
+          htmlFor="description"
+          className="block mb-2 font-bold text-slate-700"
+        >
+          وصف الدورة
+        </label>
 
-      <input
-        name="price"
-        type="number"
-        step="0.01"
-        defaultValue={course?.price ?? 0}
-        placeholder="السعر"
-        className="w-full border rounded-lg p-3"
-      />
+        <textarea
+          id="description"
+          name="description"
+          rows={4}
+          defaultValue={course?.description ?? ""}
+          placeholder="اكتب وصفًا مختصرًا للدورة..."
+          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600 resize-y"
+        />
+      </div>
 
-
-      <select
-        name="currency"
-        defaultValue={course?.currency ?? "JOD"}
-        className="w-full border rounded-lg p-3"
-      >
-        <option value="JOD">
-          JOD
-        </option>
-
-        <option value="USD">
-          USD
-        </option>
-      </select>
-
-
-      <label className="flex gap-2 justify-end items-center">
-        <span>
-          منشورة
-        </span>
+      <div>
+        <label
+          htmlFor="category"
+          className="block mb-2 font-bold text-slate-700"
+        >
+          التصنيف
+        </label>
 
         <input
-          type="checkbox"
-          name="is_published"
-          defaultChecked={course?.is_published}
+          id="category"
+          name="category"
+          type="text"
+          defaultValue={course?.category ?? ""}
+          placeholder="مثال: Programming"
+          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600"
         />
-      </label>
+      </div>
 
+      <div className="rounded-xl border border-slate-200 p-4">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            name="is_free"
+            type="checkbox"
+            checked={isFree}
+            onChange={(event) => setIsFree(event.target.checked)}
+            className="h-5 w-5"
+          />
 
-      <button className="bg-[#087a54] text-white px-5 py-3 rounded-lg">
-        حفظ
-      </button>
+          <span className="font-bold text-slate-700">
+            دورة مجانية
+          </span>
+        </label>
 
+        <p className="text-sm text-slate-500 mt-2">
+          عند تفعيل هذا الخيار لن يحتاج الطالب إلى الدفع للتسجيل.
+        </p>
+      </div>
+
+      {!isFree && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label
+              htmlFor="price"
+              className="block mb-2 font-bold text-slate-700"
+            >
+              سعر الدورة
+            </label>
+
+            <input
+              id="price"
+              name="price"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              defaultValue={course?.price ?? 0}
+              placeholder="10.00"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="currency"
+              className="block mb-2 font-bold text-slate-700"
+            >
+              العملة
+            </label>
+
+            <select
+              id="currency"
+              name="currency"
+              defaultValue={course?.currency ?? "JOD"}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600 bg-white"
+            >
+              <option value="JOD">JOD - دينار أردني</option>
+              <option value="USD">USD - دولار أمريكي</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-xl border border-slate-200 p-4">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            name="is_published"
+            type="checkbox"
+            defaultChecked={course?.is_published ?? false}
+            className="h-5 w-5"
+          />
+
+          <span className="font-bold text-slate-700">
+            نشر الدورة
+          </span>
+        </label>
+
+        <p className="text-sm text-slate-500 mt-2">
+          الدورة المنشورة ستظهر للطلاب في قائمة الدورات.
+        </p>
+      </div>
+
+      <div className="flex justify-start">
+        <button
+          type="submit"
+          className="rounded-xl bg-[#087a54] px-6 py-3 font-bold text-white hover:bg-[#066b49] transition"
+        >
+          {isEditing ? "حفظ التعديلات" : "إنشاء الدورة"}
+        </button>
+      </div>
     </form>
   );
 }
