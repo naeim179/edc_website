@@ -39,28 +39,36 @@ export default function CompleteLessonButton({
   }
 
   return (
-    <div className="mt-6 space-y-2">
+    <div className="mt-8 space-y-3">
+
       <button
         onClick={handleComplete}
         disabled={loading || completed}
-        className={`px-6 py-3 text-white font-bold rounded-xl transition-all ${
-          completed
-            ? "bg-slate-400 cursor-not-allowed opacity-70"
-            : "bg-[#087a54] hover:bg-[#066b49]"
-        }`}
+        className={`
+          w-full md:w-auto px-10 py-3.5 rounded-xl
+          text-white font-bold transition-all shadow-sm
+          ${
+            completed
+              ? "bg-emerald-500 cursor-not-allowed"
+              : "bg-[#124b8a] hover:bg-[#0d3b6e]"
+          }
+          disabled:opacity-80
+        `}
       >
         {loading
           ? "جاري الحفظ..."
           : completed
-          ? "تم إكمال الدرس"
+          ? "✅ تم إكمال الدرس"
           : "إكمال الدرس"}
       </button>
 
+
       {message && (
-        <p className="text-sm text-slate-600">
+        <div className="inline-flex px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-bold">
           {message}
-        </p>
+        </div>
       )}
+
     </div>
   );
 }

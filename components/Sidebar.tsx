@@ -2,48 +2,27 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type SidebarProps = {
   role?: string | null;
   isAuthenticated?: boolean;
 };
 
-type AppLanguage = "ar" | "en";
-
 export default function Sidebar({
   role = null,
   isAuthenticated = false,
 }: SidebarProps) {
-  const [language, setLanguage] =
-    useState<AppLanguage>("ar");
 
-  useEffect(() => {
-    function syncLanguage() {
-      setLanguage(
-        document.documentElement.dataset.lang === "en"
-          ? "en"
-          : "ar"
-      );
-    }
+  const { language, mounted } = useLanguage();
 
-    syncLanguage();
-
-    window.addEventListener(
-      "app-language-change",
-      syncLanguage
-    );
-
-    return () => {
-      window.removeEventListener(
-        "app-language-change",
-        syncLanguage
-      );
-    };
-  }, []);
+  if (!mounted) {
+    return null;
+  }
 
   const isAdmin = role === "admin";
   const isArabic = language === "ar";
+
 
   const text = isArabic
     ? {
@@ -69,8 +48,10 @@ export default function Sidebar({
         myCourses: "My Courses",
       };
 
+
   const linkClass =
     "block rounded-xl px-4 py-3 hover:bg-white/15 transition text-[15px]";
+
 
   return (
     <aside
@@ -81,6 +62,7 @@ export default function Sidebar({
       <div className="flex flex-col items-center mb-10">
 
         <div className="bg-white rounded-2xl p-3 mb-3">
+
           <Image
             src="/logo/logo.png"
             alt="Your Way"
@@ -88,7 +70,9 @@ export default function Sidebar({
             height={70}
             className="object-contain"
           />
+
         </div>
+
 
         <h1 className="text-xl font-bold">
           {text.platform}
@@ -109,17 +93,21 @@ export default function Sidebar({
               {text.dashboard}
             </Link>
 
+
             <Link href="/admin/courses" className={linkClass}>
               {text.manageCourses}
             </Link>
+
 
             <Link href="/admin/orders" className={linkClass}>
               {text.orders}
             </Link>
 
+
             <Link href="/admin/students" className={linkClass}>
               {text.students}
             </Link>
+
 
             <Link href="/profile" className={linkClass}>
               {text.profile}
@@ -131,9 +119,11 @@ export default function Sidebar({
               {text.home}
             </Link>
 
+
             <Link href="/courses" className={linkClass}>
               {text.courses}
             </Link>
+
 
             {isAuthenticated && (
               <>
@@ -143,6 +133,7 @@ export default function Sidebar({
                 >
                   {text.myCourses}
                 </Link>
+
 
                 <Link
                   href="/profile"

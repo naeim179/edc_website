@@ -22,70 +22,70 @@ export default function CourseCard({
   image,
 }: CourseCardProps) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition overflow-hidden">
+    <div
+      className="bg-white rounded-[26px] border border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+      dir="rtl"
+    >
 
-      <div className="flex items-center gap-5 p-5">
+      {image ? (
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-52 object-cover"
+        />
+      ) : (
+        <div className="w-full h-52 bg-slate-100 flex items-center justify-center text-sm text-slate-400">
+          لا توجد صورة
+        </div>
+      )}
 
-        {image ? (
-          <img
-            src={image}
-            alt={title}
-            className="w-28 h-28 rounded-2xl object-cover shrink-0"
-          />
-        ) : (
-          <div className="w-28 h-28 rounded-2xl bg-slate-100 flex items-center justify-center text-xs text-slate-400 shrink-0">
-            لا توجد صورة
-          </div>
+
+      <div className="p-5 space-y-4">
+
+
+        {category && (
+          <span className="inline-flex px-3 py-1 rounded-full bg-blue-50 text-[#124b8a] text-xs font-bold">
+            {category}
+          </span>
         )}
 
 
-        <div className="flex-1 text-right space-y-2">
-
-          {category && (
-            <span className="inline-block text-xs font-bold text-[#124b8a] bg-blue-50 px-3 py-1 rounded-full">
-              {category}
-            </span>
-          )}
+        <h3 className="text-xl font-bold text-slate-800 leading-8">
+          {title}
+        </h3>
 
 
-          <h3 className="text-lg font-bold text-slate-800">
-            {title}
-          </h3>
+        <div className="flex items-center justify-between text-sm">
 
-
-          <p className="text-sm text-slate-500">
-            {completedLessons} من {totalLessons} درس مكتمل
-          </p>
-
-
-          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-[#124b8a] h-full rounded-full transition-all duration-300"
-              style={{
-                width: `${progress}%`,
-              }}
-            />
-          </div>
-
-
-        </div>
-
-
-        <div className="flex flex-col items-end justify-between h-28 shrink-0">
-
-          <span className="text-sm font-bold text-slate-500">
+          <span className="font-bold text-[#124b8a]">
             {progress}%
           </span>
 
-
-          <Link
-            href={`/courses/${id}`}
-            className="px-4 py-2 text-sm font-bold text-white bg-[#124b8a] hover:bg-[#0d3b6e] rounded-xl transition"
-          >
-            عرض الدورة
-          </Link>
+          <span className="text-slate-500">
+            {completedLessons} من {totalLessons} درس مكتمل
+          </span>
 
         </div>
+
+
+        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+
+          <div
+            className="h-full bg-[#124b8a] rounded-full transition-all duration-500"
+            style={{
+              width: `${progress}%`,
+            }}
+          />
+
+        </div>
+
+
+        <Link
+          href={`/courses/${id}`}
+          className="block text-center bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold transition"
+        >
+          متابعة التعلم
+        </Link>
 
 
       </div>

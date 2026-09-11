@@ -71,6 +71,8 @@ export default async function LessonPage({
   const { data: courseLessons } = await supabase
     .from("sections")
     .select(`
+      id,
+      title,
       order_index,
       lessons (
         id,
@@ -116,93 +118,116 @@ export default async function LessonPage({
 
   return (
     <AppShell>
-      <div className="max-w-4xl mx-auto w-full space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-right">
+      <div
+        className="max-w-5xl mx-auto w-full space-y-6"
+        dir="rtl"
+      >
+
+        <section className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-6">
 
           <Link
             href={`/courses/${id}`}
-            className="text-sm text-[#087a54] font-bold"
+            className="text-sm text-[#124b8a] font-bold"
           >
-            ← العودة إلى محتوى الدورة
+            العودة إلى محتوى الدورة
           </Link>
 
-          <div className="mt-4 mb-4 text-sm text-slate-500">
-            <p>
+
+          <div className="mt-5 space-y-3">
+
+            <span className="inline-flex px-3 py-1 rounded-full bg-blue-50 text-[#124b8a] text-xs font-bold">
+              {lesson.section?.[0]?.title}
+            </span>
+
+
+            <h1 className="text-3xl font-bold text-slate-900">
+              {lesson.title}
+            </h1>
+
+
+            <p className="text-slate-500">
               الدورة: {course?.title}
             </p>
 
-            <p>
-              القسم: {lesson.section?.[0]?.title}
-            </p>
+
+            {lesson.duration && (
+              <span className="inline-flex bg-slate-50 border border-slate-100 px-3 py-1 rounded-full text-sm text-slate-500">
+                ⏱ {lesson.duration}
+              </span>
+            )}
+
           </div>
 
-          <h1 className="text-2xl font-bold text-slate-800 mb-3">
-            {lesson.title}
-          </h1>
 
-          {lesson.duration && (
-            <p className="text-sm text-slate-500 mb-4">
-              المدة: {lesson.duration}
-            </p>
-          )}
+          <div className="mt-8">
 
-          {lesson.content_url ? (
-            lesson.content_url.includes("youtube.com") ||
-            lesson.content_url.includes("youtu.be") ? (
-              <div className="aspect-video rounded-xl overflow-hidden border">
-                <iframe
-                  src={`https://www.youtube.com/embed/${youtubeId}`}
-                  title={lesson.title}
-                  className="w-full h-full"
-                  allowFullScreen
-                />
-              </div>
+            {lesson.content_url ? (
+              lesson.content_url.includes("youtube.com") ||
+              lesson.content_url.includes("youtu.be") ? (
+                <div className="aspect-video rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${youtubeId}`}
+                    title={lesson.title}
+                    className="w-full h-full"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <a
+                  href={lesson.content_url}
+                  target="_blank"
+                  className="inline-flex px-6 py-3 bg-[#124b8a] text-white rounded-xl font-bold"
+                >
+                  فتح محتوى الدرس
+                </a>
+              )
             ) : (
-              <a
-                href={lesson.content_url}
-                target="_blank"
-                className="inline-block px-5 py-3 bg-[#087a54] text-white rounded-xl font-bold"
-              >
-                فتح محتوى الدرس
-              </a>
-            )
-          ) : (
-            <p className="text-sm text-slate-500">
-              لا يوجد محتوى لهذا الدرس حاليًا.
-            </p>
-          )}
+              <div className="bg-slate-50 rounded-2xl p-8 text-center text-slate-500">
+                لا يوجد محتوى لهذا الدرس حالياً.
+              </div>
+            )}
+
+          </div>
+
 
           {enrollment && (
             <CompleteLessonButton
               enrollmentId={enrollment.id}
               lessonId={lesson.id}
-              initialCompleted={progress?.is_completed ?? false}
+              initialCompleted={
+                progress?.is_completed ?? false
+              }
             />
           )}
 
-          <div className="flex justify-between mt-8">
+
+          <div className="flex items-center justify-between mt-10">
+
             {previousLesson ? (
               <Link
                 href={`/courses/${id}/lessons/${previousLesson.id}`}
-                className="px-4 py-2 bg-slate-100 rounded-lg text-sm"
+                className="px-5 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition"
               >
-                ⬅️ الدرس السابق
+                الدرس السابق
               </Link>
             ) : (
               <span />
             )}
 
+
             {nextLesson && (
               <Link
                 href={`/courses/${id}/lessons/${nextLesson.id}`}
-                className="px-4 py-2 bg-[#087a54] text-white rounded-lg text-sm"
+                className="px-5 py-3 bg-[#124b8a] hover:bg-[#0d3b6e] text-white rounded-xl font-bold transition"
               >
-                الدرس التالي ➡️
+                الدرس التالي
               </Link>
             )}
+
           </div>
 
-        </div>
+        </section>
+
       </div>
     </AppShell>
   );
