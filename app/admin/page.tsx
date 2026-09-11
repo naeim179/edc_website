@@ -19,6 +19,7 @@ export default async function AdminDashboardPage() {
     { count: studentsCount },
     { count: enrollmentsCount },
     { count: ordersCount },
+    { count: pendingOrdersCount },
   ] = await Promise.all([
     supabase
       .from("courses")
@@ -48,6 +49,14 @@ export default async function AdminDashboardPage() {
         count: "exact",
         head: true,
       }),
+
+    supabase
+      .from("orders")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("status", "pending"),
   ]);
 
 
@@ -58,6 +67,7 @@ export default async function AdminDashboardPage() {
         studentsCount={studentsCount ?? 0}
         enrollmentsCount={enrollmentsCount ?? 0}
         ordersCount={ordersCount ?? 0}
+        pendingOrdersCount={pendingOrdersCount ?? 0}
       />
     </AppShell>
   );

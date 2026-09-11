@@ -6,24 +6,34 @@ import { useTransition } from "react";
 
 export default function BuyCourseButton({
   courseId,
-}:{
-  courseId:string;
-}){
+}: {
+  courseId: string;
+}) {
 
-  const [pending,startTransition]=useTransition();
+  const [pending, startTransition] = useTransition();
+
+
+  function handleBuy() {
+
+    if (pending) return;
+
+
+    startTransition(async () => {
+      await createOrder(courseId);
+    });
+
+  }
 
 
   return (
     <button
       disabled={pending}
-      onClick={()=>{
-        startTransition(()=>{
-          createOrder(courseId);
-        });
-      }}
-      className="bg-[#087a54] text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50"
+      onClick={handleBuy}
+      className="bg-[#087a54] text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {pending ? "جاري المعالجة..." : "شراء الآن"}
+      {pending
+        ? "جاري إنشاء الطلب..."
+        : "شراء الآن"}
     </button>
   );
 }

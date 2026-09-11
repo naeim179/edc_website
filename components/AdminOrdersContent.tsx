@@ -1,20 +1,29 @@
 "use client";
 
+import { useTransition } from "react";
+import { approveOrder } from "@/app/actions/admin-orders";
 import { useLanguage } from "@/components/LanguageProvider";
+
 
 type Order = {
   id: string;
   amount: number;
   currency: string;
   status: string;
+  user_id: string;
+  created_at: string;
+  student?: string;
+  studentName?: string;
   courses: {
     title?: string;
   }[];
 };
 
+
 type Props = {
   orders: Order[];
 };
+
 
 export default function AdminOrdersContent({
   orders,
@@ -23,6 +32,22 @@ export default function AdminOrdersContent({
   const { language } = useLanguage();
 
   const isArabic = language === "ar";
+
+  const [pending, startTransition] =
+    useTransition();
+
+
+  function handleApprove(orderId: string) {
+
+    startTransition(async () => {
+
+      await approveOrder(orderId);
+
+      window.location.reload();
+
+    });
+
+  }
 
 
   return (
@@ -36,6 +61,7 @@ export default function AdminOrdersContent({
         <h1 className="text-2xl font-bold">
           {isArabic ? "الطلبات" : "Orders"}
         </h1>
+
 
         <p className="text-slate-500 mt-2">
           {isArabic
@@ -73,6 +99,32 @@ export default function AdminOrdersContent({
 
                 <p className="text-sm text-slate-500 mt-2">
                   {isArabic
+                    ? "الطالب"
+                    : "Student"}
+                  : {order.student ?? "Unknown"}
+                </p>
+
+
+                <p className="text-xs text-slate-400 mt-1 break-all">
+                  User ID: {order.user_id}
+                </p>
+
+
+                <p className="text-sm text-slate-500 mt-2">
+                  {isArabic
+                    ? "الطالب"
+                    : "Student"}
+                  : {order.studentName}
+                </p>
+
+
+                <p className="text-sm text-slate-400 mt-1">
+                  User ID: {order.user_id}
+                </p>
+
+
+                <p className="text-sm text-slate-500 mt-2">
+                  {isArabic
                     ? "المبلغ"
                     : "Amount"}
                   : {order.amount} {order.currency}
@@ -85,6 +137,30 @@ export default function AdminOrdersContent({
                     : "Status"}
                   : {order.status}
                 </p>
+
+
+                <p className="text-xs text-slate-400 mt-1">
+                  {new Date(order.created_at).toLocaleDateString()}
+                </p>
+
+
+                {order.status === "pending" && (
+
+                  <button
+                    disabled={pending}
+                    onClick={() =>
+                      handleApprove(order.id)
+                    }
+                    className="mt-4 bg-green-600 text-white px-5 py-2 rounded-xl font-bold disabled:opacity-50"
+                  >
+                    {pending
+                      ? "..."
+                      : isArabic
+                        ? "تأكيد الدفع"
+                        : "Approve Payment"}
+                  </button>
+
+                )}
 
 
               </div>

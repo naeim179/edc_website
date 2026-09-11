@@ -14,6 +14,7 @@ type AdminDashboardContentProps = {
   studentsCount: number;
   enrollmentsCount: number;
   ordersCount: number;
+  pendingOrdersCount: number;
 };
 
 export default function AdminDashboardContent({
@@ -21,6 +22,7 @@ export default function AdminDashboardContent({
   studentsCount,
   enrollmentsCount,
   ordersCount,
+  pendingOrdersCount,
 }: AdminDashboardContentProps) {
 
   const { language } = useLanguage();
@@ -57,9 +59,9 @@ export default function AdminDashboardContent({
       title: isArabic ? "الطلبات" : "Orders",
       value: ordersCount,
       description: isArabic
-        ? "طلبات الشراء"
-        : "Purchase orders",
-      icon: "💳",
+        ? `طلبات الشراء - ${pendingOrdersCount} بانتظار المراجعة`
+        : `Purchase orders - ${pendingOrdersCount} pending`,
+      icon: pendingOrdersCount > 0 ? "🔴💳" : "💳",
     },
   ];
 
