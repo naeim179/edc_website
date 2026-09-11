@@ -170,25 +170,7 @@ export default function CourseDetailContent({
           </div>
 
 
-          <div className="bg-[#eef4fb] min-h-[280px]">
 
-            {course.image_url ? (
-
-              <img
-                src={course.image_url}
-                alt={course.title}
-                className="w-full h-full min-h-[280px] object-cover"
-              />
-
-            ) : (
-
-              <div className="flex items-center justify-center h-full text-5xl">
-                📚
-              </div>
-
-            )}
-
-          </div>
 
 
         </div>

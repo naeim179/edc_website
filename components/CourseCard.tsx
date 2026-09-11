@@ -1,16 +1,14 @@
-"use client";
-
 import Link from "next/link";
 
-interface CourseCardProps {
-  id: string | number;
+type CourseCardProps = {
+  id: string;
   title: string;
   category?: string | null;
   progress: number;
   completedLessons: number;
   totalLessons: number;
   image?: string | null;
-}
+};
 
 export default function CourseCard({
   id,
@@ -19,7 +17,6 @@ export default function CourseCard({
   progress,
   completedLessons,
   totalLessons,
-  image,
 }: CourseCardProps) {
   return (
     <div
@@ -27,21 +24,7 @@ export default function CourseCard({
       dir="rtl"
     >
 
-      {image ? (
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-52 object-cover"
-        />
-      ) : (
-        <div className="w-full h-52 bg-slate-100 flex items-center justify-center text-sm text-slate-400">
-          لا توجد صورة
-        </div>
-      )}
-
-
       <div className="p-5 space-y-4">
-
 
         {category && (
           <span className="inline-flex px-3 py-1 rounded-full bg-blue-50 text-[#124b8a] text-xs font-bold">
@@ -86,7 +69,6 @@ export default function CourseCard({
         >
           متابعة التعلم
         </Link>
-
 
       </div>
 
