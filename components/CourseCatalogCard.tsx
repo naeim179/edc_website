@@ -24,17 +24,7 @@ export default function CourseCatalogCard({
 
       <Link href={`/courses/${id}`}>
 
-        {image ? (
-          <img
-            src={image}
-            alt={title}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-48 bg-slate-100 flex items-center justify-center text-sm text-slate-400">
-            لا توجد صورة
-          </div>
-        )}
+
 
       </Link>
 
