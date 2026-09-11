@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -42,23 +43,23 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const {
-        error: signUpError,
-      } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
+      const { error: signUpError } =
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+            },
           },
-        },
-      });
+        });
 
       if (signUpError) {
         throw signUpError;
       }
 
       router.push("/login");
+
     } catch (err) {
       setError(
         err instanceof Error
@@ -72,20 +73,38 @@ export default function RegisterPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-[#f4f7f6] p-4"
+      className="min-h-screen flex items-center justify-center bg-[#f5f8fc] p-4"
       dir="rtl"
     >
-      <div className="w-full max-w-md bg-white rounded-2xl border p-8 shadow-sm">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-lg p-8">
 
-        <h1 className="text-2xl font-bold text-center mb-6">
-          إنشاء حساب جديد
-        </h1>
+        <div className="text-center mb-8">
+
+          <Image
+            src="/logo/logo.png"
+            alt="Your Way"
+            width={180}
+            height={120}
+            className="mx-auto mb-5 object-contain"
+          />
+
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+            إنشاء حساب جديد
+          </h1>
+
+          <p className="text-sm text-slate-400">
+            أنشئ حسابك وابدأ رحلة التعلم
+          </p>
+
+        </div>
+
 
         {error && (
-          <div className="mb-5 p-3 rounded-lg bg-red-50 text-red-600 text-sm text-center">
+          <div className="mb-5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center">
             {error}
           </div>
         )}
+
 
         <form
           onSubmit={handleSubmit}
@@ -98,8 +117,9 @@ export default function RegisterPage() {
               setFullName(e.target.value)
             }
             placeholder="الاسم الكامل"
-            className="w-full border rounded-lg p-3 text-right"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-right focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           />
+
 
           <input
             type="email"
@@ -108,8 +128,9 @@ export default function RegisterPage() {
               setEmail(e.target.value)
             }
             placeholder="البريد الإلكتروني"
-            className="w-full border rounded-lg p-3 text-right"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-right focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           />
+
 
           <input
             type="password"
@@ -118,8 +139,9 @@ export default function RegisterPage() {
               setPassword(e.target.value)
             }
             placeholder="كلمة المرور"
-            className="w-full border rounded-lg p-3 text-right"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-right focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           />
+
 
           <input
             type="password"
@@ -128,12 +150,13 @@ export default function RegisterPage() {
               setConfirmPassword(e.target.value)
             }
             placeholder="تأكيد كلمة المرور"
-            className="w-full border rounded-lg p-3 text-right"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-right focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           />
+
 
           <button
             disabled={isLoading}
-            className="w-full bg-[#087a54] text-white py-3 rounded-lg font-bold disabled:opacity-50"
+            className="w-full bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold transition disabled:opacity-50"
           >
             {isLoading
               ? "جاري إنشاء الحساب..."
@@ -142,12 +165,12 @@ export default function RegisterPage() {
 
         </form>
 
-        <p className="text-center text-sm mt-6">
-          لديك حساب؟
-          {" "}
+
+        <p className="text-center text-sm mt-6 text-slate-500">
+          لديك حساب؟{" "}
           <Link
             href="/login"
-            className="text-[#087a54] font-bold"
+            className="text-[#124b8a] font-bold hover:underline"
           >
             تسجيل الدخول
           </Link>

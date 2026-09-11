@@ -98,11 +98,11 @@ export default async function Home() {
   return (
     <AppShell>
       {user ? (
-        <section className="rounded-[24px] bg-gradient-to-l from-[#087a54] to-[#045f42] text-white p-8 shadow-lg">
+        <section className="rounded-[24px] bg-gradient-to-l from-[#124b8a] to-[#0d3b6e] text-white p-8 shadow-lg">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
             <div className="text-right">
-              <p className="text-emerald-100 text-sm mb-2">
+              <p className="text-blue-100 text-sm mb-2">
                 أهلاً بعودتك
               </p>
 
@@ -110,13 +110,13 @@ export default async function Home() {
                 مرحباً {displayName} 👋
               </h1>
 
-              <p className="mt-3 text-emerald-100">
+              <p className="mt-3 text-blue-100">
                 أكمل رحلتك التعليمية من حيث توقفت.
               </p>
 
               <Link
                 href="/my-courses"
-                className="inline-block mt-6 bg-white text-[#087a54] px-6 py-3 rounded-xl font-bold"
+                className="inline-block mt-6 bg-white text-[#124b8a] px-6 py-3 rounded-xl font-bold"
               >
                 متابعة التعلم
               </Link>
@@ -127,7 +127,7 @@ export default async function Home() {
                 {enrolledCount}
               </p>
 
-              <p className="text-sm text-emerald-100 mt-1">
+              <p className="text-sm text-blue-100 mt-1">
                 دورات مسجلة
               </p>
             </div>
@@ -135,9 +135,9 @@ export default async function Home() {
           </div>
         </section>
       ) : (
-        <section className="rounded-[24px] bg-gradient-to-l from-[#087a54] to-[#045f42] text-white p-8 shadow-lg">
+        <section className="rounded-[24px] bg-gradient-to-l from-[#124b8a] to-[#0d3b6e] text-white p-8 shadow-lg">
           <div className="max-w-2xl mr-auto text-right">
-            <p className="text-emerald-100 text-sm mb-2">
+            <p className="text-blue-100 text-sm mb-2">
               منصتك للتعلم والتطور
             </p>
 
@@ -145,7 +145,7 @@ export default async function Home() {
               ابدأ رحلتك التعليمية اليوم
             </h1>
 
-            <p className="mt-4 text-emerald-100 leading-7">
+            <p className="mt-4 text-blue-100 leading-7">
               استعرض الدورات المتاحة، أنشئ حسابك،
               وتابع تقدمك من مكان واحد.
             </p>
@@ -153,7 +153,7 @@ export default async function Home() {
             <div className="flex flex-wrap justify-end gap-3 mt-6">
               <Link
                 href="/register"
-                className="bg-white text-[#087a54] px-6 py-3 rounded-xl font-bold"
+                className="bg-white text-[#124b8a] px-6 py-3 rounded-xl font-bold"
               >
                 إنشاء حساب
               </Link>
@@ -173,7 +173,7 @@ export default async function Home() {
         <div className="flex items-center justify-between">
           <Link
             href="/courses"
-            className="text-sm font-semibold text-emerald-600 hover:underline"
+            className="text-sm font-semibold text-[#124b8a] hover:underline"
           >
             عرض جميع الدورات
           </Link>
@@ -211,7 +211,7 @@ export default async function Home() {
                 >
                   <div className="text-right">
                     {course.category && (
-                      <span className="text-xs text-emerald-600 font-bold">
+                      <span className="text-xs text-[#124b8a] font-bold">
                         {course.category}
                       </span>
                     )}
@@ -224,7 +224,7 @@ export default async function Home() {
                       {course.lessons} درس
                     </p>
 
-                    <p className="mt-4 font-bold text-[#087a54]">
+                    <p className="mt-4 font-bold text-[#124b8a]">
                       {course.isFree
                         ? "مجانية"
                         : `${course.price ?? 0} ${

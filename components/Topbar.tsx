@@ -106,64 +106,9 @@ export default function Topbar({
       className="w-full flex items-center justify-between gap-4 py-2 px-1"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      <div className="flex items-center gap-3">
-        {isAuthenticated ? (
-          <>
-            <Link
-              href="/profile"
-              className="flex items-center gap-3 bg-white p-2 px-3 rounded-[14px] shadow-sm border border-slate-100 hover:border-emerald-200 transition"
-            >
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={userName}
-                  className="w-10 h-10 rounded-full object-cover border border-slate-200"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-emerald-50 text-[#087a54] flex items-center justify-center font-bold">
-                  {userName
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-              )}
 
-              <div
-                className={`flex flex-col ${
-                  isArabic
-                    ? "text-right"
-                    : "text-left"
-                }`}
-              >
-                <span className="text-[15px] font-bold text-slate-800">
-                  {userName}
-                </span>
 
-                <span className="text-[12px] text-slate-500">
-                  {roleLabel}
-                </span>
-              </div>
-            </Link>
 
-            <form action={signOut}>
-              <button
-                type="submit"
-                className="h-11 px-4 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-600 hover:text-red-600 hover:border-red-200 transition"
-              >
-                {text.logout}
-              </button>
-            </form>
-          </>
-        ) : (
-          <Link
-            href="/login"
-            className="h-11 flex items-center px-5 rounded-xl bg-[#087a54] text-white text-sm font-bold"
-          >
-            {text.login}
-          </Link>
-        )}
-
-        <DisplaySettings />
-      </div>
 
       <form
         onSubmit={handleSearch}
@@ -178,7 +123,7 @@ export default function Topbar({
               setQuery(event.target.value)
             }
             placeholder={text.search}
-            className={`w-full h-11 bg-white text-slate-700 text-[14px] rounded-[14px] border border-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#087a54]/20 transition-all ${
+            className={`w-full h-11 bg-white text-slate-700 text-[14px] rounded-[14px] border border-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${
               isArabic
                 ? "pr-11 pl-4 text-right"
                 : "pl-11 pr-4 text-left"
@@ -188,14 +133,76 @@ export default function Topbar({
           <button
             type="submit"
             aria-label={text.searchLabel}
-            className={`absolute top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#087a54] transition-colors ${
+            className={`absolute top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#124b8a] ${
               isArabic ? "right-3.5" : "left-3.5"
             }`}
           >
             🔍
           </button>
+
         </div>
       </form>
+
+
+      <div className="flex items-center gap-3">
+
+        {isAuthenticated ? (
+          <>
+            <Link
+              href="/profile"
+              className="flex items-center gap-3 bg-white p-2 px-3 rounded-[14px] shadow-sm border border-slate-100 hover:border-blue-200 transition"
+            >
+
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={userName}
+                  className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#124b8a] flex items-center justify-center font-bold">
+                  {userName.charAt(0).toUpperCase()}
+                </div>
+              )}
+
+              <div className="flex flex-col text-right">
+                <span className="text-[15px] font-bold text-slate-800">
+                  {userName}
+                </span>
+
+                <span className="text-[12px] text-slate-500">
+                  {roleLabel}
+                </span>
+              </div>
+
+            </Link>
+
+
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="h-11 px-4 rounded-xl bg-white border border-slate-200 text-sm font-bold text-slate-600 hover:text-red-600 hover:border-red-200 transition"
+              >
+                {text.logout}
+              </button>
+            </form>
+
+          </>
+        ) : (
+
+          <Link
+            href="/login"
+            className="h-11 flex items-center px-5 rounded-xl bg-[#124b8a] hover:bg-[#0d3b6e] text-white text-sm font-bold"
+          >
+            {text.login}
+          </Link>
+
+        )}
+
+        <DisplaySettings />
+
+      </div>
+
     </header>
   );
 }

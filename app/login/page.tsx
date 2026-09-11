@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -17,9 +18,7 @@ export default function LoginPage() {
     password?: string;
   }>({});
 
-  const [serverError, setServerError] =
-    useState<string | null>(null);
-
+  const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
@@ -53,37 +52,27 @@ export default function LoginPage() {
 
     setServerError(null);
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
-      const {
-        data,
-        error,
-      } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      const {
-        data: profile,
-        error: profileError,
-      } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .maybeSingle();
+      const { data: profile, error: profileError } =
+        await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .maybeSingle();
 
-      if (profileError) {
-        throw profileError;
-      }
+      if (profileError) throw profileError;
 
       if (profile?.role === "admin") {
         router.replace("/admin");
@@ -103,15 +92,20 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-[#f4f7f6] p-4"
+      className="min-h-screen flex items-center justify-center bg-[#f5f8fc] p-4"
       dir="rtl"
     >
-      <div className="w-full max-w-md bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-lg p-8">
 
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-2xl flex items-center justify-center mx-auto mb-4">
-            🎓
-          </div>
+
+          <Image
+            src="/logo/logo.png"
+            alt="Your Way"
+            width={180}
+            height={120}
+            className="mx-auto mb-5 object-contain"
+          />
 
           <h1 className="text-2xl font-bold text-slate-800 mb-2">
             تسجيل الدخول
@@ -120,6 +114,7 @@ export default function LoginPage() {
           <p className="text-sm text-slate-400">
             أدخل بيانات حسابك للمتابعة
           </p>
+
         </div>
 
         {serverError && (
@@ -133,6 +128,7 @@ export default function LoginPage() {
           className="space-y-5"
           noValidate
         >
+
           <div>
             <label className="block text-sm font-medium text-slate-600 mb-1.5">
               البريد الإلكتروني
@@ -146,11 +142,11 @@ export default function LoginPage() {
               }
               placeholder="name@example.com"
               disabled={isLoading}
-              className={`w-full px-4 py-2.5 rounded-lg bg-slate-50 border ${
+              className={`w-full px-4 py-2.5 rounded-xl bg-slate-50 border ${
                 errors.email
                   ? "border-red-400"
                   : "border-slate-200"
-              } text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#087a54]/30 transition disabled:opacity-50`}
+              } text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
             />
 
             {errors.email && (
@@ -159,6 +155,7 @@ export default function LoginPage() {
               </p>
             )}
           </div>
+
 
           <div>
             <label className="block text-sm font-medium text-slate-600 mb-1.5">
@@ -173,11 +170,11 @@ export default function LoginPage() {
               }
               placeholder="••••••••"
               disabled={isLoading}
-              className={`w-full px-4 py-2.5 rounded-lg bg-slate-50 border ${
+              className={`w-full px-4 py-2.5 rounded-xl bg-slate-50 border ${
                 errors.password
                   ? "border-red-400"
                   : "border-slate-200"
-              } text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#087a54]/30 transition disabled:opacity-50`}
+              } text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
             />
 
             {errors.password && (
@@ -187,22 +184,25 @@ export default function LoginPage() {
             )}
           </div>
 
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#087a54] hover:bg-[#066b49] text-white font-bold py-2.5 rounded-lg transition disabled:opacity-50"
+            className="w-full bg-[#124b8a] hover:bg-[#0d3b6e] text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
           >
             {isLoading
               ? "جاري تسجيل الدخول..."
               : "تسجيل الدخول"}
           </button>
+
         </form>
+
 
         <div className="mt-6 text-center text-sm text-slate-500">
           ليس لديك حساب؟{" "}
           <Link
             href="/register"
-            className="text-[#087a54] font-medium hover:underline"
+            className="text-[#124b8a] font-bold hover:underline"
           >
             إنشاء حساب جديد
           </Link>
