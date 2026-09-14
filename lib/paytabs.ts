@@ -46,6 +46,8 @@ export async function createPaymentPage(params: CreatePaymentParams) {
 
   const data = await res.json();
 
+  console.error("PAYTABS_RESPONSE", JSON.stringify(data));
+
   if (!res.ok || !data.redirect_url) {
     throw new Error(
       data.message || "تعذر إنشاء صفحة الدفع، حاول مرة أخرى"
