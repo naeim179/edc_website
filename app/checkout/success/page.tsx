@@ -17,15 +17,22 @@ export default async function CheckoutSuccessPage({
   let courseId: string | null = params.course ?? null;
 
   if (params.tranRef) {
-    try {
-      const result = await fulfillPaymentByTranRef(params.tranRef);
-      paid = result.paid;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const result = await fulfillPaymentByTranRef(params.tranRef);
 
-      if (result.paid) {
-        courseId = result.courseId;
+        if (result.paid) {
+          paid = true;
+          courseId = result.courseId;
+          break;
+        }
+      } catch {
+        // Continue retrying in case the payment is still being processed.
       }
-    } catch {
-      paid = false;
+
+      if (attempt < 4) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     }
   }
 
