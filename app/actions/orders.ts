@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createPaymentPage } from "@/lib/paytabs";
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  process.env.SITE_URL ?? "http://localhost:3000";
 
 
 export async function createOrder(courseId: string) {
