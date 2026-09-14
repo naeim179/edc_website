@@ -1,6 +1,11 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "educational-platform",
+        "vars": {
+                "PAYTABS_PROFILE_ID": "185536",
+                "PAYTABS_REGION": "JOR",
+                "SITE_URL": "https://educational-platform.naeemmohmd8.workers.dev"
+        },
         "workers_dev": true,
 	"compatibility_date": "2026-09-13",
 	"compatibility_flags": [
