@@ -40,7 +40,7 @@ export async function createPaymentPage(params: CreatePaymentParams) {
         zip: "00000",
       },
       callback: `${params.siteUrl}/api/payments/webhook`,
-      return: `${params.siteUrl}/checkout/success`,
+      return: `${params.siteUrl}/api/payments/return`,
     }),
   });
 
