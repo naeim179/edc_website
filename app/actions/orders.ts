@@ -3,6 +3,10 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createPaymentPage } from "@/lib/paytabs";
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 
 export async function createOrder(courseId: string) {
@@ -24,6 +28,7 @@ export async function createOrder(courseId: string) {
       .from("courses")
       .select(`
         id,
+        title,
         price,
         currency,
         is_free
@@ -71,11 +76,22 @@ export async function createOrder(courseId: string) {
 
 
   if (existingPendingOrder) {
-    redirect(`/checkout/success?course=${courseId}`);
+
+    const paymentUrl = await createPaymentPage({
+      orderId: existingPendingOrder.id,
+      amount: course.price,
+      currency: course.currency,
+      description: course.title,
+      customerEmail: user.email ?? "",
+      customerName: user.email?.split("@")[0] ?? "Student",
+      siteUrl: SITE_URL,
+    });
+
+    redirect(paymentUrl);
   }
 
 
-  const { error } = await supabase
+  const { data: newOrder, error } = await supabase
     .from("orders")
     .insert({
       user_id: user.id,
@@ -83,23 +99,35 @@ export async function createOrder(courseId: string) {
       amount: course.price,
       currency: course.currency,
       status: "pending",
-    });
+    })
+    .select("id")
+    .single();
 
 
-  if (error) {
+  if (error || !newOrder) {
 
     if (
-      error.message.includes("unique_pending_order_per_user_course") ||
-      error.message.includes("duplicate")
+      error?.message.includes("unique_pending_order_per_user_course") ||
+      error?.message.includes("duplicate")
     ) {
-      redirect(`/checkout/success?course=${courseId}`);
+      redirect(`/courses/${courseId}`);
     }
 
-    throw new Error(error.message);
+    throw new Error(error?.message ?? "تعذر إنشاء الطلب");
   }
 
 
-  redirect(`/checkout/success?course=${courseId}`);
+  const paymentUrl = await createPaymentPage({
+    orderId: newOrder.id,
+    amount: course.price,
+    currency: course.currency,
+    description: course.title,
+    customerEmail: user.email ?? "",
+    customerName: user.email?.split("@")[0] ?? "Student",
+    siteUrl: SITE_URL,
+  });
+
+  redirect(paymentUrl);
 }
 
 
