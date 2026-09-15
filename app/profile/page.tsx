@@ -20,7 +20,6 @@ export default async function ProfilePage() {
     .select(`
       full_name,
       phone,
-      avatar_url,
       role
     `)
     .eq("id", user.id)

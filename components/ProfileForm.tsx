@@ -9,13 +9,8 @@ export default function ProfileForm({
   profile: {
     full_name: string | null;
     phone: string | null;
-    avatar_url: string | null;
   };
 }) {
-  const [avatarUrl, setAvatarUrl] = useState(
-    profile.avatar_url ?? ""
-  );
-
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -82,53 +77,6 @@ export default function ProfileForm({
             className={inputClass}
           />
         </div>
-
-      </div>
-
-
-      <div>
-        <label className="block text-sm font-bold text-slate-700 mb-2">
-          رابط الصورة الشخصية
-        </label>
-
-        <input
-          name="avatar_url"
-          type="url"
-          value={avatarUrl}
-          onChange={(event) =>
-            setAvatarUrl(event.target.value)
-          }
-          placeholder="https://..."
-          disabled={isSaving}
-          dir="ltr"
-          className={inputClass}
-        />
-
-
-        {avatarUrl.trim() && (
-          <div className="mt-5 flex items-center justify-end gap-4">
-
-            <div className="text-right">
-              <p className="text-sm font-bold text-slate-700">
-                معاينة الصورة
-              </p>
-
-              <p className="text-xs text-slate-400 mt-1">
-                ستظهر هذه الصورة في ملفك الشخصي
-              </p>
-            </div>
-
-            <img
-              src={avatarUrl}
-              alt="معاينة الصورة الشخصية"
-              className="w-16 h-16 rounded-full object-cover border-4 border-blue-50"
-              onError={(event) => {
-                event.currentTarget.style.display = "none";
-              }}
-            />
-
-          </div>
-        )}
 
       </div>
 

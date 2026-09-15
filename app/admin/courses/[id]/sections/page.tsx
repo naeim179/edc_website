@@ -5,7 +5,7 @@ import {
   deleteSection,
   updateSection,
 } from "@/app/actions/admin-sections";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { canManageCourse } from "@/lib/auth/can-manage-course";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function SectionsPage({
@@ -13,9 +13,13 @@ export default async function SectionsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
-
   const { id } = await params;
+
+  const allowed = await canManageCourse(id);
+
+  if (!allowed) {
+    return null;
+  }
 
   const supabase = await createClient();
 

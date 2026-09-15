@@ -2,14 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { canManageCourse } from "@/lib/auth/can-manage-course";
 
 export async function createLesson(
   sectionId: string,
   courseId: string,
   formData: FormData
 ) {
-  await requireAdmin();
+  const allowed = await canManageCourse(courseId);
+
+  if (!allowed) {
+    throw new Error("Unauthorized");
+  }
 
   const supabase = await createClient();
 
@@ -47,7 +51,11 @@ export async function deleteLesson(
   courseId: string,
   sectionId: string
 ) {
-  await requireAdmin();
+  const allowed = await canManageCourse(courseId);
+
+  if (!allowed) {
+    throw new Error("Unauthorized");
+  }
 
   const supabase = await createClient();
 
@@ -71,7 +79,11 @@ export async function updateLesson(
   sectionId: string,
   formData: FormData
 ) {
-  await requireAdmin();
+  const allowed = await canManageCourse(courseId);
+
+  if (!allowed) {
+    throw new Error("Unauthorized");
+  }
 
   const supabase = await createClient();
 

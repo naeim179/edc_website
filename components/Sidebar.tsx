@@ -13,7 +13,6 @@ export default function Sidebar({
   role = null,
   isAuthenticated = false,
 }: SidebarProps) {
-
   const { language, mounted } = useLanguage();
 
   if (!mounted) {
@@ -21,17 +20,19 @@ export default function Sidebar({
   }
 
   const isAdmin = role === "admin";
+  const isTeacher = role === "teacher";
   const isArabic = language === "ar";
-
 
   const text = isArabic
     ? {
         platform: "Your Way",
         dashboard: "لوحة الإدارة",
         manageCourses: "إدارة الدورات",
+        teachers: "المعلمون",
         orders: "الطلبات",
         students: "الطلاب",
         profile: "الملف الشخصي",
+        teacherDashboard: "لوحة المعلم",
         home: "الرئيسية",
         courses: "جميع الدورات",
         myCourses: "موادي",
@@ -40,29 +41,26 @@ export default function Sidebar({
         platform: "Your Way",
         dashboard: "Dashboard",
         manageCourses: "Manage Courses",
+        teachers: "Teachers",
         orders: "Orders",
         students: "Students",
         profile: "Profile",
+        teacherDashboard: "Teacher Dashboard",
         home: "Home",
         courses: "All Courses",
         myCourses: "My Courses",
       };
 
-
   const linkClass =
     "block rounded-xl px-4 py-3 hover:bg-white/15 transition text-[15px]";
-
 
   return (
     <aside
       className="w-64 shrink-0 rounded-[22px] bg-gradient-to-b from-[#124b8a] to-[#0d3b6e] text-white p-6 min-h-[calc(100vh-2rem)] shadow-lg"
       dir={isArabic ? "rtl" : "ltr"}
     >
-
       <div className="flex flex-col items-center mb-10">
-
         <div className="bg-white rounded-2xl p-3 mb-3">
-
           <Image
             src="/logo/logo.png"
             alt="Your Way"
@@ -70,44 +68,49 @@ export default function Sidebar({
             height={70}
             className="object-contain"
           />
-
         </div>
-
 
         <h1 className="text-xl font-bold">
           {text.platform}
         </h1>
-
       </div>
-
 
       <nav
         className={`space-y-2 ${
           isArabic ? "text-right" : "text-left"
         }`}
       >
-
         {isAdmin ? (
           <>
             <Link href="/admin" className={linkClass}>
               {text.dashboard}
             </Link>
 
-
             <Link href="/admin/courses" className={linkClass}>
               {text.manageCourses}
             </Link>
 
+            <Link href="/admin/teachers" className={linkClass}>
+              {text.teachers}
+            </Link>
 
             <Link href="/admin/orders" className={linkClass}>
               {text.orders}
             </Link>
 
-
             <Link href="/admin/students" className={linkClass}>
               {text.students}
             </Link>
 
+            <Link href="/profile" className={linkClass}>
+              {text.profile}
+            </Link>
+          </>
+        ) : isTeacher ? (
+          <>
+            <Link href="/teacher" className={linkClass}>
+              {text.teacherDashboard}
+            </Link>
 
             <Link href="/profile" className={linkClass}>
               {text.profile}
@@ -119,11 +122,9 @@ export default function Sidebar({
               {text.home}
             </Link>
 
-
             <Link href="/courses" className={linkClass}>
               {text.courses}
             </Link>
-
 
             {isAuthenticated && (
               <>
@@ -134,7 +135,6 @@ export default function Sidebar({
                   {text.myCourses}
                 </Link>
 
-
                 <Link
                   href="/profile"
                   className={linkClass}
@@ -143,12 +143,9 @@ export default function Sidebar({
                 </Link>
               </>
             )}
-
           </>
         )}
-
       </nav>
-
     </aside>
   );
 }

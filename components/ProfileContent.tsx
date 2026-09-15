@@ -8,7 +8,6 @@ type ProfileContentProps = {
   profile: {
     full_name: string | null;
     phone: string | null;
-    avatar_url: string | null;
     role: string | null;
   };
   email: string;
@@ -52,21 +51,9 @@ export default function ProfileContent({
 
           <div className="flex items-center gap-5">
 
-            {profile.avatar_url ? (
-
-              <img
-                src={profile.avatar_url}
-                alt={displayName}
-                className="w-24 h-24 rounded-full object-cover border border-slate-200"
-              />
-
-            ) : (
-
-              <div className="w-24 h-24 rounded-full bg-blue-50 text-[#1f5aa6] flex items-center justify-center text-4xl font-bold">
-                {displayName.charAt(0).toUpperCase()}
-              </div>
-
-            )}
+            <div className="w-24 h-24 rounded-full bg-blue-50 text-[#1f5aa6] flex items-center justify-center text-4xl font-bold">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
 
 
             <div className="text-right">

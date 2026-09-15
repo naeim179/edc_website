@@ -9,7 +9,6 @@ type Props = {
   role: string | null;
   isAuthenticated: boolean;
   userName: string;
-  avatarUrl: string | null;
 };
 
 export default function AppShellClient({
@@ -17,7 +16,6 @@ export default function AppShellClient({
   role,
   isAuthenticated,
   userName,
-  avatarUrl,
 }: Props) {
   return (
     <div className="app-shell flex min-h-screen p-4 gap-6 font-sans">
@@ -32,7 +30,6 @@ export default function AppShellClient({
         <Topbar
           isAuthenticated={isAuthenticated}
           userName={userName}
-          avatarUrl={avatarUrl}
           role={role}
         />
 

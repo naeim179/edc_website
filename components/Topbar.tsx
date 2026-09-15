@@ -14,7 +14,6 @@ import { useLanguage } from "@/components/LanguageProvider";
 type TopbarProps = {
   isAuthenticated: boolean;
   userName: string;
-  avatarUrl: string | null;
   role: string | null;
 };
 
@@ -22,7 +21,6 @@ type TopbarProps = {
 export default function Topbar({
   isAuthenticated,
   userName,
-  avatarUrl,
   role,
 }: TopbarProps) {
 
@@ -70,12 +68,10 @@ export default function Topbar({
 
 
   return (
-
     <header
       className="w-full flex items-center justify-between gap-4 py-2 px-1"
       dir={isArabic ? "rtl" : "ltr"}
     >
-
 
       <form
         onSubmit={handleSearch}
@@ -98,7 +94,6 @@ export default function Topbar({
             }`}
           />
 
-
           <button
             type="submit"
             aria-label="search"
@@ -116,9 +111,7 @@ export default function Topbar({
       </form>
 
 
-
       <div className="flex items-center gap-3">
-
 
         {isAuthenticated ? (
 
@@ -129,21 +122,9 @@ export default function Topbar({
               className="flex items-center gap-3 bg-white p-2 px-3 rounded-[14px] shadow-sm border border-slate-100"
             >
 
-              {avatarUrl ? (
-
-                <img
-                  src={avatarUrl}
-                  alt={userName}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-
-              ) : (
-
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#124b8a] flex items-center justify-center font-bold">
-                  {userName.charAt(0).toUpperCase()}
-                </div>
-
-              )}
+              <div className="w-10 h-10 rounded-full bg-blue-50 text-[#124b8a] flex items-center justify-center font-bold">
+                {userName.charAt(0).toUpperCase()}
+              </div>
 
 
               <div className="flex flex-col text-right">
@@ -185,13 +166,10 @@ export default function Topbar({
 
         )}
 
-
         <DisplaySettings />
-
 
       </div>
 
     </header>
-
   );
 }

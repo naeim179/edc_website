@@ -2,7 +2,7 @@ import AppShell from "@/components/AppShell";
 import LessonForm from "@/components/admin/LessonForm";
 import DeleteLessonButton from "@/components/admin/DeleteLessonButton";
 import { updateLesson } from "@/app/actions/admin-lessons";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { canManageCourse } from "@/lib/auth/can-manage-course";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function LessonsPage({
@@ -13,9 +13,13 @@ export default async function LessonsPage({
     sectionId: string;
   }>;
 }) {
-  await requireAdmin();
-
   const { id, sectionId } = await params;
+
+  const allowed = await canManageCourse(id);
+
+  if (!allowed) {
+    return null;
+  }
 
   const supabase = await createClient();
 
