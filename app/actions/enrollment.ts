@@ -27,7 +27,10 @@ export async function checkEnrollmentStatus(courseId: string) {
   return Boolean(enrollment);
 }
 
-export async function enrollInCourse(courseId: string) {
+export async function enrollInCourse(
+  courseId: string,
+  offerId?: string
+) {
   const supabase = await createClient();
 
   const {
@@ -57,6 +60,7 @@ export async function enrollInCourse(courseId: string) {
     .insert({
       student_id: user.id,
       course_id: courseId,
+      offer_id: offerId ?? null,
     });
 
   if (error) {

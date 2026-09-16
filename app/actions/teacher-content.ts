@@ -246,3 +246,13 @@ export async function teacherDeleteLesson(
     `/teacher/courses/${courseId}/sections/${sectionId}/lessons`
   );
 }
+
+
+// Backward compatibility aliases
+
+export const createTeacherLesson =
+  teacherCreateLesson;
+
+
+export const createTeacherSection =
+  teacherCreateSection;

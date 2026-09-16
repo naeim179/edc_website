@@ -15,7 +15,7 @@ export async function fulfillPaymentByTranRef(tranRef: string) {
 
   const { data: order } = await supabase
     .from("orders")
-    .select("id, user_id, course_id, status")
+    .select("id, user_id, course_id, offer_id, status")
     .eq("id", orderId)
     .maybeSingle();
 
@@ -35,6 +35,7 @@ export async function fulfillPaymentByTranRef(tranRef: string) {
     .insert({
       student_id: order.user_id,
       course_id: order.course_id,
+      offer_id: order.offer_id,
     });
 
   if (enrollError && !enrollError.message.includes("duplicate")) {

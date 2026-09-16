@@ -18,7 +18,12 @@ export default async function AdminCoursesPage() {
       currency,
       is_free,
       is_published,
-      created_at
+      created_at,
+      course_offers (
+        id,
+        type,
+        price
+      )
     `)
     .order("created_at", {
       ascending: false,

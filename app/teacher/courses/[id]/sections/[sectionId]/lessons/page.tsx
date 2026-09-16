@@ -64,7 +64,7 @@ export default async function TeacherLessonsPage({
       >
         <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">
           <Link
-            href={`/teacher/courses/${id}`}
+            href={`/teacher/courses/${id}/sections`}
             className="text-blue-100 font-bold"
           >
             العودة للأقسام

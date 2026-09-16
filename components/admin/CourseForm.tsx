@@ -23,11 +23,24 @@ export default function CourseForm({
   course?: Course;
 }) {
   const isEditing = Boolean(course);
-  const [isFree, setIsFree] = useState(course?.is_free ?? false);
+
+  const [isFree, setIsFree] = useState(
+    course?.is_free ?? false
+  );
+
+  const [enableGroup, setEnableGroup] = useState(
+    !isEditing
+  );
+
+  const [enablePrivate, setEnablePrivate] = useState(
+    false
+  );
+
 
   const action = course
     ? updateCourse.bind(null, course.id)
     : createCourse;
+
 
   return (
     <form
@@ -35,152 +48,187 @@ export default function CourseForm({
       className="space-y-6"
       dir="rtl"
     >
+
       <div>
-        <label
-          htmlFor="title"
-          className="block mb-2 font-bold text-slate-700"
-        >
+        <label className="block mb-2 font-bold text-slate-700">
           اسم الدورة
         </label>
 
         <input
-          id="title"
           name="title"
-          type="text"
           required
           defaultValue={course?.title ?? ""}
-          placeholder="مثال: أساسيات البرمجة"
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600"
+          placeholder="مثال: Cyber Security"
+          className="w-full rounded-xl border px-4 py-3"
         />
       </div>
 
+
       <div>
-        <label
-          htmlFor="description"
-          className="block mb-2 font-bold text-slate-700"
-        >
+        <label className="block mb-2 font-bold text-slate-700">
           وصف الدورة
         </label>
 
         <textarea
-          id="description"
           name="description"
           rows={4}
-          defaultValue={course?.description ?? ""}
-          placeholder="اكتب وصفًا مختصرًا للدورة..."
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600 resize-y"
+          defaultValue={
+            course?.description ?? ""
+          }
+          className="w-full rounded-xl border px-4 py-3"
         />
       </div>
 
+
       <div>
-        <label
-          htmlFor="category"
-          className="block mb-2 font-bold text-slate-700"
-        >
+        <label className="block mb-2 font-bold text-slate-700">
           التصنيف
         </label>
 
         <input
-          id="category"
           name="category"
-          type="text"
-          defaultValue={course?.category ?? ""}
-          placeholder="مثال: Programming"
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600"
+          defaultValue={
+            course?.category ?? ""
+          }
+          placeholder="Programming"
+          className="w-full rounded-xl border px-4 py-3"
         />
       </div>
 
-      <div className="rounded-xl border border-slate-200 p-4">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            name="is_free"
-            type="checkbox"
-            checked={isFree}
-            onChange={(event) => setIsFree(event.target.checked)}
-            className="h-5 w-5"
-          />
 
-          <span className="font-bold text-slate-700">
-            دورة مجانية
-          </span>
-        </label>
+      {!isEditing && (
+        <div className="bg-white border rounded-xl p-5 space-y-5">
 
-        <p className="text-sm text-slate-500 mt-2">
-          عند تفعيل هذا الخيار لن يحتاج الطالب إلى الدفع للتسجيل.
-        </p>
-      </div>
+          <h2 className="font-bold text-lg">
+            طرق التسجيل
+          </h2>
 
-      {!isFree && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div>
-            <label
-              htmlFor="price"
-              className="block mb-2 font-bold text-slate-700"
-            >
-              سعر الدورة
+
+          <div className="border rounded-xl p-4">
+
+            <label className="flex items-center gap-3 font-bold">
+
+              <input
+                type="checkbox"
+                name="group_enabled"
+                checked={enableGroup}
+                onChange={(e) =>
+                  setEnableGroup(
+                    e.target.checked
+                  )
+                }
+              />
+
+              Group Course
             </label>
 
-            <input
-              id="price"
-              name="price"
-              type="number"
-              min="0"
-              step="0.01"
-              required
-              defaultValue={course?.price ?? 0}
-              placeholder="10.00"
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600"
-            />
+
+            {enableGroup && (
+              <input
+                name="group_price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="السعر الشهري"
+                className="mt-4 w-full border rounded-xl px-4 py-3"
+              />
+            )}
+
           </div>
 
-          <div>
-            <label
-              htmlFor="currency"
-              className="block mb-2 font-bold text-slate-700"
-            >
-              العملة
+
+
+          <div className="border rounded-xl p-4">
+
+            <label className="flex items-center gap-3 font-bold">
+
+              <input
+                type="checkbox"
+                name="private_enabled"
+                checked={enablePrivate}
+                onChange={(e) =>
+                  setEnablePrivate(
+                    e.target.checked
+                  )
+                }
+              />
+
+              Private Course
             </label>
 
-            <select
-              id="currency"
-              name="currency"
-              defaultValue={course?.currency ?? "JOD"}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600 bg-white"
-            >
-              <option value="JOD">JOD - دينار أردني</option>
-              <option value="USD">USD - دولار أمريكي</option>
-            </select>
+
+            {enablePrivate && (
+              <input
+                name="private_price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="السعر الشهري"
+                className="mt-4 w-full border rounded-xl px-4 py-3"
+              />
+            )}
+
           </div>
+
+
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 p-4">
-        <label className="flex items-center gap-3 cursor-pointer">
+
+
+      {isEditing && (
+        <div className="border rounded-xl p-4">
+
+          <label className="flex items-center gap-3 font-bold">
+
+            <input
+              name="is_free"
+              type="checkbox"
+              checked={isFree}
+              onChange={(e) =>
+                setIsFree(
+                  e.target.checked
+                )
+              }
+            />
+
+            دورة مجانية
+          </label>
+
+        </div>
+      )}
+
+
+
+      <div className="border rounded-xl p-4">
+
+        <label className="flex items-center gap-3 font-bold">
+
           <input
             name="is_published"
             type="checkbox"
-            defaultChecked={course?.is_published ?? false}
-            className="h-5 w-5"
+            defaultChecked={
+              course?.is_published ?? false
+            }
           />
 
-          <span className="font-bold text-slate-700">
-            نشر الدورة
-          </span>
+          نشر الدورة
         </label>
 
-        <p className="text-sm text-slate-500 mt-2">
-          الدورة المنشورة ستظهر للطلاب في قائمة الدورات.
-        </p>
       </div>
 
-      <div className="flex justify-start">
-        <button
-          type="submit"
-          className="rounded-xl bg-[#087a54] px-6 py-3 font-bold text-white hover:bg-[#066b49] transition"
-        >
-          {isEditing ? "حفظ التعديلات" : "إنشاء الدورة"}
-        </button>
-      </div>
+
+
+      <button
+        type="submit"
+        className="bg-[#087a54] text-white px-6 py-3 rounded-xl font-bold"
+      >
+        {isEditing
+          ? "حفظ التعديلات"
+          : "إنشاء الدورة"}
+      </button>
+
+
     </form>
   );
 }

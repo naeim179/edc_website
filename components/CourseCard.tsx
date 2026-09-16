@@ -8,6 +8,7 @@ type CourseCardProps = {
   completedLessons: number;
   totalLessons: number;
   image?: string | null;
+  nextLessonId?: string | null;
 };
 
 export default function CourseCard({
@@ -17,7 +18,14 @@ export default function CourseCard({
   progress,
   completedLessons,
   totalLessons,
+  nextLessonId,
 }: CourseCardProps) {
+
+  const continueLink = nextLessonId
+    ? `/courses/${id}/lessons/${nextLessonId}`
+    : `/courses/${id}`;
+
+
   return (
     <div
       className="bg-white rounded-[26px] border border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
@@ -44,6 +52,7 @@ export default function CourseCard({
             {progress}%
           </span>
 
+
           <span className="text-slate-500">
             {completedLessons} من {totalLessons} درس مكتمل
           </span>
@@ -64,11 +73,14 @@ export default function CourseCard({
 
 
         <Link
-          href={`/courses/${id}`}
+          href={continueLink}
           className="block text-center bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold transition"
         >
-          متابعة التعلم
+          {progress === 100
+            ? "مراجعة الدورة"
+            : "متابعة التعلم"}
         </Link>
+
 
       </div>
 

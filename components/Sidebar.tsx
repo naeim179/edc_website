@@ -108,9 +108,17 @@ export default function Sidebar({
           </>
         ) : isTeacher ? (
           <>
-            <Link href="/teacher" className={linkClass}>
+            <Link href="/teacher/courses" className={linkClass}>
               {text.teacherDashboard}
             </Link>
+
+
+            <Link href="/teacher/profile" className={linkClass}>
+              {isArabic
+                ? "ملف المدرس"
+                : "Teacher Profile"}
+            </Link>
+
 
             <Link href="/profile" className={linkClass}>
               {text.profile}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import TeacherProfileForm from "./TeacherProfileForm";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   assignCourseToTeacher,
@@ -27,6 +28,20 @@ export default async function TeacherManagePage({
     .eq("id", id)
     .eq("role", "teacher")
     .maybeSingle();
+
+
+  const { data: teacherProfile } =
+    await admin
+      .from("teacher_profiles")
+      .select(`
+        image_url,
+        bio,
+        specialization,
+        experience_years
+      `)
+      .eq("user_id", id)
+      .maybeSingle();
+
 
   if (!teacher) {
     return (
@@ -111,6 +126,11 @@ export default async function TeacherManagePage({
             العودة للمعلمين
           </Link>
         </div>
+
+        <TeacherProfileForm
+          teacherId={id}
+          profile={teacherProfile}
+        />
 
         <form
           action={updateAction}

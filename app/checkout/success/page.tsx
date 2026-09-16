@@ -64,7 +64,7 @@ export default async function CheckoutSuccessPage({
           </h1>
 
           <p className="text-slate-500 mb-6">
-            إذا انخصم مبلغ من حسابك، تواصل معنا أو راجع صفحة "طلباتي" بعد دقائق.
+            إذا انخصم مبلغ من حسابك، تواصل معنا أو راجع صفحة &quot;طلباتي&quot; بعد دقائق.
           </p>
 
           <Link

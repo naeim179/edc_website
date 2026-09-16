@@ -9,7 +9,10 @@ const SITE_URL =
   process.env.SITE_URL ?? "http://localhost:3000";
 
 
-export async function createOrder(courseId: string) {
+export async function createOrder(
+  courseId: string,
+  offerId?: string
+) {
   const supabase = await createClient();
 
 
@@ -39,6 +42,28 @@ export async function createOrder(courseId: string) {
 
   if (courseError || !course) {
     throw new Error("Course not found");
+  }
+
+
+  let offerPrice = course.price;
+  let offerFinalPrice = course.price;
+
+
+  if (offerId) {
+
+    const { data: offer } = await supabase
+      .from("course_offers")
+      .select("price, final_price")
+      .eq("id", offerId)
+      .maybeSingle();
+
+
+    if (offer) {
+      offerPrice = offer.price;
+      offerFinalPrice =
+        offer.final_price ?? offer.price;
+    }
+
   }
 
 
@@ -79,7 +104,7 @@ export async function createOrder(courseId: string) {
 
     const paymentUrl = await createPaymentPage({
       orderId: existingPendingOrder.id,
-      amount: course.price,
+      amount: offerFinalPrice,
       currency: course.currency,
       description: course.title,
       customerEmail: user.email ?? "",
@@ -96,7 +121,7 @@ export async function createOrder(courseId: string) {
     .insert({
       user_id: user.id,
       course_id: courseId,
-      amount: course.price,
+      amount: offerFinalPrice,
       currency: course.currency,
       status: "pending",
     })
@@ -119,7 +144,7 @@ export async function createOrder(courseId: string) {
 
   const paymentUrl = await createPaymentPage({
     orderId: newOrder.id,
-    amount: course.price,
+    amount: offerFinalPrice,
     currency: course.currency,
     description: course.title,
     customerEmail: user.email ?? "",

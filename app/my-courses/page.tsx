@@ -84,10 +84,32 @@ export default async function MyCoursesPage() {
         ) ?? 0;
 
 
+      const completedIds =
+        enrollment.lesson_progress
+          ?.filter(
+            (lesson) => lesson.is_completed
+          )
+          .map(
+            (lesson) => lesson.lesson_id
+          ) ?? [];
+
+
       const completedLessons =
-        enrollment.lesson_progress?.filter(
-          (lesson) => lesson.is_completed
-        ).length ?? 0;
+        completedIds.length;
+
+
+      const nextLesson =
+        course.sections
+          ?.flatMap(
+            (section) =>
+              section.lessons ?? []
+          )
+          .find(
+            (lesson) =>
+              !completedIds.includes(
+                lesson.id
+              )
+          );
 
 
       const progress =
@@ -107,6 +129,8 @@ export default async function MyCoursesPage() {
           totalLessons,
           completedLessons,
           progress,
+          nextLessonId:
+            nextLesson?.id ?? null,
         },
       ];
 

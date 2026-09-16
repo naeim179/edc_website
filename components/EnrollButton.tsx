@@ -9,8 +9,10 @@ import {
 
 export default function EnrollButton({
   courseId,
+  offerId,
 }: {
   courseId: string;
+  offerId?: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -42,7 +44,10 @@ export default function EnrollButton({
       setLoading(true);
       setMessage("");
 
-      const result = await enrollInCourse(courseId);
+      const result = await enrollInCourse(
+        courseId,
+        offerId
+      );
 
       setEnrolled(true);
       router.refresh();

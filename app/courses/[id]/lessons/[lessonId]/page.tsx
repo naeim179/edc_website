@@ -191,13 +191,32 @@ export default async function LessonPage({
 
 
           {enrollment && (
-            <CompleteLessonButton
-              enrollmentId={enrollment.id}
-              lessonId={lesson.id}
-              initialCompleted={
-                progress?.is_completed ?? false
-              }
-            />
+
+            <div className="mt-6">
+
+              <div
+                className={`inline-flex px-4 py-2 rounded-full font-bold text-sm mb-4 ${
+                  progress?.is_completed
+                    ? "bg-green-50 text-green-700"
+                    : "bg-slate-50 text-slate-600"
+                }`}
+              >
+                {progress?.is_completed
+                  ? "✓ تم إكمال الدرس"
+                  : "الدرس غير مكتمل"}
+              </div>
+
+
+              <CompleteLessonButton
+                enrollmentId={enrollment.id}
+                lessonId={lesson.id}
+                initialCompleted={
+                  progress?.is_completed ?? false
+                }
+              />
+
+            </div>
+
           )}
 
 

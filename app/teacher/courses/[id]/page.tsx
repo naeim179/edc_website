@@ -1,164 +1,319 @@
-import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { canManageCourse } from "@/lib/auth/can-manage-course";
-import {
-  teacherCreateSection,
-  teacherDeleteSection,
-  teacherUpdateSection,
-} from "@/app/actions/teacher-content";
+import { requireTeacher } from "@/lib/auth/require-teacher";
+
 
 export default async function TeacherCoursePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+
+  const user = await requireTeacher();
+
   const { id } = await params;
 
-  const allowed = await canManageCourse(id);
+  const supabase = await createClient();
 
-  if (!allowed) {
-    return null;
+
+  // Get every offer of this course assigned to this teacher.
+  // Important because the same teacher may manage Group + Private.
+  const { data: assignments } =
+    await supabase
+      .from("course_instructors")
+      .select(`
+        id,
+        offer_id
+      `)
+      .eq("course_id", id)
+      .eq("teacher_id", user.id);
+
+
+  if (!assignments || assignments.length === 0) {
+    return notFound();
   }
 
+
+  const offerIds = Array.from(
+    new Set(
+      assignments
+        .map((assignment) => assignment.offer_id)
+        .filter(
+          (offerId): offerId is string =>
+            Boolean(offerId)
+        )
+    )
+  );
+
+
+  // Assignment was verified above.
+  // Admin client lets us read management/analytics data reliably.
   const admin = createAdminClient();
 
-  const { data: course } = await admin
-    .from("courses")
-    .select("id, title")
-    .eq("id", id)
-    .maybeSingle();
+
+  const { data: course } =
+    await admin
+      .from("courses")
+      .select(`
+        id,
+        title,
+        description
+      `)
+      .eq("id", id)
+      .maybeSingle();
+
 
   if (!course) {
-    return null;
+    return notFound();
   }
 
-  const { data: sections } = await admin
-    .from("sections")
-    .select("id, title, order_index")
-    .eq("course_id", id)
-    .order("order_index", {
-      ascending: true,
-    });
 
-  const createAction =
-    teacherCreateSection.bind(null, id);
+  const { data: assignedOffers } =
+    offerIds.length > 0
+      ? await admin
+          .from("course_offers")
+          .select(`
+            id,
+            type
+          `)
+          .in("id", offerIds)
+      : {
+          data: [] as {
+            id: string;
+            type: string;
+          }[],
+        };
+
+
+  let sectionsQuery =
+    admin
+      .from("sections")
+      .select(`
+        id,
+        title,
+        offer_id,
+        lessons (
+          id,
+          title
+        )
+      `)
+      .eq("course_id", id)
+      .order("order_index");
+
+
+  // New offer-based assignments only see their own content.
+  // Legacy assignments with offer_id = null still see course content.
+  if (offerIds.length > 0) {
+    sectionsQuery =
+      sectionsQuery.in(
+        "offer_id",
+        offerIds
+      );
+  }
+
+
+  const { data: sections } =
+    await sectionsQuery;
+
+
+  let enrollmentsQuery =
+    admin
+      .from("enrollments")
+      .select("student_id")
+      .eq("course_id", id);
+
+
+  if (offerIds.length > 0) {
+    enrollmentsQuery =
+      enrollmentsQuery.in(
+        "offer_id",
+        offerIds
+      );
+  }
+
+
+  const { data: enrollmentRows } =
+    await enrollmentsQuery;
+
+
+  const studentsCount =
+    new Set(
+      (enrollmentRows ?? []).map(
+        (row) => row.student_id
+      )
+    ).size;
+
+
+  const totalSections =
+    sections?.length ?? 0;
+
+
+  const totalLessons =
+    sections?.reduce(
+      (total, section) =>
+        total +
+        (section.lessons?.length ?? 0),
+      0
+    ) ?? 0;
+
 
   return (
     <AppShell>
+
       <div
-        className="max-w-6xl mx-auto w-full space-y-6 p-6"
+        className="max-w-5xl mx-auto p-6 space-y-6"
         dir="rtl"
       >
-        <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">
-          <Link
-            href="/teacher"
-            className="text-blue-100 font-bold"
-          >
-            العودة للوحة المعلم
-          </Link>
 
-          <h1 className="text-3xl font-bold mt-5">
-            إدارة محتوى الدورة
+        <div>
+          <h1 className="text-2xl font-bold">
+            إدارة دورة: {course.title}
           </h1>
 
-          <p className="mt-2 text-blue-100">
-            {course.title}
+          <p className="text-slate-500 mt-2">
+            {course.description}
           </p>
-        </section>
 
-        <form
-          action={createAction}
-          className="bg-white border rounded-2xl p-6"
-        >
-          <h2 className="font-bold text-lg mb-4">
-            إضافة قسم جديد
+
+          {assignedOffers &&
+            assignedOffers.length > 0 && (
+
+            <div className="flex flex-wrap gap-2 mt-4">
+
+              {assignedOffers.map((offer) => (
+
+                <span
+                  key={offer.id}
+                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold"
+                >
+                  {offer.type === "group"
+                    ? "Group - قروب"
+                    : "Private - خاص"}
+                </span>
+
+              ))}
+
+            </div>
+
+          )}
+        </div>
+
+
+        <div className="grid md:grid-cols-3 gap-4">
+
+          <div className="bg-white border rounded-2xl p-5">
+            <p className="text-slate-500">
+              الطلاب
+            </p>
+
+            <p className="text-3xl font-bold mt-2">
+              {studentsCount}
+            </p>
+          </div>
+
+
+          <div className="bg-white border rounded-2xl p-5">
+            <p className="text-slate-500">
+              الأقسام
+            </p>
+
+            <p className="text-3xl font-bold mt-2">
+              {totalSections}
+            </p>
+          </div>
+
+
+          <div className="bg-white border rounded-2xl p-5">
+            <p className="text-slate-500">
+              الدروس
+            </p>
+
+            <p className="text-3xl font-bold mt-2">
+              {totalLessons}
+            </p>
+          </div>
+
+        </div>
+
+
+        <div className="bg-white border rounded-2xl p-6">
+
+          <h2 className="font-bold mb-4">
+            الأقسام والدروس
           </h2>
 
-          <input
-            name="title"
-            required
-            placeholder="اسم القسم"
-            className="w-full border rounded-xl px-4 py-3 mb-4"
-          />
 
-          <button
-            type="submit"
-            className="bg-[#087a54] text-white px-6 py-3 rounded-xl font-bold"
-          >
-            إضافة القسم
-          </button>
-        </form>
+          <div className="space-y-4">
 
-        <div className="grid md:grid-cols-2 gap-5">
-          {sections?.map((section) => {
-            const updateAction =
-              teacherUpdateSection.bind(
-                null,
-                section.id,
-                id
-              );
+            {sections?.map((section) => (
 
-            const deleteAction =
-              teacherDeleteSection.bind(
-                null,
-                section.id,
-                id
-              );
-
-            return (
               <div
                 key={section.id}
-                className="bg-white border rounded-2xl p-5 space-y-4"
+                className="border rounded-xl p-4"
               >
-                <form
-                  action={updateAction}
-                  className="space-y-4"
-                >
-                  <input
-                    name="title"
-                    defaultValue={section.title}
-                    required
-                    className="w-full border rounded-xl px-4 py-3"
-                  />
 
-                  <input
-                    name="order_index"
-                    type="number"
-                    min="1"
-                    defaultValue={section.order_index}
-                    required
-                    className="w-full border rounded-xl px-4 py-3"
-                  />
+                <h3 className="font-bold">
+                  {section.title}
+                </h3>
 
-                  <button
-                    type="submit"
-                    className="w-full bg-[#124b8a] text-white py-3 rounded-xl font-bold"
-                  >
-                    حفظ التعديل
-                  </button>
-                </form>
 
-                <Link
-                  href={`/teacher/courses/${id}/sections/${section.id}/lessons`}
-                  className="block text-center bg-emerald-50 text-[#087a54] py-3 rounded-xl font-bold"
-                >
-                  إدارة الدروس
-                </Link>
+                <div className="mt-3 space-y-2">
 
-                <form action={deleteAction}>
-                  <button
-                    type="submit"
-                    className="w-full bg-red-50 text-red-600 py-3 rounded-xl font-bold"
-                  >
-                    حذف القسم
-                  </button>
-                </form>
+                  {section.lessons?.map(
+                    (lesson) => (
+
+                    <div
+                      key={lesson.id}
+                      className="bg-slate-50 rounded-lg p-3"
+                    >
+                      {lesson.title}
+                    </div>
+
+                  ))}
+
+
+                  {(!section.lessons ||
+                    section.lessons.length === 0) && (
+
+                    <p className="text-sm text-slate-400">
+                      لا توجد دروس في هذا القسم.
+                    </p>
+
+                  )}
+
+                </div>
+
               </div>
-            );
-          })}
+
+            ))}
+
+
+            {(!sections ||
+              sections.length === 0) && (
+
+              <p className="text-slate-500">
+                لا يوجد محتوى لهذا النوع حتى الآن.
+              </p>
+
+            )}
+
+          </div>
+
         </div>
+
+
+        <Link
+          href={`/teacher/courses/${id}/sections`}
+          className="inline-block bg-[#124b8a] text-white px-5 py-3 rounded-xl font-bold"
+        >
+          إدارة المحتوى
+        </Link>
+
       </div>
+
     </AppShell>
   );
 }
