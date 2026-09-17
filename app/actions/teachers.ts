@@ -169,42 +169,55 @@ export async function assignCourseToTeacher(
   await assertAdmin();
   await assertTeacher(teacherId);
 
-  const courseId = String(formData.get("courseId") ?? "");
+  const courseId = String(
+    formData.get("courseId") ?? ""
+  );
+
 
   if (!courseId) {
     throw new Error("اختر دورة");
   }
 
+
   const admin = createAdminClient();
 
-  const { data: course, error: courseError } = await admin
-    .from("courses")
-    .select("id")
-    .eq("id", courseId)
-    .maybeSingle();
+
+  const { data: course, error: courseError } =
+    await admin
+      .from("courses")
+      .select("id")
+      .eq("id", courseId)
+      .maybeSingle();
+
 
   if (courseError) {
     throw new Error(courseError.message);
   }
 
+
   if (!course) {
     throw new Error("Course not found");
   }
 
-  const { error } = await admin
-    .from("course_instructors")
-    .insert({
-      teacher_id: teacherId,
-      course_id: courseId,
-    });
+
+  const { error } =
+    await admin
+      .from("course_instructors")
+      .insert({
+        teacher_id: teacherId,
+        course_id: courseId,
+      });
+
 
   if (error && error.code !== "23505") {
     throw new Error(error.message);
   }
 
+
   revalidatePath(`/admin/teachers/${teacherId}`);
   revalidatePath(`/admin/courses/${courseId}/teachers`);
 }
+
 
 export async function removeCourseFromTeacher(
   teacherId: string,

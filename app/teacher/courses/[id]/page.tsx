@@ -21,36 +21,22 @@ export default async function TeacherCoursePage({
 
   // Get every offer of this course assigned to this teacher.
   // Important because the same teacher may manage Group + Private.
-  const { data: assignments } =
+  const { data: assignment } =
     await supabase
       .from("course_instructors")
       .select(`
-        id,
-        offer_id
+        id
       `)
       .eq("course_id", id)
-      .eq("teacher_id", user.id);
+      .eq("teacher_id", user.id)
+      .maybeSingle();
 
 
-  if (!assignments || assignments.length === 0) {
+  if (!assignment) {
     return notFound();
   }
 
 
-  const offerIds = Array.from(
-    new Set(
-      assignments
-        .map((assignment) => assignment.offer_id)
-        .filter(
-          (offerId): offerId is string =>
-            Boolean(offerId)
-        )
-    )
-  );
-
-
-  // Assignment was verified above.
-  // Admin client lets us read management/analytics data reliably.
   const admin = createAdminClient();
 
 
@@ -60,7 +46,10 @@ export default async function TeacherCoursePage({
       .select(`
         id,
         title,
-        description
+        description,
+        course_type,
+        price,
+        currency
       `)
       .eq("id", id)
       .maybeSingle();
@@ -71,30 +60,12 @@ export default async function TeacherCoursePage({
   }
 
 
-  const { data: assignedOffers } =
-    offerIds.length > 0
-      ? await admin
-          .from("course_offers")
-          .select(`
-            id,
-            type
-          `)
-          .in("id", offerIds)
-      : {
-          data: [] as {
-            id: string;
-            type: string;
-          }[],
-        };
-
-
-  let sectionsQuery =
-    admin
+  const { data: sections } =
+    await admin
       .from("sections")
       .select(`
         id,
         title,
-        offer_id,
         lessons (
           id,
           title
@@ -104,39 +75,11 @@ export default async function TeacherCoursePage({
       .order("order_index");
 
 
-  // New offer-based assignments only see their own content.
-  // Legacy assignments with offer_id = null still see course content.
-  if (offerIds.length > 0) {
-    sectionsQuery =
-      sectionsQuery.in(
-        "offer_id",
-        offerIds
-      );
-  }
-
-
-  const { data: sections } =
-    await sectionsQuery;
-
-
-  let enrollmentsQuery =
-    admin
+  const { data: enrollmentRows } =
+    await admin
       .from("enrollments")
       .select("student_id")
       .eq("course_id", id);
-
-
-  if (offerIds.length > 0) {
-    enrollmentsQuery =
-      enrollmentsQuery.in(
-        "offer_id",
-        offerIds
-      );
-  }
-
-
-  const { data: enrollmentRows } =
-    await enrollmentsQuery;
 
 
   const studentsCount =
@@ -177,28 +120,12 @@ export default async function TeacherCoursePage({
             {course.description}
           </p>
 
+          <span className="inline-block mt-4 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold">
+            {course.course_type === "group"
+              ? "Group - قروب"
+              : "Private - خاص"}
+          </span>
 
-          {assignedOffers &&
-            assignedOffers.length > 0 && (
-
-            <div className="flex flex-wrap gap-2 mt-4">
-
-              {assignedOffers.map((offer) => (
-
-                <span
-                  key={offer.id}
-                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold"
-                >
-                  {offer.type === "group"
-                    ? "Group - قروب"
-                    : "Private - خاص"}
-                </span>
-
-              ))}
-
-            </div>
-
-          )}
         </div>
 
 

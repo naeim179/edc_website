@@ -28,12 +28,8 @@ export default function CourseForm({
     course?.is_free ?? false
   );
 
-  const [enableGroup, setEnableGroup] = useState(
-    !isEditing
-  );
-
-  const [enablePrivate, setEnablePrivate] = useState(
-    false
+  const [courseType, setCourseType] = useState<"group" | "private">(
+    "group"
   );
 
 
@@ -100,75 +96,61 @@ export default function CourseForm({
         <div className="bg-white border rounded-xl p-5 space-y-5">
 
           <h2 className="font-bold text-lg">
-            طرق التسجيل
+            نوع الدورة
           </h2>
 
 
-          <div className="border rounded-xl p-4">
+          <div className="border rounded-xl p-4 space-y-4">
+
 
             <label className="flex items-center gap-3 font-bold">
 
               <input
-                type="checkbox"
-                name="group_enabled"
-                checked={enableGroup}
-                onChange={(e) =>
-                  setEnableGroup(
-                    e.target.checked
-                  )
+                type="radio"
+                name="course_type"
+                value="group"
+                checked={courseType === "group"}
+                onChange={() =>
+                  setCourseType("group")
                 }
               />
 
               Group Course
+
             </label>
 
 
-            {enableGroup && (
-              <input
-                name="group_price"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="السعر الشهري"
-                className="mt-4 w-full border rounded-xl px-4 py-3"
-              />
-            )}
-
-          </div>
-
-
-
-          <div className="border rounded-xl p-4">
 
             <label className="flex items-center gap-3 font-bold">
 
               <input
-                type="checkbox"
-                name="private_enabled"
-                checked={enablePrivate}
-                onChange={(e) =>
-                  setEnablePrivate(
-                    e.target.checked
-                  )
+                type="radio"
+                name="course_type"
+                value="private"
+                checked={courseType === "private"}
+                onChange={() =>
+                  setCourseType("private")
                 }
               />
 
               Private Course
+
             </label>
 
 
-            {enablePrivate && (
-              <input
-                name="private_price"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="السعر الشهري"
-                className="mt-4 w-full border rounded-xl px-4 py-3"
-              />
-            )}
-
           </div>
+
+
+
+          <input
+            name="course_price"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="السعر الشهري"
+            required
+            className="w-full border rounded-xl px-4 py-3"
+          />
 
 
         </div>

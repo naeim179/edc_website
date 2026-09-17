@@ -14,133 +14,68 @@ export async function createCourse(
   const supabase = await createClient();
 
 
-  const title = String(
-    formData.get("title") ?? ""
-  );
+  const title =
+    String(formData.get("title") ?? "");
 
-  const description = String(
-    formData.get("description") ?? ""
-  );
 
-  const category = String(
-    formData.get("category") ?? ""
-  );
+  const description =
+    String(formData.get("description") ?? "");
+
+
+  const category =
+    String(formData.get("category") ?? "");
+
+
+  const courseType =
+    String(formData.get("course_type") ?? "");
+
 
 
   const isPublished =
     formData.get("is_published") === "on";
 
 
-  const groupEnabled =
-    formData.get("group_enabled") === "on";
 
-
-  const privateEnabled =
-    formData.get("private_enabled") === "on";
-
-
-  const groupPrice =
-    Number(
-      formData.get("group_price") ?? 0
-    );
-
-
-  const privatePrice =
-    Number(
-      formData.get("private_price") ?? 0
-    );
-
-
-
-  if (!groupEnabled && !privateEnabled) {
-    throw new Error(
-      "اختر نوع تسجيل واحد على الأقل"
-    );
+  if (
+    !["group","private"].includes(courseType)
+  ) {
+    throw new Error("اختر نوع الدورة");
   }
 
 
 
-  const {
-    data: course,
-    error: courseError,
-  } =
+  const { error } =
     await supabase
       .from("courses")
       .insert({
+
         title,
         description,
         category,
 
-        // مؤقت حتى ننقل النظام بالكامل
+        course_type: courseType,
+
         price: 0,
-        currency: "JOD",
-        is_free: false,
+        currency:"JOD",
+        is_free:false,
 
-        is_published: isPublished,
-      })
-      .select("id")
-      .single();
+        is_published:isPublished,
 
+      });
 
 
-  if (courseError || !course) {
-    throw new Error(
-      courseError?.message ??
-      "Course creation failed"
-    );
+
+  if(error){
+    throw new Error(error.message);
   }
 
 
 
-  const offers = [];
+  revalidatePath("/admin/courses");
 
-
-
-  if (groupEnabled) {
-    offers.push({
-      course_id: course.id,
-      type: "group",
-      price: groupPrice,
-    });
-  }
-
-
-
-  if (privateEnabled) {
-    offers.push({
-      course_id: course.id,
-      type: "private",
-      price: privatePrice,
-    });
-  }
-
-
-
-  const {
-    error: offerError,
-  } =
-    await supabase
-      .from("course_offers")
-      .insert(offers);
-
-
-
-  if (offerError) {
-    throw new Error(
-      offerError.message
-    );
-  }
-
-
-
-  revalidatePath(
-    "/admin/courses"
-  );
-
-  redirect(
-    "/admin/courses"
-  );
+  redirect("/admin/courses");
 }
+
 
 
 

@@ -20,13 +20,15 @@ export default async function TeacherCoursesPage(){
       .from("course_instructors")
       .select(`
         id,
-        offer_id,
         course_id,
 
         courses (
           id,
           title,
           description,
+          course_type,
+          price,
+          currency,
 
           sections (
             id,
@@ -35,10 +37,6 @@ export default async function TeacherCoursesPage(){
               id
             )
           )
-        ),
-
-        course_offers (
-          type
         )
       `)
       .eq(
@@ -92,10 +90,6 @@ export default async function TeacherCoursesPage(){
 
 
 
-            const offer =
-              item.course_offers?.[0];
-
-
 
             return (
 
@@ -112,15 +106,11 @@ export default async function TeacherCoursesPage(){
                   </h2>
 
 
-                  {offer && (
-
-                    <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
-                      {offer.type === "group"
-                        ? "Group"
-                        : "Private"}
-                    </span>
-
-                  )}
+                  <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                    {course.course_type === "group"
+                      ? "Group"
+                      : "Private"}
+                  </span>
 
                 </div>
 

@@ -6,10 +6,8 @@ import { useTransition } from "react";
 
 export default function BuyCourseButton({
   courseId,
-  offerId,
 }: {
   courseId: string;
-  offerId?: string;
 }) {
 
   const [pending, startTransition] = useTransition();
@@ -22,8 +20,7 @@ export default function BuyCourseButton({
 
     startTransition(async () => {
       await createOrder(
-        courseId,
-        offerId
+        courseId
       );
     });
 

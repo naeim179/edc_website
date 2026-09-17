@@ -27,27 +27,19 @@ type Course = {
   price: number | null;
   currency: string | null;
 
-  course_offers?: {
-    id: string;
-    type: string;
-    price: number;
-    discount_type: string | null;
-    final_price: number | null;
-    discount_value: number | null;
+  course_type: "group" | "private";
 
-    course_instructors?: {
-      teacher?: {
-        id: string;
-        full_name: string | null;
-        teacher_profiles?: {
-          image_url: string | null;
-          bio: string | null;
-          specialization: string | null;
-          experience_years: number | null;
-        }[];
+  course_instructors?: {
+    teacher?: {
+      id: string;
+      full_name: string | null;
+      teacher_profiles?: {
+        image_url: string | null;
+        bio: string | null;
+        specialization: string | null;
+        experience_years: number | null;
       }[];
     }[];
-
   }[];
 };
 
@@ -74,22 +66,7 @@ export default function CourseDetailContent({
 
   const { language } = useLanguage();
 
-  const [selectedOfferId, setSelectedOfferId] =
-    useState<string | null>(null);
-
-
   const isArabic = language === "ar";
-
-
-  const offers =
-    course.course_offers ?? [];
-
-
-  const activeOffer =
-    offers.find(
-      (offer) =>
-        offer.id === selectedOfferId
-    ) ?? offers[0];
 
 
   return (
@@ -189,178 +166,7 @@ export default function CourseDetailContent({
           )}
 
 
-          {offers.length > 0 && (
-
-            <div className="mt-6 space-y-4">
-
-              {offers.map((offer)=>(
-
-                <div
-                  key={offer.id}
-                  onClick={() =>
-                    setSelectedOfferId(offer.id)
-                  }
-                  className={`cursor-pointer rounded-2xl p-5 space-y-4 border-2 transition ${
-                    activeOffer?.id === offer.id
-                      ? "border-[#124b8a] bg-blue-50"
-                      : "bg-slate-50 border-transparent"
-                  }`}
-                >
-
-                  <div className="flex justify-between items-center">
-
-                    <h3 className="font-bold text-lg">
-                      {offer.type === "group"
-                        ? "Group Course"
-                        : "Private Course"}
-                    </h3>
-
-
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold">
-                      {offer.type}
-                    </span>
-
-                  </div>
-
-
-
-                  {offer.course_instructors?.map((item)=>{
-
-                    const teacher =
-                      item.teacher?.[0];
-
-
-                    const profile =
-                      teacher?.teacher_profiles?.[0];
-
-
-                    if(!teacher) return null;
-
-
-                    return (
-
-                      <div
-                        key={teacher.id}
-                        className="relative group flex items-center gap-4 bg-white rounded-xl p-4"
-                      >
-
-                        {profile?.image_url ? (
-
-                          <img
-                            src={profile.image_url}
-                            alt={teacher.full_name ?? "Teacher"}
-                            className="w-16 h-16 rounded-full object-cover"
-                          />
-
-                        ) : (
-
-                          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center font-bold text-xl">
-                            {(teacher.full_name ?? "T").charAt(0)}
-                          </div>
-
-                        )}
-
-
-
-                        <div>
-
-                          <p className="font-bold">
-                            {teacher.full_name}
-                          </p>
-
-
-                          <p className="text-sm text-slate-500">
-                            {profile?.specialization}
-                          </p>
-
-
-                          <p className="text-xs text-slate-400">
-                            {profile?.experience_years ?? 0} سنوات خبرة
-                          </p>
-
-                        </div>
-
-
-
-                        {profile?.bio && (
-
-                          <div className="absolute hidden group-hover:block right-0 top-full mt-2 bg-slate-900 text-white p-4 rounded-xl w-72 z-20 text-sm shadow-lg">
-
-                            {profile.bio}
-
-                          </div>
-
-                        )}
-
-
-                      </div>
-
-                    );
-
-                  })}
-
-
-
-                  <div className="space-y-2">
-
-                    {offer.final_price &&
-                    offer.final_price < offer.price ? (
-
-                      <>
-
-                        <p className="text-sm text-slate-400 line-through">
-                          السعر الأساسي:
-                          {" "}
-                          {offer.price}
-                          {" "}
-                          JOD
-                        </p>
-
-
-                        <p className="text-red-600 font-bold">
-                          خصم:
-                          {" "}
-                          {offer.discount_type === "percentage"
-                            ? `${offer.discount_value}%`
-                            : `${offer.discount_value} JOD`}
-                        </p>
-
-
-                        <p className="font-bold text-xl text-[#087a54]">
-                          السعر النهائي:
-                          {" "}
-                          {offer.final_price}
-                          {" "}
-                          JOD
-                        </p>
-
-                      </>
-
-                    ) : (
-
-                      <p className="font-bold text-xl">
-                        السعر:
-                        {" "}
-                        {offer.price}
-                        {" "}
-                        JOD
-                      </p>
-
-                    )}
-
-                  </div>
-
-
-                </div>
-
-              ))}
-
-            </div>
-
-          )}
-
-
-          <div className="mt-6 text-right">
+                    <div className="mt-6 text-right">
 
             {enrollmentId ? (
 
@@ -376,12 +182,13 @@ export default function CourseDetailContent({
 
               <EnrollButton
   courseId={course.id}
-  offerId={activeOffer?.id}
 />
 
             ) : (
 
-              <BuyCourseButton courseId={course.id}/>
+              <BuyCourseButton
+  courseId={course.id}
+/>
 
             )}
 

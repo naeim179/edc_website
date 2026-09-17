@@ -25,29 +25,7 @@ export default async function CourseDetailPage({
       price,
       currency,
       is_free,
-
-      course_offers (
-        id,
-        type,
-        price,
-        discount_type,
-        final_price,
-        discount_value,
-
-        course_instructors (
-          teacher:profiles (
-            id,
-            full_name,
-
-            teacher_profiles (
-              image_url,
-              bio,
-              specialization,
-              experience_years
-            )
-          )
-        )
-      ),
+      course_type,
 
       sections (
         id,

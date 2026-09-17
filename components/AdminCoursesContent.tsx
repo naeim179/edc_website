@@ -11,13 +11,8 @@ type Course = {
   price: number | null;
   currency: string | null;
   is_free: boolean | null;
+  course_type: "group" | "private" | null;
   is_published: boolean | null;
-
-  course_offers?: {
-    id: string;
-    type: "group" | "private";
-    price: number;
-  }[];
 };
 
 type Props = {
@@ -116,30 +111,20 @@ export default function AdminCoursesContent({
 
                 <div className="flex flex-col gap-2 items-end">
 
-                  {course.course_offers?.map((offer) => (
-                    <span
-                      key={offer.id}
-                      className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700"
-                    >
-                      {offer.type === "group"
-                        ? "Group"
-                        : "Private"}
-                      {" "}
-                      {offer.price} JOD / month
-                    </span>
-                  ))}
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
+                    {course.course_type === "group"
+                      ? "Group"
+                      : "Private"}
+                  </span>
 
 
-                  {(!course.course_offers ||
-                    course.course_offers.length === 0) && (
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
-                      {course.is_free
-                        ? "Free"
-                        : `${course.price ?? 0} ${
-                            course.currency ?? "JOD"
-                          }`}
-                    </span>
-                  )}
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
+                    {course.is_free
+                      ? "Free"
+                      : `${course.price ?? 0} ${
+                          course.currency ?? "JOD"
+                        }`}
+                  </span>
 
                 </div>
 

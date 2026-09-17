@@ -10,8 +10,7 @@ const SITE_URL =
 
 
 export async function createOrder(
-  courseId: string,
-  offerId?: string
+  courseId: string
 ) {
   const supabase = await createClient();
 
@@ -45,26 +44,7 @@ export async function createOrder(
   }
 
 
-  let offerPrice = course.price;
-  let offerFinalPrice = course.price;
-
-
-  if (offerId) {
-
-    const { data: offer } = await supabase
-      .from("course_offers")
-      .select("price, final_price")
-      .eq("id", offerId)
-      .maybeSingle();
-
-
-    if (offer) {
-      offerPrice = offer.price;
-      offerFinalPrice =
-        offer.final_price ?? offer.price;
-    }
-
-  }
+  const finalPrice = course.price ?? 0;
 
 
   if (course.is_free) {
@@ -104,7 +84,7 @@ export async function createOrder(
 
     const paymentUrl = await createPaymentPage({
       orderId: existingPendingOrder.id,
-      amount: offerFinalPrice,
+      amount: finalPrice,
       currency: course.currency,
       description: course.title,
       customerEmail: user.email ?? "",
@@ -121,7 +101,7 @@ export async function createOrder(
     .insert({
       user_id: user.id,
       course_id: courseId,
-      amount: offerFinalPrice,
+      amount: finalPrice,
       currency: course.currency,
       status: "pending",
     })
@@ -144,7 +124,7 @@ export async function createOrder(
 
   const paymentUrl = await createPaymentPage({
     orderId: newOrder.id,
-    amount: offerFinalPrice,
+    amount: finalPrice,
     currency: course.currency,
     description: course.title,
     customerEmail: user.email ?? "",
