@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 
-async function assertAdmin(){
+async function assertAdminOrSelf(teacherId:string){
 
   const supabase = await createClient();
 
@@ -26,8 +26,11 @@ async function assertAdmin(){
     .maybeSingle();
 
 
-  if(profile?.role !== "admin"){
-    throw new Error("Only admins");
+  if(
+    profile?.role !== "admin" &&
+    user.id !== teacherId
+  ){
+    throw new Error("Not allowed");
   }
 
 }
@@ -40,7 +43,7 @@ export async function updateTeacherProfile(
   formData:FormData
 ){
 
-  await assertAdmin();
+  await assertAdminOrSelf(teacherId);
 
 
   const admin=createAdminClient();
