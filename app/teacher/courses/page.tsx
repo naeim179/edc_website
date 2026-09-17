@@ -68,7 +68,9 @@ export default async function TeacherCoursesPage(){
 
 
             const course =
-              item.courses?.[0];
+              Array.isArray(item.courses)
+                ? item.courses[0]
+                : item.courses;
 
 
             if(!course){
@@ -119,6 +121,15 @@ export default async function TeacherCoursesPage(){
                 <p className="text-slate-500">
                   {course.description}
                 </p>
+
+
+                <div className="bg-emerald-50 text-emerald-700 rounded-xl p-3 font-bold text-center">
+                  السعر:
+                  {" "}
+                  {course.price ?? 0}
+                  {" "}
+                  {course.currency ?? "JOD"}
+                </div>
 
 
 

@@ -78,12 +78,14 @@ export default function ProfileContent({
           </div>
 
 
-          <Link
-            href="/my-courses"
-            className="bg-[#1f5aa6] text-white px-6 py-3 rounded-xl font-bold text-center"
-          >
-            {isArabic ? "دوراتي التعليمية" : "My Courses"}
-          </Link>
+          {profile.role === "student" && (
+            <Link
+              href="/my-courses"
+              className="bg-[#1f5aa6] text-white px-6 py-3 rounded-xl font-bold text-center"
+            >
+              {isArabic ? "دوراتي التعليمية" : "My Courses"}
+            </Link>
+          )}
 
         </div>
 

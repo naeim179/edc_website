@@ -15,8 +15,8 @@ export default function CreateLessonForm({
   const action =
     createTeacherLesson.bind(
       null,
-      courseId,
-      sectionId
+      sectionId,
+      courseId
     );
 
 

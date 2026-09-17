@@ -7,6 +7,7 @@ export async function canManageCourse(courseId: string) {
     data: { user },
   } = await supabase.auth.getUser();
 
+
   if (!user) {
     return false;
   }
@@ -19,6 +20,7 @@ export async function canManageCourse(courseId: string) {
     .single();
 
 
+
   if (profile?.role === "admin") {
     return true;
   }
@@ -26,10 +28,11 @@ export async function canManageCourse(courseId: string) {
 
   const { data: assignment } = await supabase
     .from("course_instructors")
-    .select("id")
+    .select("id, course_id, teacher_id")
     .eq("course_id", courseId)
     .eq("teacher_id", user.id)
     .maybeSingle();
+
 
 
   return !!assignment;
