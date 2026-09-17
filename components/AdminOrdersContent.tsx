@@ -101,25 +101,7 @@ export default function AdminOrdersContent({
                   {isArabic
                     ? "الطالب"
                     : "Student"}
-                  : {order.student ?? "Unknown"}
-                </p>
-
-
-                <p className="text-xs text-slate-400 mt-1 break-all">
-                  User ID: {order.user_id}
-                </p>
-
-
-                <p className="text-sm text-slate-500 mt-2">
-                  {isArabic
-                    ? "الطالب"
-                    : "Student"}
-                  : {order.studentName}
-                </p>
-
-
-                <p className="text-sm text-slate-400 mt-1">
-                  User ID: {order.user_id}
+                  : {order.studentName ?? "Unknown"}
                 </p>
 
 
