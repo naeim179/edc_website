@@ -29,6 +29,9 @@ export async function createCourse(
   const courseType =
     String(formData.get("course_type") ?? "");
 
+  const coursePrice =
+    Number(formData.get("course_price") ?? 0);
+
 
 
   const isPublished =
@@ -55,7 +58,7 @@ export async function createCourse(
 
         course_type: courseType,
 
-        price: 0,
+        price: coursePrice,
         currency:"JOD",
         is_free:false,
 
@@ -131,6 +134,9 @@ export async function updateCourse(
     formData.get("category") ?? ""
   );
 
+  const coursePrice =
+    Number(formData.get("course_price") ?? 0);
+
   const isPublished =
     formData.get("is_published") === "on";
 
@@ -143,6 +149,8 @@ export async function updateCourse(
         title,
         description,
         category,
+        price: coursePrice,
+        is_free: coursePrice === 0,
         is_published: isPublished,
       })
       .eq(

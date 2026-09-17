@@ -15,6 +15,7 @@ type Course = {
   currency?: string | null;
   is_free?: boolean;
   is_published: boolean;
+  course_type?: string;
 };
 
 export default function CourseForm({
@@ -87,6 +88,22 @@ export default function CourseForm({
             course?.category ?? ""
           }
           placeholder="Programming"
+          className="w-full rounded-xl border px-4 py-3"
+        />
+      </div>
+
+
+      <div>
+        <label className="block mb-2 font-bold text-slate-700">
+          السعر
+        </label>
+
+        <input
+          name="course_price"
+          type="number"
+          min="0"
+          step="0.01"
+          defaultValue={course?.price ?? 0}
           className="w-full rounded-xl border px-4 py-3"
         />
       </div>
