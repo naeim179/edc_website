@@ -29,6 +29,10 @@ export default async function Home() {
       redirect("/admin");
     }
 
+    if (role === "teacher") {
+      redirect("/teacher/courses");
+    }
+
     const { count } = await supabase
       .from("enrollments")
       .select("id", {
