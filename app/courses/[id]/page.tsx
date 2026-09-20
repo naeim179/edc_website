@@ -25,6 +25,8 @@ export default async function CourseDetailPage({
       price,
       currency,
       is_free,
+      discount_type,
+      discount_value,
       course_type,
 
       sections (
