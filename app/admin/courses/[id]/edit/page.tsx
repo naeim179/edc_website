@@ -24,7 +24,10 @@ export default async function EditCoursePage({
       price,
       currency,
       is_free,
-      is_published
+      is_published,
+      course_type,
+      discount_type,
+      discount_value
     `)
     .eq("id", id)
     .maybeSingle();
