@@ -9,29 +9,31 @@ const SITE_URL =
   process.env.SITE_URL ?? "http://localhost:3000";
 
 function calculateFinalPrice(
-  price: number | null,
+  price: number,
   discountType: string | null,
-  discountValue: number | null
+  discountValue: number
 ) {
-  const originalPrice = Math.max(0, Number(price ?? 0));
-  const value = Math.max(0, Number(discountValue ?? 0));
-
-  let finalPrice = originalPrice;
+  if (!discountType || discountValue <= 0) {
+    return price;
+  }
 
   if (discountType === "percentage") {
-    finalPrice =
-      originalPrice -
-      (originalPrice * value) / 100;
+    return Math.max(
+      0,
+      Number(
+        (price - (price * discountValue) / 100).toFixed(2)
+      )
+    );
   }
 
   if (discountType === "fixed") {
-    finalPrice =
-      originalPrice - value;
+    return Math.max(
+      0,
+      Number((price - discountValue).toFixed(2))
+    );
   }
 
-  finalPrice = Math.max(0, finalPrice);
-
-  return Math.round(finalPrice * 100) / 100;
+  return price;
 }
 
 export async function createOrder(
@@ -66,16 +68,14 @@ export async function createOrder(
     throw new Error("Course not found");
   }
 
+  const originalPrice = course.price ?? 0;
+
   const finalPrice = calculateFinalPrice(
-    course.price,
+    originalPrice,
     course.discount_type,
-    course.discount_value
+    course.discount_value ?? 0
   );
 
-  /*
-   * Free course OR course that becomes free
-   * after discount.
-   */
   if (course.is_free || finalPrice === 0) {
     await createEnrollment(courseId, user.id);
 
@@ -96,24 +96,33 @@ export async function createOrder(
     redirect(`/courses/${courseId}`);
   }
 
-  /*
-   * If there is already a pending order,
-   * keep its original amount.
-   */
   const { data: existingPendingOrder } =
     await supabase
       .from("orders")
-      .select("id, amount, currency")
+      .select("id,status")
       .eq("user_id", user.id)
       .eq("course_id", courseId)
       .eq("status", "pending")
       .maybeSingle();
 
   if (existingPendingOrder) {
+    const { error: updateError } =
+      await supabase
+        .from("orders")
+        .update({
+          amount: finalPrice,
+          currency: course.currency,
+        })
+        .eq("id", existingPendingOrder.id);
+
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
+
     const paymentUrl = await createPaymentPage({
       orderId: existingPendingOrder.id,
-      amount: Number(existingPendingOrder.amount),
-      currency: existingPendingOrder.currency,
+      amount: finalPrice,
+      currency: course.currency,
       description: course.title,
       customerEmail: user.email ?? "",
       customerName:
@@ -124,9 +133,6 @@ export async function createOrder(
     redirect(paymentUrl);
   }
 
-  /*
-   * Store the discounted price in the order.
-   */
   const { data: newOrder, error } =
     await supabase
       .from("orders")
