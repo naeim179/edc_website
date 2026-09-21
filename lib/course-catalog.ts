@@ -38,38 +38,58 @@ type RawCatalogCourse = {
   sections?: { lessons?: { id: string }[] | null }[] | null;
 };
 
+const BASE_COLUMNS = `
+  id,
+  title,
+  category,
+  image_url,
+  price,
+  currency,
+  is_free,
+  discount_type,
+  discount_value,
+  sections (
+    lessons (
+      id
+    )
+  )
+`;
+
+const INSTRUCTOR_COLUMNS = `
+  course_instructors (
+    teacher:profiles (
+      full_name
+    )
+  )
+`;
+
 /** الدورات المنشورة مع السعر والمدرب وحالة تسجيل الطالب */
 export async function fetchCatalogCourses(
   supabase: SupabaseServerClient,
   studentCourses: StudentCourse[],
   options: { limit?: number } = {}
 ): Promise<CatalogCourse[]> {
-  const { data, error } = await supabase
-    .from("courses")
-    .select(`
-      id,
-      title,
-      category,
-      image_url,
-      price,
-      currency,
-      is_free,
-      discount_type,
-      discount_value,
-      course_instructors (
-        teacher:profiles (
-          full_name
-        )
-      ),
-      sections (
-        lessons (
-          id
-        )
-      )
-    `)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false })
-    .limit(options.limit ?? 100);
+  const load = (columns: string) =>
+    supabase
+      .from("courses")
+      .select(columns)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(options.limit ?? 100);
+
+  let { data, error } = await load(
+    `${BASE_COLUMNS}, ${INSTRUCTOR_COLUMNS}`
+  );
+
+  if (error) {
+    // اسم المدرب اختياري: إذا الصلاحيات ما سمحت بقراءته (مثلاً للزائر)
+    // نعرض الدورات بدونه بدل ما تنكسر الصفحة كلها.
+    console.error(
+      `Catalog: loading instructors failed, retrying without them: ${error.message}`
+    );
+
+    ({ data, error } = await load(BASE_COLUMNS));
+  }
 
   if (error) {
     throw new Error(`Failed to load courses: ${error.message}`);

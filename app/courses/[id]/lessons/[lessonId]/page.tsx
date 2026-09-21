@@ -1,8 +1,31 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
-import CompleteLessonButton from "@/components/CompleteLessonButton";
+import LessonContent from "@/components/LessonContent";
+import { getLessonMedia } from "@/lib/lesson-media";
 import { createClient } from "@/lib/supabase/server";
+
+type RawLesson = {
+  id: string;
+  title: string;
+  duration: string | number | null;
+  is_free_preview: boolean | null;
+  section_id: string;
+  course_id: string;
+};
+
+type RawSection = {
+  id: string;
+  title: string;
+  order_index: number | null;
+};
+
+type RawCurriculumLesson = {
+  id: string;
+  section_id: string;
+  title: string;
+  order_index: number | null;
+  is_free_preview: boolean | null;
+};
 
 export default async function LessonPage({
   params,
@@ -16,30 +39,26 @@ export default async function LessonPage({
 
   const supabase = await createClient();
 
-  const { data: lesson, error } = await supabase
-    .from("lessons")
-    .select(`
-      id,
-      title,
-      content_url,
-      duration,
-      order_index,
-      is_free_preview,
-      section:sections (
-        id,
-        title,
-        order_index,
-        course_id
-      )
-    `)
+  // بيانات الدرس من الـ view العام (بدون رابط المحتوى)
+  const { data: lessonData, error } = await supabase
+    .from("lessons_public")
+    .select("id, title, duration, is_free_preview, section_id, course_id")
     .eq("id", lessonId)
     .maybeSingle();
 
   if (error) {
+    // 22P02 = معرّف غير صالح (مش UUID)
+    if (error.code === "22P02") {
+      return notFound();
+    }
+
     throw new Error(`Failed to load lesson: ${error.message}`);
   }
 
-  if (!lesson) {
+  const lesson = lessonData as unknown as RawLesson | null;
+
+  // الدرس لازم يتبع نفس الدورة اللي بالرابط
+  if (!lesson || lesson.course_id !== id) {
     return notFound();
   }
 
@@ -47,207 +66,155 @@ export default async function LessonPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return notFound();
+  let enrollmentId: string | null = null;
+
+  if (user) {
+    const { data: enrollment } = await supabase
+      .from("enrollments")
+      .select("id")
+      .eq("student_id", user.id)
+      .eq("course_id", id)
+      .maybeSingle();
+
+    enrollmentId = enrollment?.id ?? null;
   }
 
-  const { data: enrollment } = await supabase
-    .from("enrollments")
-    .select("id")
-    .eq("student_id", user.id)
-    .eq("course_id", id)
-    .maybeSingle();
-
-  if (!enrollment && !lesson.is_free_preview) {
-    return notFound();
+  if (!enrollmentId && !lesson.is_free_preview) {
+    redirect(user ? `/courses/${id}` : "/login");
   }
 
-  const { data: course } = await supabase
-    .from("courses")
-    .select("title")
-    .eq("id", id)
-    .maybeSingle();
+  const [
+    courseResult,
+    sectionsResult,
+    lessonsResult,
+    progressResult,
+    contentResult,
+  ] = await Promise.all([
+    supabase
+      .from("courses")
+      .select("title")
+      .eq("id", id)
+      .maybeSingle(),
 
-  const { data: courseLessons } = await supabase
-    .from("sections")
-    .select(`
-      id,
-      title,
-      order_index,
-      lessons (
-        id,
-        title,
-        order_index
-      )
-    `)
-    .eq("course_id", id);
+    supabase
+      .from("sections")
+      .select("id, title, order_index")
+      .eq("course_id", id),
 
-  const allLessons =
-    courseLessons
-      ?.sort((a, b) => a.order_index - b.order_index)
-      .flatMap((section) =>
-        (section.lessons ?? [])
-          .sort((a, b) => a.order_index - b.order_index)
-      ) ?? [];
+    supabase
+      .from("lessons_public")
+      .select("id, section_id, title, order_index, is_free_preview")
+      .eq("course_id", id),
 
-  const currentIndex = allLessons.findIndex(
+    enrollmentId
+      ? supabase
+          .from("lesson_progress")
+          .select("lesson_id")
+          .eq("enrollment_id", enrollmentId)
+          .eq("is_completed", true)
+      : Promise.resolve({ data: [] }),
+
+    // رابط المحتوى بينقرأ من الجدول الأصلي، وقاعدة البيانات بترجعه
+    // فقط للمسجّل أو لدرس المعاينة المجانية أو لطاقم الدورة
+    supabase
+      .from("lessons")
+      .select("content_url")
+      .eq("id", lessonId)
+      .maybeSingle(),
+  ]);
+
+  if (contentResult.error) {
+    throw new Error(
+      `Failed to load lesson content: ${contentResult.error.message}`
+    );
+  }
+
+  const contentUrl =
+    (contentResult.data as { content_url: string | null } | null)
+      ?.content_url ?? null;
+
+  const courseTitle =
+    (courseResult.data as { title: string } | null)?.title ?? "";
+
+  const lessonRows = (lessonsResult.data ??
+    []) as unknown as RawCurriculumLesson[];
+
+  const sections = (
+    (sectionsResult.data ?? []) as unknown as RawSection[]
+  )
+    .slice()
+    .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      lessons: lessonRows
+        .filter((row) => row.section_id === item.id)
+        .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+        .map((row) => ({
+          id: row.id,
+          title: row.title,
+          isFreePreview: Boolean(row.is_free_preview),
+        })),
+    }));
+
+  const sectionTitle =
+    sections.find((item) => item.id === lesson.section_id)?.title ?? "";
+
+  const completedLessonIds = (
+    (progressResult.data ?? []) as unknown as { lesson_id: string }[]
+  ).map((row) => row.lesson_id);
+
+  const isEnrolled = Boolean(enrollmentId);
+
+  const allLessons = sections.flatMap((item) => item.lessons);
+
+  // الزائر أو غير المسجل يتنقل بين دروس المعاينة المجانية فقط
+  const navigable = isEnrolled
+    ? allLessons
+    : allLessons.filter((item) => item.isFreePreview);
+
+  const currentIndex = navigable.findIndex(
     (item) => item.id === lesson.id
   );
 
   const previousLesson =
-    currentIndex > 0 ? allLessons[currentIndex - 1] : null;
+    currentIndex > 0 ? navigable[currentIndex - 1] : null;
 
   const nextLesson =
-    currentIndex < allLessons.length - 1
-      ? allLessons[currentIndex + 1]
+    currentIndex >= 0 && currentIndex < navigable.length - 1
+      ? navigable[currentIndex + 1]
       : null;
 
-  const youtubeId = lesson.content_url
-    ?.match(
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/
-    )?.[1];
-
-  const { data: progress } = enrollment
-    ? await supabase
-        .from("lesson_progress")
-        .select("is_completed")
-        .eq("enrollment_id", enrollment.id)
-        .eq("lesson_id", lesson.id)
-        .maybeSingle()
-    : { data: null };
+  const position = {
+    current:
+      allLessons.findIndex((item) => item.id === lesson.id) + 1,
+    total: allLessons.length,
+  };
 
   return (
     <AppShell>
-      <div
-        className="max-w-5xl mx-auto w-full space-y-6"
-        dir="rtl"
-      >
-
-        <section className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-6">
-
-          <Link
-            href={`/courses/${id}`}
-            className="text-sm text-[#124b8a] font-bold"
-          >
-            العودة إلى محتوى الدورة
-          </Link>
-
-
-          <div className="mt-5 space-y-3">
-
-            <span className="inline-flex px-3 py-1 rounded-full bg-blue-50 text-[#124b8a] text-xs font-bold">
-              {lesson.section?.[0]?.title}
-            </span>
-
-
-            <h1 className="text-3xl font-bold text-slate-900">
-              {lesson.title}
-            </h1>
-
-
-            <p className="text-slate-500">
-              الدورة: {course?.title}
-            </p>
-
-
-            {lesson.duration && (
-              <span className="inline-flex bg-slate-50 border border-slate-100 px-3 py-1 rounded-full text-sm text-slate-500">
-                ⏱ {lesson.duration}
-              </span>
-            )}
-
-          </div>
-
-
-          <div className="mt-8">
-
-            {lesson.content_url ? (
-              lesson.content_url.includes("youtube.com") ||
-              lesson.content_url.includes("youtu.be") ? (
-                <div className="aspect-video rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${youtubeId}`}
-                    title={lesson.title}
-                    className="w-full h-full"
-                    allowFullScreen
-                  />
-                </div>
-              ) : (
-                <a
-                  href={lesson.content_url}
-                  target="_blank"
-                  className="inline-flex px-6 py-3 bg-[#124b8a] text-white rounded-xl font-bold"
-                >
-                  فتح محتوى الدرس
-                </a>
-              )
-            ) : (
-              <div className="bg-slate-50 rounded-2xl p-8 text-center text-slate-500">
-                لا يوجد محتوى لهذا الدرس حالياً.
-              </div>
-            )}
-
-          </div>
-
-
-          {enrollment && (
-
-            <div className="mt-6">
-
-              <div
-                className={`inline-flex px-4 py-2 rounded-full font-bold text-sm mb-4 ${
-                  progress?.is_completed
-                    ? "bg-green-50 text-green-700"
-                    : "bg-slate-50 text-slate-600"
-                }`}
-              >
-                {progress?.is_completed
-                  ? "✓ تم إكمال الدرس"
-                  : "الدرس غير مكتمل"}
-              </div>
-
-
-              <CompleteLessonButton
-                enrollmentId={enrollment.id}
-                lessonId={lesson.id}
-                initialCompleted={
-                  progress?.is_completed ?? false
-                }
-              />
-
-            </div>
-
-          )}
-
-
-          <div className="flex items-center justify-between mt-10">
-
-            {previousLesson ? (
-              <Link
-                href={`/courses/${id}/lessons/${previousLesson.id}`}
-                className="px-5 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition"
-              >
-                الدرس السابق
-              </Link>
-            ) : (
-              <span />
-            )}
-
-
-            {nextLesson && (
-              <Link
-                href={`/courses/${id}/lessons/${nextLesson.id}`}
-                className="px-5 py-3 bg-[#124b8a] hover:bg-[#0d3b6e] text-white rounded-xl font-bold transition"
-              >
-                الدرس التالي
-              </Link>
-            )}
-
-          </div>
-
-        </section>
-
-      </div>
+      <LessonContent
+        courseId={id}
+        courseTitle={courseTitle}
+        lesson={{
+          id: lesson.id,
+          title: lesson.title,
+          duration:
+            lesson.duration !== null && lesson.duration !== undefined
+              ? String(lesson.duration)
+              : null,
+          sectionTitle,
+          isFreePreview: Boolean(lesson.is_free_preview),
+          media: getLessonMedia(contentUrl),
+        }}
+        enrollmentId={enrollmentId}
+        completed={completedLessonIds.includes(lesson.id)}
+        sections={sections}
+        completedLessonIds={completedLessonIds}
+        previousLessonId={previousLesson?.id ?? null}
+        nextLessonId={nextLesson?.id ?? null}
+        position={position}
+      />
     </AppShell>
   );
 }

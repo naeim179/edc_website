@@ -3,38 +3,15 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createPaymentPage } from "@/lib/paytabs";
+import {
+  calculateFinalPrice,
+  enrollInFreeCourse,
+} from "@/lib/free-enrollment";
 
 const SITE_URL =
   process.env.SITE_URL ?? "http://localhost:3000";
-
-function calculateFinalPrice(
-  price: number,
-  discountType: string | null,
-  discountValue: number
-) {
-  if (!discountType || discountValue <= 0) {
-    return price;
-  }
-
-  if (discountType === "percentage") {
-    return Math.max(
-      0,
-      Number(
-        (price - (price * discountValue) / 100).toFixed(2)
-      )
-    );
-  }
-
-  if (discountType === "fixed") {
-    return Math.max(
-      0,
-      Number((price - discountValue).toFixed(2))
-    );
-  }
-
-  return price;
-}
 
 export async function createOrder(
   courseId: string
@@ -77,7 +54,7 @@ export async function createOrder(
   );
 
   if (course.is_free || finalPrice === 0) {
-    await createEnrollment(courseId, user.id);
+    await enrollInFreeCourse(user.id, courseId);
 
     revalidatePath("/my-courses");
 
@@ -96,6 +73,9 @@ export async function createOrder(
     redirect(`/courses/${courseId}`);
   }
 
+  // الطلبات بتنكتب من السيرفر فقط، والمبلغ دايماً من السعر المحسوب هون
+  const admin = createAdminClient();
+
   const { data: existingPendingOrder } =
     await supabase
       .from("orders")
@@ -107,13 +87,14 @@ export async function createOrder(
 
   if (existingPendingOrder) {
     const { error: updateError } =
-      await supabase
+      await admin
         .from("orders")
         .update({
           amount: finalPrice,
           currency: course.currency,
         })
-        .eq("id", existingPendingOrder.id);
+        .eq("id", existingPendingOrder.id)
+        .eq("status", "pending");
 
     if (updateError) {
       throw new Error(updateError.message);
@@ -134,7 +115,7 @@ export async function createOrder(
   }
 
   const { data: newOrder, error } =
-    await supabase
+    await admin
       .from("orders")
       .insert({
         user_id: user.id,
@@ -173,25 +154,4 @@ export async function createOrder(
   });
 
   redirect(paymentUrl);
-}
-
-async function createEnrollment(
-  courseId: string,
-  userId: string
-) {
-  const supabase = await createClient();
-
-  const { error } = await supabase
-    .from("enrollments")
-    .insert({
-      course_id: courseId,
-      student_id: userId,
-    });
-
-  if (
-    error &&
-    !error.message.includes("duplicate")
-  ) {
-    throw new Error(error.message);
-  }
 }

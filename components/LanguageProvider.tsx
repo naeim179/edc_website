@@ -57,16 +57,26 @@ export function LanguageProvider({
 
   // مستخدمون قدامى حفظوا اللغة بالتخزين المحلي فقط: نطبقها مرة واحدة
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     try {
       const saved = localStorage.getItem("app-language");
 
       if (isLanguage(saved) && saved !== initialLanguage) {
-        setLanguage(saved);
-        applyLanguage(saved);
+        timeoutId = setTimeout(() => {
+          setLanguage(saved);
+          applyLanguage(saved);
+        }, 0);
       }
     } catch {
       // تجاهل
     }
+
+    return () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [initialLanguage]);
 
   function changeLanguage(nextLanguage: Language) {

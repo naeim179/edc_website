@@ -6,6 +6,14 @@ import BuyCourseButton from "@/components/BuyCourseButton";
 import CourseDetailContent from "@/components/CourseDetailContent";
 import { createClient } from "@/lib/supabase/server";
 
+type CurriculumLesson = {
+  id: string;
+  section_id: string;
+  title: string;
+  order_index: number;
+  is_free_preview: boolean;
+};
+
 export default async function CourseDetailPage({
   params,
 }: {
@@ -45,13 +53,7 @@ export default async function CourseDetailPage({
       sections (
         id,
         title,
-        order_index,
-        lessons (
-          id,
-          title,
-          order_index,
-          is_free_preview
-        )
+        order_index
       )
     `)
     .eq("id", id)
@@ -66,6 +68,26 @@ export default async function CourseDetailPage({
 
   if (!course) {
     return notFound();
+  }
+
+  // قائمة الدروس من الـ view العام (بدون روابط المحتوى) عشان الزائر يشوف المنهج كامل
+  const { data: lessonRows, error: lessonsError } = await supabase
+    .from("lessons_public")
+    .select("id, section_id, title, order_index, is_free_preview")
+    .eq("course_id", id);
+
+  if (lessonsError) {
+    throw new Error(
+      `Failed to load lessons: ${lessonsError.message}`
+    );
+  }
+
+  const lessonsBySection = new Map<string, CurriculumLesson[]>();
+
+  for (const row of (lessonRows ?? []) as unknown as CurriculumLesson[]) {
+    const list = lessonsBySection.get(row.section_id) ?? [];
+    list.push(row);
+    lessonsBySection.set(row.section_id, list);
   }
 
   const {
@@ -97,9 +119,14 @@ export default async function CourseDetailPage({
     }
   }
 
-  const sections = [...(course.sections ?? [])].sort(
-    (a, b) => a.order_index - b.order_index
-  );
+  const sections = [...(course.sections ?? [])]
+    .sort((a, b) => a.order_index - b.order_index)
+    .map((section) => ({
+      ...section,
+      lessons: [...(lessonsBySection.get(section.id) ?? [])].sort(
+        (a, b) => a.order_index - b.order_index
+      ),
+    }));
 
   const totalLessons = sections.reduce(
     (total, section) =>
@@ -120,7 +147,7 @@ export default async function CourseDetailPage({
   return (
     <AppShell>
       <CourseDetailContent
-        course={course}
+        course={{ ...course, sections }}
         sections={sections}
         enrollmentId={enrollmentId}
         completedLessonIds={completedLessonIds}

@@ -46,6 +46,8 @@ type Course = {
   discount_value: number | null;
   course_type: "group" | "private";
 
+  sections?: Section[];
+
   course_instructors?: {
     teacher?: Teacher | Teacher[] | null;
   }[];

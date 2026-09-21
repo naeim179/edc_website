@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { enrollInFreeCourse } from "@/lib/free-enrollment";
 
 export async function checkEnrollmentStatus(courseId: string) {
   const supabase = await createClient();
@@ -54,16 +55,8 @@ export async function enrollInCourse(
     };
   }
 
-  const { error } = await supabase
-    .from("enrollments")
-    .insert({
-      student_id: user.id,
-      course_id: courseId,
-    });
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  // فحص النشر والسعر والدور بيصير جوّا الدالة المشتركة
+  await enrollInFreeCourse(user.id, courseId);
 
   return {
     success: true,
@@ -83,6 +76,45 @@ export async function completeLesson(
 
   if (!user) {
     throw new Error("يجب تسجيل الدخول أولاً");
+  }
+
+  // 1) التسجيل لازم يكون للمستخدم الحالي (مش لطالب ثاني)
+  const { data: enrollment, error: enrollmentError } = await supabase
+    .from("enrollments")
+    .select("id, course_id")
+    .eq("id", enrollmentId)
+    .eq("student_id", user.id)
+    .maybeSingle();
+
+  if (enrollmentError) {
+    throw new Error(enrollmentError.message);
+  }
+
+  if (!enrollment) {
+    throw new Error("غير مصرح لك بهذا التسجيل");
+  }
+
+  // 2) والدرس لازم يتبع نفس الدورة اللي مسجل فيها
+  const { data: lessonRow, error: lessonError } = await supabase
+    .from("lessons")
+    .select("id, section:sections ( course_id )")
+    .eq("id", lessonId)
+    .maybeSingle();
+
+  if (lessonError) {
+    throw new Error(lessonError.message);
+  }
+
+  const lessonInfo = lessonRow as unknown as {
+    section: { course_id: string } | { course_id: string }[] | null;
+  } | null;
+
+  const lessonSection = Array.isArray(lessonInfo?.section)
+    ? lessonInfo?.section[0]
+    : lessonInfo?.section;
+
+  if (!lessonInfo || lessonSection?.course_id !== enrollment.course_id) {
+    throw new Error("هذا الدرس لا يتبع هذه الدورة");
   }
 
   const { data: existingProgress, error: findError } = await supabase
@@ -130,4 +162,3 @@ export async function completeLesson(
     success: true,
   };
 }
-

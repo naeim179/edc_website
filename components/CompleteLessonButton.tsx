@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { completeLesson } from "@/app/actions/enrollment";
 
 export default function CompleteLessonButton({
@@ -12,6 +13,7 @@ export default function CompleteLessonButton({
   lessonId: string;
   initialCompleted: boolean;
 }) {
+  const router = useRouter();
   const [completed, setCompleted] = useState(initialCompleted);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -27,6 +29,7 @@ export default function CompleteLessonButton({
 
       setCompleted(true);
       setMessage("تم إكمال الدرس بنجاح");
+      router.refresh();
     } catch (error) {
       setMessage(
         error instanceof Error
