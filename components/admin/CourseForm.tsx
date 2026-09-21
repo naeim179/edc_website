@@ -11,6 +11,7 @@ type Course = {
   title: string;
   description: string | null;
   category: string | null;
+  image_url?: string | null;
   price?: number | null;
   currency?: string | null;
   is_free?: boolean;
@@ -104,6 +105,24 @@ export default function CourseForm({
           placeholder="Programming"
           className="w-full rounded-xl border px-4 py-3"
         />
+      </div>
+
+      <div>
+        <label className="block mb-2 font-bold text-slate-700">
+          صورة الدورة
+        </label>
+
+        <input
+          name="image_url"
+          type="url"
+          defaultValue={course?.image_url ?? ""}
+          placeholder="https://example.com/course-image.jpg"
+          className="w-full rounded-xl border px-4 py-3"
+        />
+
+        <p className="text-xs text-slate-400 mt-2">
+          ضع رابط مباشر للصورة.
+        </p>
       </div>
 
       {!isEditing && (

@@ -72,6 +72,38 @@ export default async function Home() {
     );
   }
 
+  // التقدم الحقيقي للطالب في كل دورة
+  const enrolledCourseIds = new Set<string>();
+  const completedByCourse = new Map<string, number>();
+
+  if (user) {
+    const { data: enrollments } = await supabase
+      .from("enrollments")
+      .select("id, course_id")
+      .eq("student_id", user.id);
+
+    const enrollmentIds = (enrollments ?? []).map((e) => e.id);
+    let progressRows: { enrollment_id: string }[] = [];
+
+    if (enrollmentIds.length > 0) {
+      const { data } = await supabase
+        .from("lesson_progress")
+        .select("enrollment_id")
+        .in("enrollment_id", enrollmentIds)
+        .eq("is_completed", true);
+
+      progressRows = data ?? [];
+    }
+
+    for (const e of enrollments ?? []) {
+      enrolledCourseIds.add(e.course_id);
+      completedByCourse.set(
+        e.course_id,
+        progressRows.filter((r) => r.enrollment_id === e.id).length
+      );
+    }
+  }
+
   const mappedCourses =
     courses?.map((course) => {
       const lessonsCount =
@@ -198,9 +230,21 @@ export default async function Home() {
                   category={
                     course.category ?? "عام"
                   }
-                  progress={0}
-                  completedLessons={0}
+                  progress={
+                    course.lessons > 0
+                      ? Math.min(
+                          100,
+                          Math.round(
+                            ((completedByCourse.get(course.id) ?? 0) /
+                              course.lessons) *
+                              100
+                          )
+                        )
+                      : 0
+                  }
+                  completedLessons={completedByCourse.get(course.id) ?? 0}
                   totalLessons={course.lessons}
+                  enrolled={enrolledCourseIds.has(course.id)}
                   image={course.image}
                 />
               ))}

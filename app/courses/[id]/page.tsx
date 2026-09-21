@@ -48,8 +48,7 @@ export default async function CourseDetailPage({
         order_index,
         lessons (
           id,
-          title,
-          content_url,
+          title,
           order_index,
           is_free_preview
         )

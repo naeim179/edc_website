@@ -407,3 +407,78 @@ html[data-lang="ar"] .app-shell {
 html[data-lang="en"] .app-shell {
   direction: ltr;
 }
+
+
+/* ===== REDESIGN-V1 ===== */
+
+/* الخط: IBM Plex Sans Arabic (عربي + لاتيني بنفس العائلة) */
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+}
+
+html,
+body {
+  font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* إزالة الحشوة القديمة حول الصفحة (من النموذج الأولي) */
+body {
+  padding: 0;
+}
+
+.app-shell {
+  background: #f3f6fb;
+}
+
+::selection {
+  background: rgba(18, 75, 138, 0.18);
+}
+
+:focus-visible {
+  outline: 2px solid #124b8a;
+  outline-offset: 2px;
+}
+
+html[data-theme="dark"] :focus-visible {
+  outline-color: #7cb2ff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ألوان Tailwind الملوّنة تتبع المظهر (داكن / مريح للعين) بدل أن تبقى فاتحة */
+
+html[data-theme="dark"] {
+  --color-blue-50: #16304f;
+  --color-blue-100: #1c3d63;
+  --color-blue-600: #7cb2ff;
+  --color-amber-50: #3a2d12;
+  --color-amber-700: #fbbf24;
+  --color-red-50: #3b1d22;
+  --color-red-600: #f87171;
+  --color-emerald-50: #14372e;
+  --color-emerald-100: #1a4a3d;
+  --color-emerald-600: #34d399;
+  --color-green-50: #14372e;
+  --color-green-700: #34d399;
+}
+
+html[data-theme="eye"] {
+  --color-blue-50: #ece6d3;
+  --color-blue-100: #e2d9bf;
+  --color-amber-50: #f6e8c6;
+  --color-red-50: #f6e0d8;
+  --color-emerald-50: #e3ead2;
+  --color-emerald-100: #d8e2c2;
+  --color-green-50: #e3ead2;
+}

@@ -60,6 +60,10 @@ export async function createCourse(
     formData.get("category") ?? ""
   );
 
+  const imageUrl = String(
+    formData.get("image_url") ?? ""
+  ).trim();
+
   const courseType = String(
     formData.get("course_type") ?? ""
   );
@@ -105,6 +109,7 @@ export async function createCourse(
         title,
         description,
         category,
+        image_url: imageUrl || null,
         course_type: courseType,
         price: coursePrice,
         currency: "JOD",
@@ -163,6 +168,10 @@ export async function updateCourse(
     formData.get("category") ?? ""
   );
 
+  const imageUrl = String(
+    formData.get("image_url") ?? ""
+  ).trim();
+
   const coursePrice = Number(
     formData.get("course_price") ?? 0
   );
@@ -201,6 +210,7 @@ export async function updateCourse(
         title,
         description,
         category,
+        image_url: imageUrl || null,
         price: coursePrice,
         is_free: isFree,
         discount_type: discountType,

@@ -8,23 +8,29 @@ import { useLanguage } from "@/components/LanguageProvider";
 type Lesson = {
   id: string;
   title: string;
+  content_url?: string | null;
+  order_index?: number;
+  is_free_preview?: boolean | null;
 };
 
 type Section = {
   id: string;
   title: string;
+  order_index?: number;
   lessons?: Lesson[] | null;
+};
+
+type TeacherProfile = {
+  image_url: string | null;
+  bio: string | null;
+  specialization: string | null;
+  experience_years: number | null;
 };
 
 type Teacher = {
   id: string;
   full_name: string | null;
-  teacher_profiles?: {
-    image_url: string | null;
-    bio: string | null;
-    specialization: string | null;
-    experience_years: number | null;
-  }[];
+  teacher_profiles?: TeacherProfile | TeacherProfile[] | null;
 };
 
 type Course = {
@@ -36,18 +42,12 @@ type Course = {
   is_free: boolean | null;
   price: number | null;
   currency: string | null;
-
-  discount_type:
-    | "percentage"
-    | "fixed"
-    | null;
-
+  discount_type: "percentage" | "fixed" | null;
   discount_value: number | null;
-
   course_type: "group" | "private";
 
   course_instructors?: {
-    teacher?: Teacher[];
+    teacher?: Teacher | Teacher[] | null;
   }[];
 };
 
@@ -61,6 +61,104 @@ type Props = {
   progressPercent: number;
 };
 
+/* ---------- helpers ---------- */
+
+// جمع عربي صحيح: قسم واحد / قسمان / 3 أقسام / 11 قسمًا
+function arabicCount(
+  n: number,
+  forms: { one: string; two: string; few: string; many: string }
+) {
+  if (n === 0) return `0 ${forms.few}`;
+  if (n === 1) return forms.one;
+  if (n === 2) return forms.two;
+  if (n >= 3 && n <= 10) return `${n} ${forms.few}`;
+  return `${n} ${forms.many}`;
+}
+
+function formatCount(
+  n: number,
+  isArabic: boolean,
+  kind: "section" | "lesson"
+) {
+  if (isArabic) {
+    return kind === "section"
+      ? arabicCount(n, {
+          one: "قسم واحد",
+          two: "قسمان",
+          few: "أقسام",
+          many: "قسمًا",
+        })
+      : arabicCount(n, {
+          one: "درس واحد",
+          two: "درسان",
+          few: "دروس",
+          many: "درسًا",
+        });
+  }
+
+  const word = kind === "section" ? "Section" : "Lesson";
+  return `${n} ${word}${n === 1 ? "" : "s"}`;
+}
+
+function formatYears(n: number, isArabic: boolean) {
+  if (!isArabic) return `${n} ${n === 1 ? "year" : "years"} of experience`;
+  if (n === 1) return "سنة خبرة";
+  if (n === 2) return "سنتان خبرة";
+  if (n >= 3 && n <= 10) return `${n} سنوات خبرة`;
+  return `${n} سنة خبرة`;
+}
+
+/* ---------- small icons ---------- */
+
+function PlayIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-4 h-4"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
+      <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+    </svg>
+  );
+}
+
+/* ---------- component ---------- */
 
 export default function CourseDetailContent({
   course,
@@ -71,53 +169,28 @@ export default function CourseDetailContent({
   completedLessons,
   progressPercent,
 }: Props) {
-
-  const { language } =
-    useLanguage();
-
-  const isArabic =
-    language === "ar";
+  const { language } = useLanguage();
+  const isArabic = language === "ar";
+  const currency = course.currency ?? "JOD";
 
 
-  const originalPrice =
-    course.price ?? 0;
+  /* ----- price ----- */
 
-  const discountValue =
-    course.discount_value ?? 0;
+  const originalPrice = course.price ?? 0;
+  const discountValue = course.discount_value ?? 0;
 
+  let finalPrice = originalPrice;
 
-  let finalPrice =
-    originalPrice;
-
-
-  if (
-    course.discount_type ===
-    "percentage"
-  ) {
-
+  if (course.discount_type === "percentage") {
     finalPrice =
-      originalPrice -
-      originalPrice *
-        (discountValue / 100);
-
+      originalPrice - originalPrice * (discountValue / 100);
   }
 
-
-  if (
-    course.discount_type ===
-    "fixed"
-  ) {
-
-    finalPrice =
-      originalPrice -
-      discountValue;
-
+  if (course.discount_type === "fixed") {
+    finalPrice = originalPrice - discountValue;
   }
 
-
-  finalPrice =
-    Math.max(0, finalPrice);
-
+  finalPrice = Math.max(0, finalPrice);
 
   const hasDiscount =
     !course.is_free &&
@@ -125,377 +198,403 @@ export default function CourseDetailContent({
     discountValue > 0 &&
     finalPrice < originalPrice;
 
+  const discountLabel =
+    course.discount_type === "percentage"
+      ? isArabic
+        ? `خصم ${discountValue}%`
+        : `${discountValue}% off`
+      : isArabic
+      ? `خصم ${discountValue} ${currency}`
+      : `${discountValue} ${currency} off`;
 
-  const teacher =
-    course.course_instructors?.[0]
-      ?.teacher?.[0] ?? null;
+  /* ----- teacher ----- */
 
+  const teacherData =
+    course.course_instructors?.[0]?.teacher ?? null;
 
-  const teacherProfile =
-    teacher?.teacher_profiles?.[0] ??
-    null;
+  const teacher = Array.isArray(teacherData)
+    ? teacherData[0] ?? null
+    : teacherData;
 
+  const teacherProfileData = teacher?.teacher_profiles ?? null;
+
+  const teacherProfile = Array.isArray(teacherProfileData)
+    ? teacherProfileData[0] ?? null
+    : teacherProfileData;
+
+  /* ----- lessons order + continue learning ----- */
+
+  const orderedSections = sections.map((section) => ({
+    ...section,
+    lessons: [...(section.lessons ?? [])].sort(
+      (a, b) => (a.order_index ?? 0) - (b.order_index ?? 0)
+    ),
+  }));
+
+  const allLessons = orderedSections.flatMap(
+    (section) => section.lessons
+  );
+
+  const nextLesson =
+    allLessons.find(
+      (lesson) => !completedLessonIds.includes(lesson.id)
+    ) ?? null;
+
+  const firstLesson = allLessons[0] ?? null;
+
+  const isCompleted =
+    totalLessons > 0 && completedLessons >= totalLessons;
+
+  const isStarted = completedLessons > 0;
+
+  // الحالة تتغير حسب التقدم بدل ما تبقى "مسجل بالدورة" دائماً
+  const statusLabel = isCompleted
+    ? isArabic
+      ? "مكتملة"
+      : "Completed"
+    : isStarted
+    ? isArabic
+      ? "قيد التعلم"
+      : "In progress"
+    : isArabic
+    ? "مسجل بالدورة"
+    : "Enrolled";
+
+  const statusColor = isCompleted
+    ? "text-emerald-600"
+    : "text-[#124b8a]";
+
+  const ctaLesson = isCompleted ? firstLesson : nextLesson;
+
+  const ctaLabel = isCompleted
+    ? isArabic
+      ? "راجع الدورة"
+      : "Review course"
+    : isStarted
+    ? isArabic
+      ? "تابع التعلم"
+      : "Continue learning"
+    : isArabic
+    ? "ابدأ الدورة"
+    : "Start course";
+
+  // سطر المدرب المختصر داخل الهيرو
+  const instructorStrip = teacher ? (
+    <Link
+      href={`/instructors/${teacher.id}`}
+      className="mt-5 inline-flex items-center gap-3 max-w-full rounded-full bg-white/10 hover:bg-white/20 transition pe-5 ps-1.5 py-1.5"
+    >
+      <span className="w-11 h-11 rounded-full overflow-hidden bg-white/20 border-2 border-white/60 shrink-0 flex items-center justify-center">
+        {teacherProfile?.image_url ? (
+          <img
+            src={teacherProfile.image_url}
+            alt={teacher.full_name ?? "Teacher"}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="font-bold text-white">
+            {(teacher.full_name ?? "T").charAt(0).toUpperCase()}
+          </span>
+        )}
+      </span>
+
+      <span className="min-w-0 text-start">
+        <span className="block text-sm font-bold text-white truncate">
+          {isArabic ? "مع " : "With "}
+          {teacher.full_name ??
+            (isArabic ? "مدرب الدورة" : "Course Instructor")}
+        </span>
+
+        <span className="flex flex-wrap gap-x-3 text-xs text-white/80">
+          {teacherProfile?.specialization && (
+            <span>{teacherProfile.specialization}</span>
+          )}
+          {teacherProfile?.experience_years != null &&
+            teacherProfile.experience_years > 0 && (
+              <span>
+                {formatYears(teacherProfile.experience_years, isArabic)}
+              </span>
+            )}
+        </span>
+      </span>
+    </Link>
+  ) : null;
 
   return (
     <div
-      className="max-w-5xl mx-auto w-full space-y-7"
+      className="max-w-6xl mx-auto w-full space-y-7"
       dir={isArabic ? "rtl" : "ltr"}
     >
+      {/* COURSE HERO */}
 
       <section className="bg-white rounded-[28px] border border-slate-100 shadow-sm overflow-hidden">
+        {course.image_url ? (
+          <div className="relative h-64 md:h-[330px] overflow-hidden">
+            <img
+              src={course.image_url}
+              alt={course.title}
+              className="w-full h-full object-cover"
+            />
 
-        {course.image_url && (
-          <div
-            className="h-64 md:h-80 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                `url("${course.image_url}")`,
-            }}
-          />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+
+            <div className="absolute bottom-0 inset-x-0 p-6 md:p-8 text-white">
+              {course.category && (
+                <span className="inline-flex rounded-full bg-white/90 text-[#124b8a] px-4 py-2 text-xs font-bold mb-4">
+                  {course.category}
+                </span>
+              )}
+
+              <h1 className="text-3xl md:text-4xl font-bold">
+                {course.title}
+              </h1>
+{instructorStrip}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-br from-[#124b8a] to-[#0d3765] p-8 text-white">
+            {course.category && (
+              <span className="inline-flex rounded-full bg-white/90 text-[#124b8a] px-4 py-2 text-xs font-bold mb-4">
+                {course.category}
+              </span>
+            )}
+
+            <h1 className="text-3xl md:text-4xl font-bold">
+              {course.title}
+            </h1>
+{instructorStrip}
+          </div>
         )}
 
-
-        <div className="p-7 md:p-9 text-right flex flex-col">
-
-          {course.category && (
-            <span className="self-end inline-flex items-center rounded-full bg-blue-50 text-[#124b8a] px-3 py-1 text-xs font-bold mb-4">
-              {course.category}
-            </span>
-          )}
-
-
-          <h1 className="text-3xl font-bold text-slate-900">
-            {course.title}
-          </h1>
-
-
+        <div className="p-6 md:p-8">
           {course.description && (
-            <p className="mt-4 text-slate-500 leading-7">
+            <p className="text-slate-600 leading-8 text-base md:text-lg mb-7">
               {course.description}
             </p>
           )}
 
+          {/* COURSE STATS */}
 
-          <div className="grid grid-cols-2 gap-3 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* LESSONS */}
 
-            <div className="rounded-2xl bg-slate-50 p-4 text-right">
-
-              <p className="text-xs text-slate-400">
-                {isArabic
-                  ? "عدد الدروس"
-                  : "Lessons"}
+            <div className="rounded-2xl bg-slate-50 p-5">
+              <p className="text-sm text-slate-400">
+                {isArabic ? "عدد الدروس" : "Lessons"}
               </p>
 
-              <p className="font-bold text-lg">
+              <p className="font-bold text-2xl mt-2 text-slate-900">
                 {totalLessons}
               </p>
-
             </div>
 
+            {/* PRICE / STATUS */}
 
-            <div className="rounded-2xl bg-slate-50 p-4 text-right">
-
-              <p className="text-xs text-slate-400">
-                {isArabic
-                  ? "السعر"
-                  : "Price"}
-              </p>
-
-
+            <div className="rounded-2xl bg-slate-50 p-5">
               {enrollmentId ? (
-
-                <p className="font-bold text-lg text-[#124b8a]">
-                  {isArabic
-                    ? "مسجل"
-                    : "Enrolled"}
-                </p>
-
-              ) : course.is_free ? (
-
-                <p className="font-bold text-lg text-emerald-600">
-                  {isArabic
-                    ? "مجانية"
-                    : "Free"}
-                </p>
-
-              ) : hasDiscount ? (
-
-                <div>
-
-                  <p className="text-sm text-slate-400 line-through">
-                    {originalPrice.toFixed(2)}{" "}
-                    {course.currency ?? "JOD"}
+                <>
+                  <p className="text-sm text-slate-400">
+                    {isArabic ? "الحالة" : "Status"}
                   </p>
 
-                  <p className="font-bold text-lg text-emerald-600">
-                    {finalPrice.toFixed(2)}{" "}
-                    {course.currency ?? "JOD"}
+                  <p
+                    className={`font-bold text-2xl mt-2 ${statusColor}`}
+                  >
+                    {statusLabel}
                   </p>
-
-                  <span className="inline-block mt-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
-                    {course.discount_type ===
-                    "percentage"
-                      ? `خصم ${discountValue}%`
-                      : `خصم ${discountValue} ${course.currency ?? "JOD"}`}
-                  </span>
-
-                </div>
-
+                </>
               ) : (
+                <>
+                  <p className="text-sm text-slate-400">
+                    {isArabic ? "السعر" : "Price"}
+                  </p>
 
-                <p className="font-bold text-lg">
-                  {finalPrice.toFixed(2)}{" "}
-                  {course.currency ?? "JOD"}
-                </p>
+                  {course.is_free ? (
+                    <p className="font-bold text-2xl text-emerald-600 mt-2">
+                      {isArabic ? "مجانية" : "Free"}
+                    </p>
+                  ) : hasDiscount ? (
+                    <div className="mt-2">
+                      <p className="text-sm text-slate-400 line-through">
+                        {originalPrice.toFixed(2)} {currency}
+                      </p>
 
+                      <p className="font-bold text-2xl text-emerald-600">
+                        {finalPrice.toFixed(2)} {currency}
+                      </p>
+
+                      <span className="inline-flex mt-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
+                        {discountLabel}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="font-bold text-2xl text-slate-900 mt-2">
+                      {finalPrice.toFixed(2)} {currency}
+                    </p>
+                  )}
+                </>
               )}
-
             </div>
-
           </div>
 
+          {/* PROGRESS */}
 
           {enrollmentId && (
-
-            <div className="mt-5">
-
+            <div className="mt-7">
               <div className="flex justify-between text-sm mb-2">
-
                 <span className="font-bold text-[#124b8a]">
                   {progressPercent}%
                 </span>
 
-                <span>
-                  {completedLessons} /{" "}
-                  {totalLessons}
+                <span className="text-slate-500">
+                  {completedLessons} / {totalLessons}
                 </span>
-
               </div>
 
-
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-
+              <div
+                className="h-3 bg-slate-100 rounded-full overflow-hidden"
+                role="progressbar"
+                aria-valuenow={progressPercent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
                 <div
-                  className="h-full bg-[#124b8a]"
-                  style={{
-                    width:
-                      `${progressPercent}%`,
-                  }}
+                  className={`h-full rounded-full transition-all ${
+                    isCompleted ? "bg-emerald-500" : "bg-[#124b8a]"
+                  }`}
+                  style={{ width: `${progressPercent}%` }}
                 />
-
               </div>
-
             </div>
-
           )}
 
+          {/* ACTION: buy / enroll / continue */}
 
-          <div className="mt-6 text-right">
-
-            {enrollmentId ? (
-
-              <div className="bg-blue-50 text-[#124b8a] px-5 py-3 rounded-xl font-bold">
-                {isArabic
-                  ? "أنت مسجل بالدورة"
-                  : "You are enrolled"}
-              </div>
-
-            ) : course.is_free ? (
-
-              <EnrollButton
-                courseId={course.id}
-              />
-
-            ) : (
-
-              <BuyCourseButton
-                courseId={course.id}
-              />
-
-            )}
-
-          </div>
-
+          {(!enrollmentId || ctaLesson) && (
+            <div className="mt-7 flex justify-end">
+              {enrollmentId ? (
+                ctaLesson && (
+                  <Link
+                    href={`/courses/${course.id}/lessons/${ctaLesson.id}`}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#124b8a] hover:bg-[#0d3765] text-white font-bold px-6 py-3 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#124b8a]"
+                  >
+                    <PlayIcon />
+                    {ctaLabel}
+                  </Link>
+                )
+              ) : course.is_free ? (
+                <EnrollButton courseId={course.id} />
+              ) : (
+                <BuyCourseButton courseId={course.id} />
+              )}
+            </div>
+          )}
         </div>
-
       </section>
 
+      {/* COURSE CONTENT */}
 
-      {teacher && (
-        <section className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-6">
-
-          <h2 className="text-2xl font-bold mb-6">
-            {isArabic
-              ? "مدرب الدورة"
-              : "Course Instructor"}
+      <section className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-6 md:p-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold">
+            {isArabic ? "محتوى الدورة" : "Course Content"}
           </h2>
-
-
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-
-            <div className="w-28 h-28 rounded-full bg-blue-50 overflow-hidden shrink-0">
-
-              {teacherProfile?.image_url ? (
-
-                <div
-                  className="w-full h-full bg-cover bg-center"
-                  style={{
-                    backgroundImage:
-                      `url("${teacherProfile.image_url}")`,
-                  }}
-                />
-
-              ) : (
-
-                <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-[#124b8a]">
-                  {(teacher.full_name ??
-                    "T")
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-
-              )}
-
-            </div>
-
-
-            <div className="flex-1 text-right">
-
-              <h3 className="text-xl font-bold text-slate-800">
-                {teacher.full_name ??
-                  (isArabic
-                    ? "مدرب الدورة"
-                    : "Course Instructor")}
-              </h3>
-
-
-              {teacherProfile?.specialization && (
-                <p className="mt-2 text-[#124b8a] font-bold">
-                  {teacherProfile.specialization}
-                </p>
-              )}
-
-
-              {teacherProfile?.experience_years !==
-                null &&
-                teacherProfile?.experience_years !==
-                  undefined && (
-
-                  <p className="mt-2 text-sm text-slate-500">
-                    {isArabic
-                      ? `${teacherProfile.experience_years} سنوات خبرة`
-                      : `${teacherProfile.experience_years} years of experience`}
-                  </p>
-
-                )}
-
-
-              {teacherProfile?.bio && (
-                <p className="mt-4 text-slate-500 leading-7">
-                  {teacherProfile.bio}
-                </p>
-              )}
-
-            </div>
-
-          </div>
-
-        </section>
-      )}
-
-
-      <section className="bg-white rounded-[28px] border p-6">
-
-        <div className="flex justify-between mb-6">
 
           <span className="text-sm text-slate-400">
-            {sections.length}{" "}
-            {isArabic
-              ? "أقسام"
-              : "Sections"}
+            {formatCount(orderedSections.length, isArabic, "section")}
           </span>
-
-
-          <h2 className="text-2xl font-bold">
-            {isArabic
-              ? "محتوى الدورة"
-              : "Course Content"}
-          </h2>
-
         </div>
 
-
-        {sections.map((section) => (
-
+        {orderedSections.map((section) => (
           <div
             key={section.id}
-            className="border rounded-2xl mb-4 overflow-hidden"
+            className="border border-slate-200 rounded-2xl mb-4 overflow-hidden"
           >
+            <div className="bg-slate-50 p-4 flex justify-between items-center">
+              <h3 className="font-bold text-lg">{section.title}</h3>
 
-            <div className="bg-slate-50 p-4 flex justify-between">
-
-              <span>
-                {section.lessons?.length ?? 0}{" "}
-                {isArabic
-                  ? "درس"
-                  : "Lessons"}
+              <span className="text-sm text-slate-500">
+                {formatCount(section.lessons.length, isArabic, "lesson")}
               </span>
-
-
-              <h3 className="font-bold">
-                {section.title}
-              </h3>
-
             </div>
-
 
             <div className="p-3 space-y-2">
+              {section.lessons.map((lesson) => {
+                const completed = completedLessonIds.includes(
+                  lesson.id
+                );
 
-              {section.lessons?.map(
-                (lesson) => {
+                const canOpen =
+                  Boolean(enrollmentId) ||
+                  Boolean(lesson.is_free_preview);
 
-                  const completed =
-                    completedLessonIds.includes(
-                      lesson.id
-                    );
+                const iconStyle = completed
+                  ? "bg-emerald-100 text-emerald-600"
+                  : canOpen
+                  ? "bg-blue-100 text-[#124b8a]"
+                  : "bg-slate-200 text-slate-400";
 
+                const statusText = completed ? (
+                  <span className="text-emerald-600 font-bold">
+                    {isArabic ? "مكتمل" : "Done"}
+                  </span>
+                ) : canOpen ? (
+                  <span className="text-blue-600">
+                    {isArabic ? "غير مكتمل" : "Not done"}
+                  </span>
+                ) : (
+                  <span className="text-slate-400">
+                    {isArabic ? "مغلق" : "Locked"}
+                  </span>
+                );
 
-                  return (
-                    <Link
-                      key={lesson.id}
-                      href={`/courses/${course.id}/lessons/${lesson.id}`}
-                      className="flex justify-between bg-slate-50 hover:bg-blue-50 rounded-xl p-3"
-                    >
-
-                      <span>
-                        {completed
-                          ? isArabic
-                            ? "مكتمل"
-                            : "Done"
-                          : isArabic
-                            ? "غير مكتمل"
-                            : "Not done"}
+                const lessonContent = (
+                  <>
+                    <span className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${iconStyle}`}
+                      >
+                        {completed ? (
+                          <CheckIcon />
+                        ) : canOpen ? (
+                          <PlayIcon />
+                        ) : (
+                          <LockIcon />
+                        )}
                       </span>
 
-
-                      <span className="font-medium">
+                      <span className="font-medium text-slate-800 truncate">
                         {lesson.title}
                       </span>
+                    </span>
 
-                    </Link>
-                  );
+                    <span className="text-sm shrink-0">
+                      {statusText}
+                    </span>
+                  </>
+                );
 
-                }
-              )}
-
+                return canOpen ? (
+                  <Link
+                    key={lesson.id}
+                    href={`/courses/${course.id}/lessons/${lesson.id}`}
+                    className="flex justify-between items-center gap-4 bg-slate-50 hover:bg-blue-50 rounded-xl p-4 transition"
+                  >
+                    {lessonContent}
+                  </Link>
+                ) : (
+                  <div
+                    key={lesson.id}
+                    className="flex justify-between items-center gap-4 bg-slate-50 rounded-xl p-4 opacity-70"
+                  >
+                    {lessonContent}
+                  </div>
+                );
+              })}
             </div>
-
           </div>
-
         ))}
-
       </section>
-
     </div>
   );
 }
