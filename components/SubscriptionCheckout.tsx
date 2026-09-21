@@ -20,42 +20,33 @@ export default function SubscriptionCheckout({
   title,
   monthlyPriceUsd,
 }: Props) {
-  const [
-    months,
-    setMonths,
-  ] = useState<1 | 3>(1);
+  const [months, setMonths] =
+    useState<1 | 3>(1);
 
-  const [
-    currency,
-    setCurrency,
-  ] =
-    useState<PaymentCurrency>(
-      "USD"
-    );
+  const [currency, setCurrency] =
+    useState<PaymentCurrency>("USD");
 
-  const [
-    autoRenew,
-    setAutoRenew,
-  ] = useState(false);
+  const [autoRenew, setAutoRenew] =
+    useState(false);
 
-  const totalUsd =
-    Number(
-      (
-        monthlyPriceUsd *
-        months
-      ).toFixed(2)
-    );
+  const totalUsd = Number(
+    (monthlyPriceUsd * months).toFixed(2)
+  );
 
-  const totalJod =
-    convertFromUsd(
-      totalUsd,
-      "JOD"
-    );
+  const totalJod = convertFromUsd(
+    totalUsd,
+    "JOD"
+  );
 
   const paymentAmount =
     currency === "USD"
       ? totalUsd
       : totalJod;
+
+  const currencyFullName =
+    currency === "USD"
+      ? "دولار أمريكي"
+      : "دينار أردني";
 
   return (
     <div
@@ -86,9 +77,7 @@ export default function SubscriptionCheckout({
             <div className="grid gap-3 sm:grid-cols-2">
               <button
                 type="button"
-                onClick={() =>
-                  setMonths(1)
-                }
+                onClick={() => setMonths(1)}
                 className={`rounded-2xl border p-5 text-right transition ${
                   months === 1
                     ? "border-[#124b8a] bg-blue-50 ring-2 ring-blue-100"
@@ -112,9 +101,7 @@ export default function SubscriptionCheckout({
 
               <button
                 type="button"
-                onClick={() =>
-                  setMonths(3)
-                }
+                onClick={() => setMonths(3)}
                 className={`rounded-2xl border p-5 text-right transition ${
                   months === 3
                     ? "border-[#124b8a] bg-blue-50 ring-2 ring-blue-100"
@@ -146,30 +133,29 @@ export default function SubscriptionCheckout({
             <div className="grid gap-3 sm:grid-cols-2">
               <button
                 type="button"
-                onClick={() =>
-                  setCurrency(
-                    "USD"
-                  )
-                }
+                onClick={() => setCurrency("USD")}
                 className={`rounded-2xl border p-5 text-right transition ${
-                  currency ===
-                  "USD"
+                  currency === "USD"
                     ? "border-[#124b8a] bg-blue-50 ring-2 ring-blue-100"
                     : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="text-right">
                     <p className="font-bold text-slate-800">
                       USD
                     </p>
 
-                    <span className="mt-1 inline-block rounded-full bg-blue-100 px-2 py-1 text-[11px] font-bold text-[#124b8a]">
+                    <p className="mt-1 text-sm text-slate-500">
+                      دولار أمريكي
+                    </p>
+
+                    <span className="mt-2 inline-block rounded-full bg-blue-100 px-2 py-1 text-[11px] font-bold text-[#124b8a]">
                       العملة الأساسية
                     </span>
                   </div>
 
-                  <span className="text-xl font-bold text-[#124b8a]">
+                  <span className="text-2xl font-bold text-[#124b8a]">
                     $
                   </span>
                 </div>
@@ -177,24 +163,25 @@ export default function SubscriptionCheckout({
 
               <button
                 type="button"
-                onClick={() =>
-                  setCurrency(
-                    "JOD"
-                  )
-                }
+                onClick={() => setCurrency("JOD")}
                 className={`rounded-2xl border p-5 text-right transition ${
-                  currency ===
-                  "JOD"
+                  currency === "JOD"
                     ? "border-[#124b8a] bg-blue-50 ring-2 ring-blue-100"
                     : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <p className="font-bold text-slate-800">
-                    JOD
-                  </p>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="text-right">
+                    <p className="font-bold text-slate-800">
+                      JOD
+                    </p>
 
-                  <span className="text-sm font-bold text-[#124b8a]">
+                    <p className="mt-1 text-sm text-slate-500">
+                      دينار أردني
+                    </p>
+                  </div>
+
+                  <span className="text-lg font-bold text-[#124b8a]">
                     د.أ
                   </span>
                 </div>
@@ -205,16 +192,9 @@ export default function SubscriptionCheckout({
           <label className="mt-7 flex cursor-pointer items-start gap-3 rounded-2xl bg-slate-50 p-4">
             <input
               type="checkbox"
-              checked={
-                autoRenew
-              }
-              onChange={(
-                event
-              ) =>
-                setAutoRenew(
-                  event.target
-                    .checked
-                )
+              checked={autoRenew}
+              onChange={(event) =>
+                setAutoRenew(event.target.checked)
               }
               className="mt-1 h-4 w-4"
             />
@@ -249,10 +229,7 @@ export default function SubscriptionCheckout({
               </span>
 
               <span className="font-bold">
-                {totalUsd.toFixed(
-                  2
-                )}{" "}
-                USD
+                {totalUsd.toFixed(2)} USD
               </span>
             </div>
 
@@ -262,10 +239,7 @@ export default function SubscriptionCheckout({
               </span>
 
               <span className="font-bold">
-                {totalJod.toFixed(
-                  2
-                )}{" "}
-                JOD
+                {totalJod.toFixed(2)} JOD
               </span>
             </div>
 
@@ -277,31 +251,22 @@ export default function SubscriptionCheckout({
               </p>
 
               <p className="mt-2 text-2xl font-bold text-[#124b8a]">
-                {paymentAmount.toFixed(
-                  2
-                )}{" "}
-                {currency}
+                {paymentAmount.toFixed(2)} {currency}
+              </p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                {currencyFullName}
               </p>
             </div>
           </div>
 
           <div className="mt-6">
             <BuyCourseButton
-              courseId={
-                courseId
-              }
-              subscriptionMonths={
-                months
-              }
-              paymentCurrency={
-                currency
-              }
-              autoRenew={
-                autoRenew
-              }
-              label={`دفع ${paymentAmount.toFixed(
-                2
-              )} ${currency}`}
+              courseId={courseId}
+              subscriptionMonths={months}
+              paymentCurrency={currency}
+              autoRenew={autoRenew}
+              label={`دفع ${paymentAmount.toFixed(2)} ${currency}`}
             />
           </div>
 
