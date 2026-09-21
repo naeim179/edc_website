@@ -1,0 +1,300 @@
+"use client";
+
+import Link from "next/link";
+import CourseCatalogCard from "@/components/CourseCatalogCard";
+import CourseCover from "@/components/CourseCover";
+import { useLanguage } from "@/components/LanguageProvider";
+import { ArrowIcon, PlayIcon } from "@/components/icons";
+import type { CatalogCourse } from "@/lib/course-catalog";
+import type { StudentCourse } from "@/lib/student-courses";
+
+type Props = {
+  isAuthenticated: boolean;
+  displayName: string;
+  stats: {
+    enrolled: number;
+    completedLessons: number;
+    completedCourses: number;
+  };
+  continueCourse: StudentCourse | null;
+  courses: CatalogCourse[];
+};
+
+export default function HomeContent({
+  isAuthenticated,
+  displayName,
+  stats,
+  continueCourse,
+  courses,
+}: Props) {
+  const { language } = useLanguage();
+  const isArabic = language === "ar";
+
+  const statItems = [
+    {
+      value: stats.enrolled,
+      label: isArabic ? "دورات مسجلة" : "Enrolled courses",
+    },
+    {
+      value: stats.completedLessons,
+      label: isArabic ? "دروس مكتملة" : "Lessons completed",
+    },
+    {
+      value: stats.completedCourses,
+      label: isArabic ? "دورات مكتملة" : "Courses completed",
+    },
+  ];
+
+  const continueHref = continueCourse
+    ? continueCourse.nextLessonId
+      ? `/courses/${continueCourse.id}/lessons/${continueCourse.nextLessonId}`
+      : `/courses/${continueCourse.id}`
+    : "/courses";
+
+  return (
+    <div
+      className="mx-auto w-full max-w-6xl space-y-8"
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      {isAuthenticated ? (
+        <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#124b8a] via-[#0f3f75] to-[#0b3260] p-6 text-white shadow-lg sm:p-8">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -end-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl"
+          />
+
+          <div className="relative grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+            <div>
+              <p className="text-sm text-blue-100">
+                {isArabic ? "أهلاً بعودتك" : "Welcome back"}
+              </p>
+
+              <h1 className="mt-1 text-3xl font-bold leading-tight sm:text-4xl">
+                {isArabic ? "مرحباً" : "Hello"} {displayName}
+              </h1>
+
+              <p className="mt-3 max-w-md leading-7 text-blue-100">
+                {isArabic
+                  ? "أكمل رحلتك التعليمية من حيث توقفت."
+                  : "Pick up your learning journey where you left off."}
+              </p>
+
+              <div className="mt-6 grid grid-cols-3 gap-3">
+                {statItems.map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-white/15 bg-white/10 p-4"
+                  >
+                    <p className="text-2xl font-bold sm:text-3xl">
+                      {item.value}
+                    </p>
+
+                    <p className="mt-1 text-xs leading-5 text-blue-100">
+                      {item.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {continueCourse ? (
+              <div className="rounded-3xl bg-white p-5 text-slate-800 shadow-xl">
+                <p className="text-xs font-bold text-slate-400">
+                  {isArabic
+                    ? "تابع من حيث توقفت"
+                    : "Continue where you left off"}
+                </p>
+
+                <div className="mt-3 flex items-center gap-4">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl">
+                    <CourseCover
+                      image={continueCourse.image}
+                      title={continueCourse.title}
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <h2 className="line-clamp-2 font-bold leading-6">
+                      {continueCourse.title}
+                    </h2>
+
+                    {continueCourse.category && (
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {continueCourse.category}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="mb-2 flex justify-between text-xs">
+                    <span className="text-slate-500">
+                      {isArabic
+                        ? `${continueCourse.completedLessons} من ${continueCourse.totalLessons} درس`
+                        : `${continueCourse.completedLessons} of ${continueCourse.totalLessons} lessons`}
+                    </span>
+
+                    <span className="font-bold text-[#124b8a]">
+                      {continueCourse.progress}%
+                    </span>
+                  </div>
+
+                  <div
+                    className="h-2 overflow-hidden rounded-full bg-slate-100"
+                    role="progressbar"
+                    aria-valuenow={continueCourse.progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <div
+                      className="h-full rounded-full bg-[#124b8a]"
+                      style={{
+                        width: `${continueCourse.progress}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <Link
+                  href={continueHref}
+                  className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-[#124b8a] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
+                >
+                  <PlayIcon width={14} height={14} />
+                  {continueCourse.progress > 0
+                    ? isArabic
+                      ? "متابعة التعلم"
+                      : "Continue learning"
+                    : isArabic
+                    ? "ابدأ الدورة"
+                    : "Start course"}
+                </Link>
+              </div>
+            ) : (
+              <div className="rounded-3xl bg-white p-6 text-slate-800 shadow-xl">
+                <h2 className="text-lg font-bold">
+                  {stats.enrolled > 0
+                    ? isArabic
+                      ? "أنجزت كل دوراتك 🎉"
+                      : "You finished all your courses 🎉"
+                    : isArabic
+                    ? "ابدأ رحلتك الأولى"
+                    : "Start your first course"}
+                </h2>
+
+                <p className="mt-2 text-sm leading-7 text-slate-500">
+                  {isArabic
+                    ? "تصفّح الدورات المتاحة واختر ما يناسب هدفك."
+                    : "Browse the available courses and pick what fits your goal."}
+                </p>
+
+                <Link
+                  href="/courses"
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#124b8a] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
+                >
+                  {isArabic ? "استعرض الدورات" : "Browse courses"}
+                  <ArrowIcon
+                    width={16}
+                    height={16}
+                    className="rtl:rotate-180"
+                  />
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+      ) : (
+        <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#124b8a] via-[#0f3f75] to-[#0b3260] p-8 text-white shadow-lg sm:p-12">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -end-24 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl"
+          />
+
+          <div className="relative max-w-2xl">
+            <p className="text-sm text-blue-100">
+              {isArabic
+                ? "منصتك للتعلم والتطور"
+                : "Your platform for learning and growth"}
+            </p>
+
+            <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-5xl">
+              {isArabic
+                ? "ابدأ رحلتك التعليمية اليوم"
+                : "Start your learning journey today"}
+            </h1>
+
+            <p className="mt-4 leading-8 text-blue-100">
+              {isArabic
+                ? "استعرض الدورات المتاحة، أنشئ حسابك، وتابع تقدمك من مكان واحد."
+                : "Browse available courses, create your account, and track your progress in one place."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/register"
+                className="rounded-xl bg-[#ffffff] px-6 py-3 text-sm font-bold text-[#124b8a] transition-colors hover:bg-blue-50"
+              >
+                {isArabic ? "إنشاء حساب" : "Create account"}
+              </Link>
+
+              <Link
+                href="/courses"
+                className="rounded-xl border border-white/40 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10"
+              >
+                {isArabic ? "استعراض الدورات" : "Browse courses"}
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="space-y-5">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-xl font-bold text-slate-800 sm:text-2xl">
+            {isArabic ? "أحدث الدورات" : "Latest courses"}
+          </h2>
+
+          <Link
+            href="/courses"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#124b8a] hover:underline"
+          >
+            {isArabic ? "عرض جميع الدورات" : "View all courses"}
+            <ArrowIcon
+              width={16}
+              height={16}
+              className="rtl:rotate-180"
+            />
+          </Link>
+        </div>
+
+        {courses.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {courses.map((course) => (
+              <CourseCatalogCard
+                key={course.id}
+                id={course.id}
+                title={course.title}
+                category={course.category}
+                instructor={course.instructor}
+                lessons={course.lessons}
+                progress={course.progress}
+                image={course.image}
+                enrolled={course.enrolled}
+                price={course.price}
+                currency={course.currency}
+                isFree={course.isFree}
+                discountType={course.discountType}
+                discountValue={course.discountValue}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-slate-500 shadow-sm">
+            {isArabic
+              ? "لا توجد دورات منشورة حاليًا."
+              : "No published courses yet."}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

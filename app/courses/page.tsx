@@ -1,5 +1,7 @@
 import AppShell from "@/components/AppShell";
 import CoursesContent from "@/components/CoursesContent";
+import { fetchCatalogCourses } from "@/lib/course-catalog";
+import { getStudentCoursesSafe } from "@/lib/student-courses";
 import { createClient } from "@/lib/supabase/server";
 
 type CoursesPageProps = {
@@ -16,58 +18,24 @@ export default async function CoursesPage({
 
   const supabase = await createClient();
 
-  const { data: courses, error } = await supabase
-    .from("courses")
-    .select(`
-      id,
-      title,
-      category,
-      image_url,
-      instructor_id,
-      sections (
-        id,
-        lessons (
-          id
-        )
-      )
-    `)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (error) {
-    throw new Error(`Failed to load courses: ${error.message}`);
-  }
+  const studentCourses = user
+    ? await getStudentCoursesSafe(supabase, user.id)
+    : [];
 
-  const mappedCourses =
-    courses?.map((course) => {
-      const lessonsCount =
-        course.sections?.reduce(
-          (total, section) => total + (section.lessons?.length ?? 0),
-          0
-        ) ?? 0;
-
-      return {
-        id: course.id,
-        title: course.title,
-        category: course.category,
-        image: course.image_url,
-        lessons: lessonsCount,
-        progress: 0,
-      };
-    }) ?? [];
+  const courses = await fetchCatalogCourses(supabase, studentCourses);
 
   const filteredCourses = searchQuery
-    ? mappedCourses.filter((course) => {
-        const searchableText = [
-          course.title,
-          course.category ?? "",
-        ]
+    ? courses.filter((course) =>
+        [course.title, course.category ?? "", course.instructor ?? ""]
           .join(" ")
-          .toLowerCase();
-
-        return searchableText.includes(searchQuery);
-      })
-    : mappedCourses;
+          .toLowerCase()
+          .includes(searchQuery)
+      )
+    : courses;
 
   return (
     <AppShell>

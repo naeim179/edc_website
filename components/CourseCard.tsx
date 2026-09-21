@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import CourseCover from "@/components/CourseCover";
+import { useLanguage } from "@/components/LanguageProvider";
+import { ArrowIcon, CheckCircleIcon } from "@/components/icons";
 
 type CourseCardProps = {
   id: string;
@@ -9,6 +14,7 @@ type CourseCardProps = {
   totalLessons: number;
   image?: string | null;
   nextLessonId?: string | null;
+  /** false = الطالب مش مسجل بالدورة (يظهر زر "عرض الدورة") */
   enrolled?: boolean;
 };
 
@@ -19,56 +25,120 @@ export default function CourseCard({
   progress,
   completedLessons,
   totalLessons,
+  image,
+  nextLessonId,
   enrolled = true,
 }: CourseCardProps) {
-  const courseLink = `/courses/${id}`;
+  const { language } = useLanguage();
+  const isArabic = language === "ar";
+
+  const done = enrolled && progress >= 100;
+
+  const href =
+    enrolled && nextLessonId && !done
+      ? `/courses/${id}/lessons/${nextLessonId}`
+      : `/courses/${id}`;
+
+  const label = !enrolled
+    ? isArabic
+      ? "عرض الدورة"
+      : "View course"
+    : done
+    ? isArabic
+      ? "مراجعة الدورة"
+      : "Review course"
+    : progress > 0
+    ? isArabic
+      ? "متابعة التعلم"
+      : "Continue learning"
+    : isArabic
+    ? "ابدأ الدورة"
+    : "Start course";
 
   return (
-    <div
-      className="bg-white rounded-[26px] border border-slate-100 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-      dir="rtl"
+    <article
+      dir={isArabic ? "rtl" : "ltr"}
+      className="group flex flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl motion-reduce:transform-none"
     >
-      <div className="p-5 space-y-4">
+      <Link
+        href={`/courses/${id}`}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="relative block aspect-[16/9] overflow-hidden"
+      >
+        <CourseCover image={image} title={title} />
+
         {category && (
-          <span className="inline-flex px-3 py-1 rounded-full bg-blue-50 text-[#124b8a] text-xs font-bold">
+          <span className="absolute start-3 top-3 rounded-full bg-[#ffffff]/90 px-3 py-1 text-xs font-bold text-[#124b8a] backdrop-blur">
             {category}
           </span>
         )}
 
-        <h3 className="text-xl font-bold text-slate-800 leading-8">
-          {title}
+        {done && (
+          <span className="absolute end-3 top-3 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-bold text-white">
+            <CheckCircleIcon width={14} height={14} />
+            {isArabic ? "مكتملة" : "Completed"}
+          </span>
+        )}
+      </Link>
+
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <h3 className="line-clamp-2 text-lg font-bold leading-7 text-slate-800">
+          <Link
+            href={`/courses/${id}`}
+            className="transition-colors hover:text-[#124b8a]"
+          >
+            {title}
+          </Link>
         </h3>
 
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-bold text-[#124b8a]">
-            {progress}%
-          </span>
+        {enrolled && (
+          <div>
+            <div className="mb-2 flex items-center justify-between text-xs">
+              <span className="text-slate-500">
+                {isArabic
+                  ? `${completedLessons} من ${totalLessons} درس مكتمل`
+                  : `${completedLessons} of ${totalLessons} lessons completed`}
+              </span>
 
-          <span className="text-slate-500">
-            {completedLessons} من {totalLessons} درس مكتمل
-          </span>
-        </div>
+              <span
+                className={`font-bold ${
+                  done ? "text-emerald-600" : "text-[#124b8a]"
+                }`}
+              >
+                {progress}%
+              </span>
+            </div>
 
-        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#124b8a] rounded-full transition-all duration-500"
-            style={{
-              width: `${progress}%`,
-            }}
-          />
-        </div>
+            <div
+              className="h-2 w-full overflow-hidden rounded-full bg-slate-100"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  done ? "bg-emerald-500" : "bg-[#124b8a]"
+                }`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         <Link
-          href={courseLink}
-          className="block text-center bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold transition"
+          href={href}
+          className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#124b8a] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
         >
-          {!enrolled
-            ? "عرض الدورة"
-            : progress === 100
-            ? "مراجعة الدورة"
-            : "متابعة التعلم"}
+          {label}
+          <ArrowIcon
+            width={16}
+            height={16}
+            className="rtl:rotate-180"
+          />
         </Link>
       </div>
-    </div>
+    </article>
   );
 }
