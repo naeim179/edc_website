@@ -13,13 +13,13 @@ export default async function AdminDashboardPage() {
 
   const supabase = await createClient();
 
-
   const [
     { count: coursesCount },
     { count: studentsCount },
     { count: enrollmentsCount },
     { count: ordersCount },
-    { count: pendingOrdersCount },
+    { count: paidOrdersCount },
+    { count: failedOrdersCount },
   ] = await Promise.all([
     supabase
       .from("courses")
@@ -48,7 +48,8 @@ export default async function AdminDashboardPage() {
       .select("id", {
         count: "exact",
         head: true,
-      }),
+      })
+      .in("status", ["paid", "failed"]),
 
     supabase
       .from("orders")
@@ -56,9 +57,16 @@ export default async function AdminDashboardPage() {
         count: "exact",
         head: true,
       })
-      .eq("status", "pending"),
-  ]);
+      .eq("status", "paid"),
 
+    supabase
+      .from("orders")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("status", "failed"),
+  ]);
 
   return (
     <AppShell>
@@ -67,7 +75,8 @@ export default async function AdminDashboardPage() {
         studentsCount={studentsCount ?? 0}
         enrollmentsCount={enrollmentsCount ?? 0}
         ordersCount={ordersCount ?? 0}
-        pendingOrdersCount={pendingOrdersCount ?? 0}
+        paidOrdersCount={paidOrdersCount ?? 0}
+        failedOrdersCount={failedOrdersCount ?? 0}
       />
     </AppShell>
   );

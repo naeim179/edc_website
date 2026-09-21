@@ -1,65 +1,71 @@
-import AppShell from "@/components/AppShell";
-import { createClient } from "@/lib/supabase/server";
-import BuyCourseButton from "@/components/BuyCourseButton";
+import { notFound } from "next/navigation";
 
+import AppShell from "@/components/AppShell";
+import SubscriptionCheckout from "@/components/SubscriptionCheckout";
+
+import { createClient } from "@/lib/supabase/server";
+
+import {
+  calculateFinalPrice,
+} from "@/lib/free-enrollment";
 
 export default async function CheckoutPage({
- params,
-}:{
- params:Promise<{courseId:string}>
-}){
+  params,
+}: {
+  params: Promise<{
+    courseId: string;
+  }>;
+}) {
+  const {
+    courseId,
+  } = await params;
 
- const {courseId}=await params;
+  const supabase =
+    await createClient();
 
- const supabase=await createClient();
+  const {
+    data: course,
+    error,
+  } = await supabase
+    .from("courses")
+    .select(`
+      id,
+      title,
+      price,
+      currency,
+      is_free,
+      discount_type,
+      discount_value
+    `)
+    .eq("id", courseId)
+    .eq("is_published", true)
+    .maybeSingle();
 
+  if (
+    error ||
+    !course
+  ) {
+    return notFound();
+  }
 
- const {data:course}=await supabase
- .from("courses")
- .select(`
- title,
- price,
- currency
- `)
- .eq("id",courseId)
- .maybeSingle();
+  const monthlyPrice =
+    calculateFinalPrice(
+      course.price ?? 0,
+      course.discount_type,
+      course.discount_value ?? 0
+    );
 
-
-
- if(!course){
-  return null;
- }
-
-
- return (
- <AppShell>
-
- <div className="max-w-xl mx-auto bg-white rounded-2xl border p-8 text-right">
-
- <h1 className="text-2xl font-bold">
- {course.title}
- </h1>
-
-
- <p className="mt-4 text-lg">
- السعر:
- <strong>
- {" "}
- {course.price} {course.currency}
- </strong>
- </p>
-
-
- <div className="mt-6">
-
- <BuyCourseButton courseId={courseId}/>
-
- </div>
-
-
- </div>
-
- </AppShell>
- );
-
+  return (
+    <AppShell>
+      <SubscriptionCheckout
+        courseId={course.id}
+        title={course.title}
+        monthlyPrice={monthlyPrice}
+        currency={
+          course.currency ??
+          "JOD"
+        }
+      />
+    </AppShell>
+  );
 }

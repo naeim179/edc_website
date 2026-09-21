@@ -1,29 +1,119 @@
-import { NextRequest, NextResponse } from "next/server";
-import { fulfillPaymentByTranRef } from "@/lib/payments";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
-export async function POST(req: NextRequest) {
+import {
+  fulfillPaymentByTranRef,
+} from "@/lib/payments";
+
+import {
+  verifyPayTabsCallbackSignature,
+} from "@/lib/paytabs";
+
+export async function POST(
+  req: NextRequest
+) {
   try {
-    let body: Record<string, unknown>;
+    const rawBody =
+      await req.text();
 
-    const contentType = req.headers.get("content-type") ?? "";
+    const signature =
+      req.headers.get(
+        "signature"
+      );
 
-    if (contentType.includes("application/json")) {
-      body = await req.json();
-    } else {
-      const form = await req.formData();
-      body = Object.fromEntries(form.entries());
+    if (
+      !(await verifyPayTabsCallbackSignature(
+        rawBody,
+        signature
+      ))
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Invalid signature",
+        },
+        {
+          status: 401,
+        }
+      );
     }
 
-    const tranRef = (body.tran_ref ?? body.tranRef) as string | undefined;
+    const contentType =
+      req.headers.get(
+        "content-type"
+      ) ?? "";
+
+    let body:
+      Record<
+        string,
+        unknown
+      >;
+
+    if (
+      contentType.includes(
+        "application/json"
+      )
+    ) {
+      body =
+        JSON.parse(
+          rawBody
+        ) as Record<
+          string,
+          unknown
+        >;
+    } else {
+      body =
+        Object.fromEntries(
+          new URLSearchParams(
+            rawBody
+          )
+        );
+    }
+
+    const tranRef =
+      (
+        body.tran_ref ??
+        body.tranRef
+      ) as
+        | string
+        | undefined;
 
     if (!tranRef) {
-      return NextResponse.json({ ok: false }, { status: 400 });
+      return NextResponse.json(
+        {
+          ok: false,
+        },
+        {
+          status: 400,
+        }
+      );
     }
 
-    await fulfillPaymentByTranRef(tranRef);
+    const token =
+      typeof body.token ===
+      "string"
+        ? body.token
+        : null;
 
-    return NextResponse.json({ ok: true });
+    await fulfillPaymentByTranRef(
+      tranRef,
+      token
+    );
+
+    return NextResponse.json({
+      ok: true,
+    });
   } catch {
-    return NextResponse.json({ ok: false }, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false,
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import EnrollButton from "@/components/EnrollButton";
-import BuyCourseButton from "@/components/BuyCourseButton";
+import SubscriptionRenewalControls from "@/components/SubscriptionRenewalControls";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type Lesson = {
@@ -53,10 +53,20 @@ type Course = {
   }[];
 };
 
+type SubscriptionInfo = {
+  expiresAt: string | null;
+  autoRenew: boolean;
+  durationMonths: number;
+  active: boolean;
+  daysRemaining: number | null;
+};
+
 type Props = {
   course: Course;
   sections: Section[];
   enrollmentId: string | null;
+  hasCourseAccess: boolean;
+  subscription: SubscriptionInfo | null;
   completedLessonIds: string[];
   totalLessons: number;
   completedLessons: number;
@@ -166,6 +176,8 @@ export default function CourseDetailContent({
   course,
   sections,
   enrollmentId,
+  hasCourseAccess,
+  subscription,
   completedLessonIds,
   totalLessons,
   completedLessons,
@@ -249,8 +261,16 @@ export default function CourseDetailContent({
 
   const isStarted = completedLessons > 0;
 
-  // الحالة تتغير حسب التقدم بدل ما تبقى "مسجل بالدورة" دائماً
-  const statusLabel = isCompleted
+  const subscriptionExpired =
+    Boolean(enrollmentId) &&
+    !course.is_free &&
+    !hasCourseAccess;
+
+  const statusLabel = subscriptionExpired
+    ? isArabic
+      ? "انتهى الاشتراك"
+      : "Subscription expired"
+    : isCompleted
     ? isArabic
       ? "مكتملة"
       : "Completed"
@@ -262,7 +282,9 @@ export default function CourseDetailContent({
     ? "مسجل بالدورة"
     : "Enrolled";
 
-  const statusColor = isCompleted
+  const statusColor = subscriptionExpired
+    ? "text-red-600"
+    : isCompleted
     ? "text-emerald-600"
     : "text-[#124b8a]";
 
@@ -470,27 +492,51 @@ export default function CourseDetailContent({
             </div>
           )}
 
+          {/* SUBSCRIPTION */}
+
+          {enrollmentId &&
+            !course.is_free &&
+            subscription && (
+              <SubscriptionRenewalControls
+                courseId={course.id}
+                expiresAt={subscription.expiresAt}
+                autoRenew={subscription.autoRenew}
+                accessActive={hasCourseAccess}
+                daysRemaining={subscription.daysRemaining}
+              />
+            )}
+
           {/* ACTION: buy / enroll / continue */}
 
-          {(!enrollmentId || ctaLesson) && (
-            <div className="mt-7 flex justify-end">
-              {enrollmentId ? (
-                ctaLesson && (
-                  <Link
-                    href={`/courses/${course.id}/lessons/${ctaLesson.id}`}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#124b8a] hover:bg-[#0d3765] text-white font-bold px-6 py-3 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#124b8a]"
-                  >
-                    <PlayIcon />
-                    {ctaLabel}
-                  </Link>
-                )
-              ) : course.is_free ? (
-                <EnrollButton courseId={course.id} />
-              ) : (
-                <BuyCourseButton courseId={course.id} />
-              )}
-            </div>
-          )}
+          <div className="mt-7 flex justify-end">
+            {enrollmentId && !hasCourseAccess && !course.is_free ? (
+              <Link
+                href={`/checkout/${course.id}`}
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 py-3 transition"
+              >
+                {isArabic ? "تجديد الاشتراك" : "Renew subscription"}
+              </Link>
+            ) : hasCourseAccess ? (
+              ctaLesson ? (
+                <Link
+                  href={`/courses/${course.id}/lessons/${ctaLesson.id}`}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#124b8a] hover:bg-[#0d3765] text-white font-bold px-6 py-3 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#124b8a]"
+                >
+                  <PlayIcon />
+                  {ctaLabel}
+                </Link>
+              ) : null
+            ) : course.is_free ? (
+              <EnrollButton courseId={course.id} />
+            ) : (
+              <Link
+                href={`/checkout/${course.id}`}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#087a54] hover:bg-[#066844] text-white font-bold px-6 py-3 transition"
+              >
+                {isArabic ? "اختر الاشتراك واشترِ الآن" : "Choose subscription"}
+              </Link>
+            )}
+          </div>
         </div>
       </section>
 
@@ -527,7 +573,7 @@ export default function CourseDetailContent({
                 );
 
                 const canOpen =
-                  Boolean(enrollmentId) ||
+                  hasCourseAccess ||
                   Boolean(lesson.is_free_preview);
 
                 const iconStyle = completed

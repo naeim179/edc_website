@@ -3,6 +3,7 @@ import AppShell from "@/components/AppShell";
 import LessonContent from "@/components/LessonContent";
 import { getLessonMedia } from "@/lib/lesson-media";
 import { createClient } from "@/lib/supabase/server";
+import { isSubscriptionActive } from "@/lib/subscriptions";
 
 type RawLesson = {
   id: string;
@@ -39,12 +40,18 @@ export default async function LessonPage({
 
   const supabase = await createClient();
 
-  // بيانات الدرس من الـ view العام (بدون رابط المحتوى)
-  const { data: lessonData, error } = await supabase
-    .from("lessons_public")
-    .select("id, title, duration, is_free_preview, section_id, course_id")
-    .eq("id", lessonId)
-    .maybeSingle();
+  // بيانات آمنة للدرس بدون content_url.
+  const { data: lessonCatalog, error } = await supabase.rpc(
+    "get_course_lesson_catalog",
+    {
+      p_course_id: id,
+    }
+  );
+
+  const lessonData =
+    ((lessonCatalog ?? []) as unknown as RawLesson[]).find(
+      (item) => item.id === lessonId
+    ) ?? null;
 
   if (error) {
     // 22P02 = معرّف غير صالح (مش UUID)
@@ -67,19 +74,57 @@ export default async function LessonPage({
   } = await supabase.auth.getUser();
 
   let enrollmentId: string | null = null;
+  let hasCourseAccess = false;
 
-  if (user) {
-    const { data: enrollment } = await supabase
-      .from("enrollments")
-      .select("id")
-      .eq("student_id", user.id)
-      .eq("course_id", id)
+  const { data: courseAccess, error: courseAccessError } =
+    await supabase
+      .from("courses")
+      .select("is_free")
+      .eq("id", id)
       .maybeSingle();
 
-    enrollmentId = enrollment?.id ?? null;
+  if (courseAccessError) {
+    throw new Error(courseAccessError.message);
   }
 
-  if (!enrollmentId && !lesson.is_free_preview) {
+  if (user) {
+    const { data: enrollment, error: enrollmentError } =
+      await supabase
+        .from("enrollments")
+        .select("id")
+        .eq("student_id", user.id)
+        .eq("course_id", id)
+        .maybeSingle();
+
+    if (enrollmentError) {
+      throw new Error(enrollmentError.message);
+    }
+
+    enrollmentId = enrollment?.id ?? null;
+
+    if (enrollmentId) {
+      if (courseAccess?.is_free) {
+        hasCourseAccess = true;
+      } else {
+        const { data: subscription, error: subscriptionError } =
+          await supabase
+            .from("subscriptions")
+            .select("status, expires_at")
+            .eq("student_id", user.id)
+            .eq("course_id", id)
+            .maybeSingle();
+
+        if (subscriptionError) {
+          throw new Error(subscriptionError.message);
+        }
+
+        hasCourseAccess =
+          isSubscriptionActive(subscription);
+      }
+    }
+  }
+
+  if (!hasCourseAccess && !lesson.is_free_preview) {
     redirect(user ? `/courses/${id}` : "/login");
   }
 
@@ -101,10 +146,12 @@ export default async function LessonPage({
       .select("id, title, order_index")
       .eq("course_id", id),
 
-    supabase
-      .from("lessons_public")
-      .select("id, section_id, title, order_index, is_free_preview")
-      .eq("course_id", id),
+    supabase.rpc(
+      "get_course_lesson_catalog",
+      {
+        p_course_id: id,
+      }
+    ),
 
     enrollmentId
       ? supabase
@@ -164,7 +211,7 @@ export default async function LessonPage({
     (progressResult.data ?? []) as unknown as { lesson_id: string }[]
   ).map((row) => row.lesson_id);
 
-  const isEnrolled = Boolean(enrollmentId);
+  const isEnrolled = hasCourseAccess;
 
   const allLessons = sections.flatMap((item) => item.lessons);
 
@@ -207,7 +254,7 @@ export default async function LessonPage({
           isFreePreview: Boolean(lesson.is_free_preview),
           media: getLessonMedia(contentUrl),
         }}
-        enrollmentId={enrollmentId}
+        enrollmentId={hasCourseAccess ? enrollmentId : null}
         completed={completedLessonIds.includes(lesson.id)}
         sections={sections}
         completedLessonIds={completedLessonIds}

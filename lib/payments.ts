@@ -1,45 +1,335 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { queryTransaction } from "@/lib/paytabs";
 
-export async function fulfillPaymentByTranRef(tranRef: string) {
-  const result = await queryTransaction(tranRef);
+export async function fulfillPaymentByTranRef(
+  tranRef: string,
+  callbackToken?: string | null
+) {
+  const result =
+    await queryTransaction(
+      tranRef
+    );
 
-  const isPaid = result?.payment_result?.response_status === "A";
-  const orderId = result?.cart_id as string | undefined;
+  const responseStatus =
+    result?.payment_result
+      ?.response_status as
+      | string
+      | undefined;
 
-  if (!isPaid || !orderId) {
-    return { paid: false as const, courseId: null as string | null };
+  const orderId =
+    result?.cart_id as
+      | string
+      | undefined;
+
+  if (!orderId) {
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
   }
 
-  const supabase = createAdminClient();
+  const supabase =
+    createAdminClient();
 
-  const { data: order } = await supabase
+  const {
+    data: order,
+    error: orderError,
+  } = await supabase
     .from("orders")
-    .select("id, user_id, course_id, status")
+    .select(`
+      id,
+      user_id,
+      course_id,
+      status,
+      amount,
+      currency,
+      subscription_months,
+      auto_renew_requested,
+      fulfilled_at
+    `)
     .eq("id", orderId)
     .maybeSingle();
 
-  if (!order) {
-    return { paid: false as const, courseId: null as string | null };
+  if (
+    orderError ||
+    !order
+  ) {
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
   }
 
-  if (order.status !== "paid") {
-    await supabase
-      .from("orders")
-      .update({ status: "paid" })
-      .eq("id", order.id);
+  if (
+    responseStatus === "P" ||
+    responseStatus === "H"
+  ) {
+    if (
+      order.status !== "paid" &&
+      order.status !== "pending"
+    ) {
+      const {
+        error,
+      } = await supabase
+        .from("orders")
+        .update({
+          status: "pending",
+        })
+        .eq("id", order.id);
+
+      if (error) {
+        throw new Error(
+          error.message
+        );
+      }
+    }
+
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
   }
 
-  const { error: enrollError } = await supabase
-    .from("enrollments")
-    .insert({
-      student_id: order.user_id,
-      course_id: order.course_id,
-    });
+  if (
+    responseStatus !== "A"
+  ) {
+    if (
+      responseStatus &&
+      order.status !== "paid"
+    ) {
+      const {
+        error,
+      } = await supabase
+        .from("orders")
+        .update({
+          status: "failed",
+          paytabs_tran_ref:
+            tranRef,
+        })
+        .eq("id", order.id);
 
-  if (enrollError && !enrollError.message.includes("duplicate")) {
-    throw new Error(enrollError.message);
+      if (error) {
+        throw new Error(
+          error.message
+        );
+      }
+    }
+
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
   }
 
-  return { paid: true as const, courseId: order.course_id as string };
+  const paytabsAmount =
+    Number(
+      result?.cart_amount
+    );
+
+  const orderAmount =
+    Number(order.amount);
+
+  const paytabsCurrency =
+    typeof result?.cart_currency ===
+    "string"
+      ? result.cart_currency
+          .toUpperCase()
+      : "";
+
+  const orderCurrency =
+    typeof order.currency ===
+    "string"
+      ? order.currency
+          .toUpperCase()
+      : "";
+
+  const amountMatches =
+    Number.isFinite(
+      paytabsAmount
+    ) &&
+    Number.isFinite(
+      orderAmount
+    ) &&
+    Math.abs(
+      paytabsAmount -
+        orderAmount
+    ) < 0.001;
+
+  const currencyMatches =
+    paytabsCurrency !== "" &&
+    paytabsCurrency ===
+      orderCurrency;
+
+  if (
+    !amountMatches ||
+    !currencyMatches
+  ) {
+    if (
+      order.status !== "paid"
+    ) {
+      const {
+        error,
+      } = await supabase
+        .from("orders")
+        .update({
+          status: "failed",
+          paytabs_tran_ref:
+            tranRef,
+        })
+        .eq("id", order.id);
+
+      if (error) {
+        throw new Error(
+          error.message
+        );
+      }
+    }
+
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
+  }
+
+  const queryToken =
+    typeof result?.token ===
+    "string"
+      ? result.token
+      : null;
+
+  const token =
+    callbackToken ||
+    queryToken ||
+    null;
+
+  const {
+    data: fulfillment,
+    error: fulfillmentError,
+  } = await supabase.rpc(
+    "fulfill_subscription_order",
+    {
+      p_order_id: order.id,
+      p_tran_ref: tranRef,
+      p_token: token,
+    }
+  );
+
+  if (fulfillmentError) {
+    throw new Error(
+      fulfillmentError.message
+    );
+  }
+
+  /*
+   * callback and return page can race.
+   * If return fulfilled first without a token,
+   * callback can safely attach the verified token later.
+   */
+  if (
+    order.auto_renew_requested &&
+    token
+  ) {
+    const {
+      data: subscription,
+    } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq(
+        "student_id",
+        order.user_id
+      )
+      .eq(
+        "course_id",
+        order.course_id
+      )
+      .maybeSingle();
+
+    if (subscription) {
+      const {
+        error: tokenError,
+      } = await supabase
+        .from(
+          "subscription_payment_tokens"
+        )
+        .upsert(
+          {
+            subscription_id:
+              subscription.id,
+            token,
+            token_tran_ref:
+              tranRef,
+            updated_at:
+              new Date()
+                .toISOString(),
+          },
+          {
+            onConflict:
+              "subscription_id",
+          }
+        );
+
+      if (tokenError) {
+        throw new Error(
+          tokenError.message
+        );
+      }
+
+      const {
+        error: autoRenewError,
+      } = await supabase
+        .from("subscriptions")
+        .update({
+          auto_renew: true,
+          updated_at:
+            new Date()
+              .toISOString(),
+        })
+        .eq(
+          "id",
+          subscription.id
+        );
+
+      if (autoRenewError) {
+        throw new Error(
+          autoRenewError.message
+        );
+      }
+    }
+  }
+
+  const row =
+    Array.isArray(
+      fulfillment
+    )
+      ? fulfillment[0]
+      : fulfillment;
+
+  return {
+    paid: true as const,
+    courseId:
+      order.course_id as string,
+
+    expiresAt:
+      row?.subscription_expires_at ??
+      null,
+
+    autoRenew:
+      Boolean(
+        row?.subscription_auto_renew
+      ) ||
+      Boolean(
+        order.auto_renew_requested &&
+          token
+      ),
+  };
 }
