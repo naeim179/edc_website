@@ -4,6 +4,7 @@ import Link from "next/link";
 import EnrollButton from "@/components/EnrollButton";
 import SubscriptionRenewalControls from "@/components/SubscriptionRenewalControls";
 import { useLanguage } from "@/components/LanguageProvider";
+import { convertFromUsd } from "@/lib/currency";
 
 type Lesson = {
   id: string;
@@ -185,7 +186,6 @@ export default function CourseDetailContent({
 }: Props) {
   const { language } = useLanguage();
   const isArabic = language === "ar";
-  const currency = course.currency ?? "JOD";
 
 
   /* ----- price ----- */
@@ -206,6 +206,9 @@ export default function CourseDetailContent({
 
   finalPrice = Math.max(0, finalPrice);
 
+  const finalPriceJod =
+    convertFromUsd(finalPrice, "JOD");
+
   const hasDiscount =
     !course.is_free &&
     originalPrice > 0 &&
@@ -218,8 +221,8 @@ export default function CourseDetailContent({
         ? `خصم ${discountValue}%`
         : `${discountValue}% off`
       : isArabic
-      ? `خصم ${discountValue} ${currency}`
-      : `${discountValue} ${currency} off`;
+      ? `خصم ${discountValue} USD`
+      : `${discountValue} USD off`;
 
   /* ----- teacher ----- */
 
@@ -440,11 +443,15 @@ export default function CourseDetailContent({
                   ) : hasDiscount ? (
                     <div className="mt-2">
                       <p className="text-sm text-slate-400 line-through">
-                        {originalPrice.toFixed(2)} {currency}
+                        {originalPrice.toFixed(2)} USD
                       </p>
 
                       <p className="font-bold text-2xl text-emerald-600">
-                        {finalPrice.toFixed(2)} {currency}
+                        {finalPrice.toFixed(2)} USD
+                      </p>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        ≈ {finalPriceJod.toFixed(2)} JOD
                       </p>
 
                       <span className="inline-flex mt-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
@@ -452,9 +459,15 @@ export default function CourseDetailContent({
                       </span>
                     </div>
                   ) : (
-                    <p className="font-bold text-2xl text-slate-900 mt-2">
-                      {finalPrice.toFixed(2)} {currency}
-                    </p>
+                    <div className="mt-2">
+                      <p className="font-bold text-2xl text-slate-900">
+                        {finalPrice.toFixed(2)} USD
+                      </p>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        ≈ {finalPriceJod.toFixed(2)} JOD
+                      </p>
+                    </div>
                   )}
                 </>
               )}

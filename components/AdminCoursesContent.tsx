@@ -122,7 +122,7 @@ export default function AdminCoursesContent({
                     {course.is_free
                       ? "Free"
                       : `${course.price ?? 0} ${
-                          course.currency ?? "JOD"
+                          course.currency ?? "USD"
                         }`}
                   </span>
 

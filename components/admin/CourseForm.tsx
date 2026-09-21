@@ -166,7 +166,7 @@ export default function CourseForm({
 
         <div>
           <label className="block mb-2 font-bold text-slate-700">
-            السعر الأصلي
+            السعر الأساسي بالدولار (USD)
           </label>
 
           <input
@@ -176,7 +176,7 @@ export default function CourseForm({
             step="0.01"
             required
             defaultValue={course?.price ?? 0}
-            placeholder="مثال: 200"
+            placeholder="مثال: 68"
             className="w-full rounded-xl border px-4 py-3"
           />
         </div>
@@ -206,7 +206,7 @@ export default function CourseForm({
               </option>
 
               <option value="fixed">
-                مبلغ ثابت (JOD)
+                مبلغ ثابت (USD)
               </option>
             </select>
           </div>
@@ -242,12 +242,12 @@ export default function CourseForm({
             </p>
 
             <p className="text-2xl font-bold text-emerald-700 mt-1">
-              {calculatedFinalPrice.toFixed(2)} JOD
+              {calculatedFinalPrice.toFixed(2)} USD
             </p>
 
             {discountValue > 0 && (
               <p className="text-sm text-slate-400 mt-1 line-through">
-                {price.toFixed(2)} JOD
+                {price.toFixed(2)} USD
               </p>
             )}
           </div>

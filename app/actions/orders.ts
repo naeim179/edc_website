@@ -12,6 +12,11 @@ import {
   enrollInFreeCourse,
 } from "@/lib/free-enrollment";
 
+import {
+  convertFromUsd,
+  type PaymentCurrency,
+} from "@/lib/currency";
+
 const SITE_URL =
   process.env.SITE_URL ??
   "http://localhost:3000";
@@ -21,7 +26,8 @@ type SubscriptionMonths = 1 | 3;
 export async function createOrder(
   courseId: string,
   subscriptionMonths: SubscriptionMonths = 1,
-  autoRenew = false
+  autoRenew = false,
+  paymentCurrency: PaymentCurrency = "USD"
 ) {
   if (
     subscriptionMonths !== 1 &&
@@ -32,7 +38,17 @@ export async function createOrder(
     );
   }
 
-  const supabase = await createClient();
+  if (
+    paymentCurrency !== "USD" &&
+    paymentCurrency !== "JOD"
+  ) {
+    throw new Error(
+      "عملة الدفع غير صالحة"
+    );
+  }
+
+  const supabase =
+    await createClient();
 
   const {
     data: { user },
@@ -51,7 +67,6 @@ export async function createOrder(
       id,
       title,
       price,
-      currency,
       is_free,
       discount_type,
       discount_value
@@ -59,44 +74,59 @@ export async function createOrder(
     .eq("id", courseId)
     .maybeSingle();
 
-  if (courseError || !course) {
+  if (
+    courseError ||
+    !course
+  ) {
     throw new Error(
       "Course not found"
     );
   }
 
-  const originalPrice =
-    course.price ?? 0;
-
-  const monthlyPrice =
+  // سعر الدورة الأساسي أصبح بالدولار.
+  const monthlyPriceUsd =
     calculateFinalPrice(
-      originalPrice,
+      Number(course.price ?? 0),
       course.discount_type,
-      course.discount_value ?? 0
+      Number(
+        course.discount_value ?? 0
+      )
     );
 
   if (
     course.is_free ||
-    monthlyPrice === 0
+    monthlyPriceUsd === 0
   ) {
     await enrollInFreeCourse(
       user.id,
       courseId
     );
 
-    revalidatePath("/my-courses");
+    revalidatePath(
+      "/my-courses"
+    );
 
     redirect(
       `/courses/${courseId}`
     );
   }
 
-  const totalAmount = Number(
-    (
-      monthlyPrice *
-      subscriptionMonths
-    ).toFixed(2)
-  );
+  const totalUsd =
+    Number(
+      (
+        monthlyPriceUsd *
+        subscriptionMonths
+      ).toFixed(2)
+    );
+
+  const chargedAmount =
+    convertFromUsd(
+      totalUsd,
+      paymentCurrency
+    );
+
+  const description =
+    `${course.title} - ${subscriptionMonths} month subscription`;
 
   const admin =
     createAdminClient();
@@ -106,34 +136,51 @@ export async function createOrder(
   } = await admin
     .from("orders")
     .select("id,status")
-    .eq("user_id", user.id)
-    .eq("course_id", courseId)
-    .eq("status", "pending")
+    .eq(
+      "user_id",
+      user.id
+    )
+    .eq(
+      "course_id",
+      courseId
+    )
+    .eq(
+      "status",
+      "pending"
+    )
     .maybeSingle();
 
-  const description =
-    `${course.title} - ${subscriptionMonths} month subscription`;
-
-  if (existingPendingOrder) {
+  if (
+    existingPendingOrder
+  ) {
     const {
       error: updateError,
     } = await admin
       .from("orders")
       .update({
-        amount: totalAmount,
+        amount:
+          chargedAmount,
+
         currency:
-          course.currency ?? "JOD",
+          paymentCurrency,
+
         subscription_months:
           subscriptionMonths,
+
         auto_renew_requested:
           autoRenew,
-        source: "manual",
+
+        source:
+          "manual",
       })
       .eq(
         "id",
         existingPendingOrder.id
       )
-      .eq("status", "pending");
+      .eq(
+        "status",
+        "pending"
+      );
 
     if (updateError) {
       throw new Error(
@@ -145,20 +192,33 @@ export async function createOrder(
       await createPaymentPage({
         orderId:
           existingPendingOrder.id,
-        amount: totalAmount,
+
+        amount:
+          chargedAmount,
+
         currency:
-          course.currency ?? "JOD",
+          paymentCurrency,
+
         description,
+
         customerEmail:
           user.email ?? "",
+
         customerName:
-          user.email?.split("@")[0] ??
+          user.email
+            ?.split("@")[0] ??
           "Student",
-        siteUrl: SITE_URL,
-        tokenize: autoRenew,
+
+        siteUrl:
+          SITE_URL,
+
+        tokenize:
+          autoRenew,
       });
 
-    redirect(paymentUrl);
+    redirect(
+      paymentUrl
+    );
   }
 
   const {
@@ -167,14 +227,20 @@ export async function createOrder(
   } = await admin
     .from("orders")
     .insert({
-      user_id: user.id,
-      course_id: courseId,
+      user_id:
+        user.id,
 
-      amount: totalAmount,
+      course_id:
+        courseId,
+
+      amount:
+        chargedAmount,
+
       currency:
-        course.currency ?? "JOD",
+        paymentCurrency,
 
-      status: "pending",
+      status:
+        "pending",
 
       subscription_months:
         subscriptionMonths,
@@ -182,19 +248,25 @@ export async function createOrder(
       auto_renew_requested:
         autoRenew,
 
-      source: "manual",
+      source:
+        "manual",
     })
     .select("id")
     .single();
 
-  if (error || !newOrder) {
+  if (
+    error ||
+    !newOrder
+  ) {
     if (
       error?.message.includes(
         "unique_pending_order_per_user_course"
       ) ||
       error?.message
         .toLowerCase()
-        .includes("duplicate")
+        .includes(
+          "duplicate"
+        )
     ) {
       redirect(
         `/checkout/${courseId}`
@@ -209,18 +281,30 @@ export async function createOrder(
 
   const paymentUrl =
     await createPaymentPage({
-      orderId: newOrder.id,
-      amount: totalAmount,
+      orderId:
+        newOrder.id,
+
+      amount:
+        chargedAmount,
+
       currency:
-        course.currency ?? "JOD",
+        paymentCurrency,
+
       description,
+
       customerEmail:
         user.email ?? "",
+
       customerName:
-        user.email?.split("@")[0] ??
+        user.email
+          ?.split("@")[0] ??
         "Student",
-      siteUrl: SITE_URL,
-      tokenize: autoRenew,
+
+      siteUrl:
+        SITE_URL,
+
+      tokenize:
+        autoRenew,
     });
 
   redirect(paymentUrl);

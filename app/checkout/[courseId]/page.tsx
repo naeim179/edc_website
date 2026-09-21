@@ -32,13 +32,18 @@ export default async function CheckoutPage({
       id,
       title,
       price,
-      currency,
       is_free,
       discount_type,
       discount_value
     `)
-    .eq("id", courseId)
-    .eq("is_published", true)
+    .eq(
+      "id",
+      courseId
+    )
+    .eq(
+      "is_published",
+      true
+    )
     .maybeSingle();
 
   if (
@@ -48,22 +53,29 @@ export default async function CheckoutPage({
     return notFound();
   }
 
-  const monthlyPrice =
+  const monthlyPriceUsd =
     calculateFinalPrice(
-      course.price ?? 0,
+      Number(
+        course.price ?? 0
+      ),
       course.discount_type,
-      course.discount_value ?? 0
+      Number(
+        course.discount_value ??
+          0
+      )
     );
 
   return (
     <AppShell>
       <SubscriptionCheckout
-        courseId={course.id}
-        title={course.title}
-        monthlyPrice={monthlyPrice}
-        currency={
-          course.currency ??
-          "JOD"
+        courseId={
+          course.id
+        }
+        title={
+          course.title
+        }
+        monthlyPriceUsd={
+          monthlyPriceUsd
         }
       />
     </AppShell>
