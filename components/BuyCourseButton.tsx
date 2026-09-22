@@ -2,18 +2,15 @@
 
 import { useTransition } from "react";
 import { createOrder } from "@/app/actions/orders";
-import type { PaymentCurrency } from "@/lib/currency";
 
 export default function BuyCourseButton({
   courseId,
   subscriptionMonths = 1,
-  paymentCurrency = "USD",
   autoRenew = false,
   label = "متابعة إلى الدفع",
 }: {
   courseId: string;
   subscriptionMonths?: 1 | 3;
-  paymentCurrency?: PaymentCurrency;
   autoRenew?: boolean;
   label?: string;
 }) {
@@ -27,8 +24,7 @@ export default function BuyCourseButton({
       await createOrder(
         courseId,
         subscriptionMonths,
-        autoRenew,
-        paymentCurrency
+        autoRenew
       );
     });
   }

@@ -4,7 +4,6 @@ import Link from "next/link";
 import EnrollButton from "@/components/EnrollButton";
 import SubscriptionRenewalControls from "@/components/SubscriptionRenewalControls";
 import { useLanguage } from "@/components/LanguageProvider";
-import { convertFromUsd } from "@/lib/currency";
 
 type Lesson = {
   id: string;
@@ -205,9 +204,6 @@ export default function CourseDetailContent({
   }
 
   finalPrice = Math.max(0, finalPrice);
-
-  const finalPriceJod =
-    convertFromUsd(finalPrice, "JOD");
 
   const hasDiscount =
     !course.is_free &&
@@ -450,10 +446,6 @@ export default function CourseDetailContent({
                         {finalPrice.toFixed(2)} USD
                       </p>
 
-                      <p className="mt-1 text-sm text-slate-500">
-                        ≈ {finalPriceJod.toFixed(2)} JOD
-                      </p>
-
                       <span className="inline-flex mt-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
                         {discountLabel}
                       </span>
@@ -464,9 +456,6 @@ export default function CourseDetailContent({
                         {finalPrice.toFixed(2)} USD
                       </p>
 
-                      <p className="mt-1 text-sm text-slate-500">
-                        ≈ {finalPriceJod.toFixed(2)} JOD
-                      </p>
                     </div>
                   )}
                 </>

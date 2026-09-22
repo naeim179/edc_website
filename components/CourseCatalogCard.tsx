@@ -3,7 +3,6 @@
 import Link from "next/link";
 import CourseCover from "@/components/CourseCover";
 import { useLanguage } from "@/components/LanguageProvider";
-import { convertFromUsd } from "@/lib/currency";
 import {
   ArrowIcon,
   BookIcon,
@@ -53,9 +52,6 @@ export default function CourseCatalogCard({
     discountType,
     discountValue,
   });
-
-  const priceJod =
-    convertFromUsd(pricing.final, "JOD");
 
   const done = enrolled && progress >= 100;
 
@@ -202,9 +198,6 @@ export default function CourseCatalogCard({
                   </span>
                 </p>
 
-                <p className="text-xs text-slate-400">
-                  ≈ {priceJod.toFixed(2)} JOD
-                </p>
               </div>
             </div>
           )}

@@ -4,11 +4,6 @@ import { useState } from "react";
 
 import BuyCourseButton from "@/components/BuyCourseButton";
 
-import {
-  convertFromUsd,
-  type PaymentCurrency,
-} from "@/lib/currency";
-
 type Props = {
   courseId: string;
   title: string;
@@ -23,30 +18,12 @@ export default function SubscriptionCheckout({
   const [months, setMonths] =
     useState<1 | 3>(1);
 
-  const [currency, setCurrency] =
-    useState<PaymentCurrency>("USD");
-
   const [autoRenew, setAutoRenew] =
     useState(false);
 
   const totalUsd = Number(
     (monthlyPriceUsd * months).toFixed(2)
   );
-
-  const totalJod = convertFromUsd(
-    totalUsd,
-    "JOD"
-  );
-
-  const paymentAmount =
-    currency === "USD"
-      ? totalUsd
-      : totalJod;
-
-  const currencyFullName =
-    currency === "USD"
-      ? "دولار أمريكي"
-      : "دينار أردني";
 
   return (
     <div
@@ -125,67 +102,25 @@ export default function SubscriptionCheckout({
             </div>
           </div>
 
-          <div className="mt-7">
-            <h2 className="mb-3 font-bold text-slate-800">
+          <div className="mt-7 rounded-2xl border border-blue-100 bg-blue-50 p-5">
+            <p className="text-sm text-slate-500">
               عملة الدفع
-            </h2>
+            </p>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setCurrency("USD")}
-                className={`rounded-2xl border p-5 text-right transition ${
-                  currency === "USD"
-                    ? "border-[#124b8a] bg-blue-50 ring-2 ring-blue-100"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="text-right">
-                    <p className="font-bold text-slate-800">
-                      USD
-                    </p>
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-2xl font-bold text-[#124b8a]">
+                $
+              </span>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                      دولار أمريكي
-                    </p>
+              <div>
+                <p className="font-bold text-slate-900">
+                  USD
+                </p>
 
-                    <span className="mt-2 inline-block rounded-full bg-blue-100 px-2 py-1 text-[11px] font-bold text-[#124b8a]">
-                      العملة الأساسية
-                    </span>
-                  </div>
-
-                  <span className="text-2xl font-bold text-[#124b8a]">
-                    $
-                  </span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCurrency("JOD")}
-                className={`rounded-2xl border p-5 text-right transition ${
-                  currency === "JOD"
-                    ? "border-[#124b8a] bg-blue-50 ring-2 ring-blue-100"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="text-right">
-                    <p className="font-bold text-slate-800">
-                      JOD
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      دينار أردني
-                    </p>
-                  </div>
-
-                  <span className="text-lg font-bold text-[#124b8a]">
-                    د.أ
-                  </span>
-                </div>
-              </button>
+                <p className="text-sm text-slate-500">
+                  دولار أمريكي
+                </p>
+              </div>
             </div>
           </div>
 
@@ -233,16 +168,6 @@ export default function SubscriptionCheckout({
               </span>
             </div>
 
-            <div className="flex justify-between gap-4">
-              <span className="text-slate-500">
-                ما يعادله بالدينار
-              </span>
-
-              <span className="font-bold">
-                {totalJod.toFixed(2)} JOD
-              </span>
-            </div>
-
             <hr className="border-slate-100" />
 
             <div>
@@ -251,11 +176,11 @@ export default function SubscriptionCheckout({
               </p>
 
               <p className="mt-2 text-2xl font-bold text-[#124b8a]">
-                {paymentAmount.toFixed(2)} {currency}
+                {totalUsd.toFixed(2)} USD
               </p>
 
               <p className="mt-1 text-sm text-slate-500">
-                {currencyFullName}
+                دولار أمريكي
               </p>
             </div>
           </div>
@@ -264,9 +189,8 @@ export default function SubscriptionCheckout({
             <BuyCourseButton
               courseId={courseId}
               subscriptionMonths={months}
-              paymentCurrency={currency}
               autoRenew={autoRenew}
-              label={`دفع ${paymentAmount.toFixed(2)} ${currency}`}
+              label={`دفع ${totalUsd.toFixed(2)} USD`}
             />
           </div>
 

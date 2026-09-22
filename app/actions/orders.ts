@@ -12,11 +12,6 @@ import {
   enrollInFreeCourse,
 } from "@/lib/free-enrollment";
 
-import {
-  convertFromUsd,
-  type PaymentCurrency,
-} from "@/lib/currency";
-
 const SITE_URL =
   process.env.SITE_URL ??
   "http://localhost:3000";
@@ -26,8 +21,7 @@ type SubscriptionMonths = 1 | 3;
 export async function createOrder(
   courseId: string,
   subscriptionMonths: SubscriptionMonths = 1,
-  autoRenew = false,
-  paymentCurrency: PaymentCurrency = "USD"
+  autoRenew = false
 ) {
   if (
     subscriptionMonths !== 1 &&
@@ -35,15 +29,6 @@ export async function createOrder(
   ) {
     throw new Error(
       "مدة الاشتراك غير صالحة"
-    );
-  }
-
-  if (
-    paymentCurrency !== "USD" &&
-    paymentCurrency !== "JOD"
-  ) {
-    throw new Error(
-      "عملة الدفع غير صالحة"
     );
   }
 
@@ -119,11 +104,7 @@ export async function createOrder(
       ).toFixed(2)
     );
 
-  const chargedAmount =
-    convertFromUsd(
-      totalUsd,
-      paymentCurrency
-    );
+  const chargedAmount = totalUsd;
 
   const description =
     `${course.title} - ${subscriptionMonths} month subscription`;
@@ -162,7 +143,7 @@ export async function createOrder(
           chargedAmount,
 
         currency:
-          paymentCurrency,
+          "USD",
 
         subscription_months:
           subscriptionMonths,
@@ -197,7 +178,7 @@ export async function createOrder(
           chargedAmount,
 
         currency:
-          paymentCurrency,
+          "USD",
 
         description,
 
@@ -237,7 +218,7 @@ export async function createOrder(
         chargedAmount,
 
       currency:
-        paymentCurrency,
+        "USD",
 
       status:
         "pending",
@@ -288,7 +269,7 @@ export async function createOrder(
         chargedAmount,
 
       currency:
-        paymentCurrency,
+        "USD",
 
       description,
 
