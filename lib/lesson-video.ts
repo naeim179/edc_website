@@ -1,6 +1,7 @@
 export type LessonVideoProvider =
   | "youtube"
-  | "mux";
+  | "mux"
+  | "bunny";
 
 const YOUTUBE_ID =
   /^[A-Za-z0-9_-]{11}$/;
@@ -80,13 +81,11 @@ export function readLessonVideoForm(
   ).trim();
 
   if (provider === "youtube") {
-    const youtubeUrl = String(
-      formData.get("youtube_url") ?? ""
-    ).trim();
-
     const youtubeVideoId =
       extractYouTubeVideoId(
-        youtubeUrl
+        String(
+          formData.get("youtube_url") ?? ""
+        ).trim()
       );
 
     if (!youtubeVideoId) {
@@ -96,31 +95,22 @@ export function readLessonVideoForm(
     }
 
     return {
-      video_provider:
-        "youtube" as const,
-
-      youtube_video_id:
-        youtubeVideoId,
-
-      mux_asset_id:
-        null,
-
-      mux_playback_id:
-        null,
+      video_provider: "youtube" as const,
+      youtube_video_id: youtubeVideoId,
+      mux_asset_id: null,
+      mux_playback_id: null,
+      bunny_library_id: null,
+      bunny_video_id: null,
     };
   }
 
   if (provider === "mux") {
     const muxPlaybackId = String(
-      formData.get(
-        "mux_playback_id"
-      ) ?? ""
+      formData.get("mux_playback_id") ?? ""
     ).trim();
 
     const muxAssetId = String(
-      formData.get(
-        "mux_asset_id"
-      ) ?? ""
+      formData.get("mux_asset_id") ?? ""
     ).trim();
 
     if (!muxPlaybackId) {
@@ -130,17 +120,37 @@ export function readLessonVideoForm(
     }
 
     return {
-      video_provider:
-        "mux" as const,
+      video_provider: "mux" as const,
+      youtube_video_id: null,
+      mux_asset_id: muxAssetId || null,
+      mux_playback_id: muxPlaybackId,
+      bunny_library_id: null,
+      bunny_video_id: null,
+    };
+  }
 
-      youtube_video_id:
-        null,
+  if (provider === "bunny") {
+    const bunnyLibraryId = String(
+      formData.get("bunny_library_id") ?? ""
+    ).trim();
 
-      mux_asset_id:
-        muxAssetId || null,
+    const bunnyVideoId = String(
+      formData.get("bunny_video_id") ?? ""
+    ).trim();
 
-      mux_playback_id:
-        muxPlaybackId,
+    if (!bunnyLibraryId || !bunnyVideoId) {
+      throw new Error(
+        "Bunny Library ID و Video ID مطلوبين"
+      );
+    }
+
+    return {
+      video_provider: "bunny" as const,
+      youtube_video_id: null,
+      mux_asset_id: null,
+      mux_playback_id: null,
+      bunny_library_id: bunnyLibraryId,
+      bunny_video_id: bunnyVideoId,
     };
   }
 

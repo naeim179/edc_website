@@ -15,6 +15,8 @@ type RawLesson = {
   youtube_video_id: string | null;
   mux_asset_id: string | null;
   mux_playback_id: string | null;
+  bunny_library_id: string | null;
+  bunny_video_id: string | null;
 };
 
 type RawSection = {
@@ -242,6 +244,8 @@ export default async function LessonPage({
           video_provider: lesson.video_provider,
           youtube_video_id: lesson.youtube_video_id,
           mux_playback_id: lesson.mux_playback_id,
+          bunny_library_id: lesson.bunny_library_id,
+          bunny_video_id: lesson.bunny_video_id,
         }}
         enrollmentId={hasCourseAccess ? enrollmentId : null}
         completed={completedLessonIds.includes(lesson.id)}

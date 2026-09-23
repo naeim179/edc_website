@@ -1,5 +1,6 @@
 import AppShell from "@/components/AppShell";
 import LessonForm from "@/components/admin/LessonForm";
+import LessonVideoFields from "@/components/lessons/LessonVideoFields";
 import DeleteLessonButton from "@/components/admin/DeleteLessonButton";
 import { updateLesson } from "@/app/actions/admin-lessons";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
@@ -38,6 +39,10 @@ export default async function LessonsPage({
       title,
       order_index,
       content_url,
+      video_provider,
+      youtube_video_id,
+      mux_asset_id,
+      mux_playback_id,
       is_free_preview
     `)
     .eq("section_id", sectionId)
@@ -144,19 +149,23 @@ export default async function LessonsPage({
 
 
 
-                    <div>
-
-                      <label className="block text-sm font-bold mb-2 text-slate-600">
-                        رابط المحتوى
-                      </label>
-
-                      <input
-                        name="content_url"
-                        defaultValue={lesson.content_url ?? ""}
-                        className="w-full bg-slate-50 border rounded-xl px-4 py-3"
-                      />
-
-                    </div>
+                    <LessonVideoFields
+                      courseId={id}
+                      defaultProvider={
+                        lesson.video_provider === "mux"
+                          ? "mux"
+                          : "youtube"
+                      }
+                      defaultYoutubeUrl={
+                        lesson.content_url ?? ""
+                      }
+                      defaultMuxPlaybackId={
+                        lesson.mux_playback_id ?? ""
+                      }
+                      defaultMuxAssetId={
+                        lesson.mux_asset_id ?? ""
+                      }
+                    />
 
 
 

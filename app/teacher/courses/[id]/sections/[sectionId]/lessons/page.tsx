@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import LessonVideoFields from "@/components/lessons/LessonVideoFields";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
 import {
@@ -43,6 +44,10 @@ export default async function TeacherLessonsPage({
       id,
       title,
       content_url,
+      video_provider,
+      youtube_video_id,
+      mux_asset_id,
+      mux_playback_id,
       order_index,
       is_free_preview
     `)
@@ -94,11 +99,7 @@ export default async function TeacherLessonsPage({
             className="w-full border rounded-xl px-4 py-3"
           />
 
-          <input
-            name="content_url"
-            placeholder="رابط المحتوى"
-            className="w-full border rounded-xl px-4 py-3"
-          />
+          <LessonVideoFields courseId={id} />
 
           <input
             name="order_index"
@@ -158,10 +159,22 @@ export default async function TeacherLessonsPage({
                     className="w-full border rounded-xl px-4 py-3"
                   />
 
-                  <input
-                    name="content_url"
-                    defaultValue={lesson.content_url ?? ""}
-                    className="w-full border rounded-xl px-4 py-3"
+                  <LessonVideoFields
+                      courseId={id}
+                    defaultProvider={
+                      lesson.video_provider === "mux"
+                        ? "mux"
+                        : "youtube"
+                    }
+                    defaultYoutubeUrl={
+                      lesson.content_url ?? ""
+                    }
+                    defaultMuxPlaybackId={
+                      lesson.mux_playback_id ?? ""
+                    }
+                    defaultMuxAssetId={
+                      lesson.mux_asset_id ?? ""
+                    }
                   />
 
                   <input

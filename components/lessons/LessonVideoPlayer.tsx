@@ -7,6 +7,8 @@ type Props = {
   provider: string | null;
   youtubeVideoId?: string | null;
   muxPlaybackId?: string | null;
+  bunnyLibraryId?: string | null;
+  bunnyVideoId?: string | null;
   title: string;
 };
 
@@ -14,12 +16,20 @@ export default function LessonVideoPlayer({
   provider,
   youtubeVideoId,
   muxPlaybackId,
+  bunnyLibraryId,
+  bunnyVideoId,
   title,
 }: Props) {
-  const [muxToken, setMuxToken] = useState<string | null>(null);
+  const [muxToken, setMuxToken] =
+    useState<string | null>(null);
 
   useEffect(() => {
-    if (provider !== "mux" || !muxPlaybackId) return;
+    if (
+      provider !== "mux" ||
+      !muxPlaybackId
+    ) {
+      return;
+    }
 
     fetch("/api/mux/token", {
       method: "POST",
@@ -37,7 +47,10 @@ export default function LessonVideoPlayer({
         }
       })
       .catch((error) => {
-        console.error("MUX TOKEN ERROR", error);
+        console.error(
+          "MUX TOKEN ERROR",
+          error
+        );
       });
   }, [provider, muxPlaybackId]);
 
@@ -49,7 +62,10 @@ export default function LessonVideoPlayer({
     );
   }
 
-  if (provider === "youtube" && youtubeVideoId) {
+  if (
+    provider === "youtube" &&
+    youtubeVideoId
+  ) {
     return (
       <div className="aspect-video overflow-hidden rounded-xl">
         <iframe
@@ -62,7 +78,10 @@ export default function LessonVideoPlayer({
     );
   }
 
-  if (provider === "mux" && muxPlaybackId) {
+  if (
+    provider === "mux" &&
+    muxPlaybackId
+  ) {
     if (!muxToken) {
       return (
         <div className="aspect-video flex items-center justify-center rounded-xl bg-black text-white">
@@ -81,6 +100,24 @@ export default function LessonVideoPlayer({
           title={title}
           streamType="on-demand"
           className="h-full w-full"
+        />
+      </div>
+    );
+  }
+
+  if (
+    provider === "bunny" &&
+    bunnyLibraryId &&
+    bunnyVideoId
+  ) {
+    return (
+      <div className="aspect-video overflow-hidden rounded-xl bg-black">
+        <iframe
+          src={`https://iframe.mediadelivery.net/embed/${bunnyLibraryId}/${bunnyVideoId}`}
+          title={title}
+          className="h-full w-full"
+          allow="autoplay; fullscreen"
+          allowFullScreen
         />
       </div>
     );

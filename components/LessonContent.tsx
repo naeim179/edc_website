@@ -35,6 +35,8 @@ type Props = {
     video_provider: string | null;
     youtube_video_id: string | null;
     mux_playback_id: string | null;
+    bunny_library_id: string | null;
+    bunny_video_id: string | null;
   };
   enrollmentId: string | null;
   completed: boolean;
@@ -94,6 +96,8 @@ export default function LessonContent({
               provider={lesson.video_provider}
               youtubeVideoId={lesson.youtube_video_id}
               muxPlaybackId={lesson.mux_playback_id}
+              bunnyLibraryId={lesson.bunny_library_id}
+              bunnyVideoId={lesson.bunny_video_id}
               title={lesson.title}
             />
 

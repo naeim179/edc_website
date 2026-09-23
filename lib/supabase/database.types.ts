@@ -308,6 +308,8 @@ export type Database = {
       }
       lessons: {
         Row: {
+          bunny_library_id: string | null
+          bunny_video_id: string | null
           content_url: string | null
           created_at: string | null
           duration: string | null
@@ -322,6 +324,8 @@ export type Database = {
           youtube_video_id: string | null
         }
         Insert: {
+          bunny_library_id?: string | null
+          bunny_video_id?: string | null
           content_url?: string | null
           created_at?: string | null
           duration?: string | null
@@ -336,6 +340,8 @@ export type Database = {
           youtube_video_id?: string | null
         }
         Update: {
+          bunny_library_id?: string | null
+          bunny_video_id?: string | null
           content_url?: string | null
           created_at?: string | null
           duration?: string | null
@@ -742,6 +748,8 @@ export type Database = {
       get_course_lesson_catalog: {
         Args: { p_course_id: string }
         Returns: {
+          bunny_library_id: string
+          bunny_video_id: string
           course_id: string
           duration: string
           id: string

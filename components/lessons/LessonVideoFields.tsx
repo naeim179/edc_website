@@ -4,7 +4,8 @@ import { ChangeEvent, useState } from "react";
 
 type VideoProvider =
   | "youtube"
-  | "mux";
+  | "mux"
+  | "bunny";
 
 type UploadState =
   | "idle"
@@ -20,6 +21,8 @@ type Props = {
   defaultYoutubeUrl?: string;
   defaultMuxPlaybackId?: string;
   defaultMuxAssetId?: string;
+  defaultBunnyLibraryId?: string;
+  defaultBunnyVideoId?: string;
 };
 
 function sleep(ms: number) {
@@ -34,6 +37,8 @@ export default function LessonVideoFields({
   defaultYoutubeUrl = "",
   defaultMuxPlaybackId = "",
   defaultMuxAssetId = "",
+  defaultBunnyLibraryId = "",
+  defaultBunnyVideoId = "",
 }: Props) {
   const [provider, setProvider] =
     useState<VideoProvider>(
@@ -48,6 +53,16 @@ export default function LessonVideoFields({
   const [muxAssetId, setMuxAssetId] =
     useState(
       defaultMuxAssetId
+    );
+
+  const [bunnyLibraryId, setBunnyLibraryId] =
+    useState(
+      defaultBunnyLibraryId
+    );
+
+  const [bunnyVideoId, setBunnyVideoId] =
+    useState(
+      defaultBunnyVideoId
     );
 
   const [uploadState, setUploadState] =
@@ -338,6 +353,116 @@ export default function LessonVideoFields({
     }
   }
 
+
+  async function handleBunnyFile(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (
+      !file.type.startsWith("video/")
+    ) {
+      setUploadState("error");
+      setErrorMessage(
+        "الملف المختار ليس فيديو"
+      );
+      return;
+    }
+
+    try {
+      setFileName(file.name);
+      setErrorMessage("");
+      setProgress(0);
+      setUploadState("creating");
+
+      const createResponse =
+        await fetch(
+          "/api/bunny/upload",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              courseId,
+            }),
+          }
+        );
+
+      const createData =
+        await createResponse.json();
+
+      if (
+        !createResponse.ok ||
+        !createData.videoId
+      ) {
+        throw new Error(
+          createData.error ||
+            "تعذر تجهيز رفع Bunny"
+        );
+      }
+
+      const videoId =
+        createData.videoId;
+
+      const libraryId =
+        createData.libraryId;
+
+      setBunnyVideoId(videoId);
+      setBunnyLibraryId(libraryId);
+
+      setUploadState("uploading");
+
+      const uploadResponse =
+        await fetch(
+          `/api/bunny/upload/${videoId}`,
+          {
+            method: "PUT",
+            headers: {
+              "x-course-id":
+                courseId,
+              "Content-Type":
+                file.type,
+            },
+            body: file,
+          }
+        );
+
+      if (!uploadResponse.ok) {
+        const error =
+          await uploadResponse.json();
+
+        throw new Error(
+          error.error ||
+            "فشل رفع الفيديو"
+        );
+      }
+
+      setProgress(100);
+      setUploadState("ready");
+
+    } catch (error) {
+      console.error(
+        "BUNNY_UPLOAD_ERROR",
+        error
+      );
+
+      setUploadState("error");
+
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "حدث خطأ أثناء رفع الفيديو"
+      );
+    }
+  }
+
   const muxBusy =
     uploadState ===
       "creating" ||
@@ -364,6 +489,18 @@ export default function LessonVideoFields({
         type="hidden"
         name="mux_playback_id"
         value={muxPlaybackId}
+      />
+
+      <input
+        type="hidden"
+        name="bunny_library_id"
+        value={bunnyLibraryId}
+      />
+
+      <input
+        type="hidden"
+        name="bunny_video_id"
+        value={bunnyVideoId}
       />
 
       <div>
@@ -416,6 +553,27 @@ export default function LessonVideoFields({
               فيديو محمي
             </span>
           </button>
+
+          <button
+            type="button"
+            disabled={muxBusy}
+            onClick={() =>
+              setProvider("bunny")
+            }
+            className={`rounded-xl border p-4 text-center transition ${
+              provider === "bunny"
+                ? "border-[#124b8a] bg-blue-50 text-[#124b8a] ring-2 ring-blue-100"
+                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+            } disabled:cursor-not-allowed disabled:opacity-50`}
+          >
+            <span className="block font-bold">
+              Bunny
+            </span>
+
+            <span className="mt-1 block text-xs">
+              فيديو محمي
+            </span>
+          </button>
         </div>
       </div>
 
@@ -444,7 +602,7 @@ export default function LessonVideoFields({
             youtu.be
           </p>
         </div>
-      ) : (
+      ) : provider === "mux" ? (
         <div className="space-y-4 rounded-2xl border border-violet-100 bg-violet-50 p-5">
           <div>
             <p className="font-bold text-violet-950">
@@ -584,6 +742,83 @@ export default function LessonVideoFields({
                 الدرس.
               </p>
             )}
+        </div>
+      ) : (
+        <div className="space-y-4 rounded-2xl border border-orange-100 bg-orange-50 p-5">
+          <div>
+            <p className="font-bold text-orange-950">
+              فيديو Bunny Stream
+            </p>
+
+            <p className="mt-1 text-xs leading-6 text-orange-700">
+              اختر الفيديو وسيتم رفعه مباشرة إلى Bunny.
+            </p>
+          </div>
+
+          <label
+            className={`block cursor-pointer rounded-xl border-2 border-dashed border-orange-200 bg-white p-6 text-center transition hover:border-orange-400 ${
+              muxBusy
+                ? "pointer-events-none opacity-60"
+                : ""
+            }`}
+          >
+            <input
+              type="file"
+              accept="video/*"
+              className="hidden"
+              disabled={muxBusy}
+              onChange={handleBunnyFile}
+            />
+
+            <span className="block text-2xl">
+              🐰
+            </span>
+
+            <span className="mt-2 block font-bold text-slate-800">
+              {muxBusy
+                ? "جاري العمل..."
+                : bunnyVideoId
+                  ? "استبدال الفيديو"
+                  : "اختر فيديو من جهازك"}
+            </span>
+
+            <span className="mt-1 block text-xs text-slate-500">
+              MP4 أو أي صيغة فيديو مدعومة
+            </span>
+          </label>
+
+          {fileName && (
+            <div className="rounded-xl bg-white p-3 text-sm text-slate-700">
+              {fileName}
+            </div>
+          )}
+
+          {uploadState === "uploading" && (
+            <div className="rounded-xl bg-white p-4">
+              جاري رفع الفيديو {progress}%
+            </div>
+          )}
+
+          {uploadState === "ready" &&
+            bunnyVideoId && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                <p className="font-bold text-emerald-800">
+                  ✅ الفيديو جاهز
+                </p>
+              </div>
+            )}
+
+          {uploadState === "error" && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+              <p className="font-bold text-red-700">
+                ❌ فشل رفع الفيديو
+              </p>
+
+              <p className="mt-1 text-sm text-red-600">
+                {errorMessage}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
