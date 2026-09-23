@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import {
-  EyeIcon,
   LockIcon,
   GlobeIcon,
 } from "@/components/icons";
+import { PasswordToggle } from "@/components/password-toggle";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -204,15 +204,15 @@ export default function LoginPage() {
                 }`}
               />
 
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPassword(!showPassword)
-                }
-                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-400 transition hover:bg-blue-50 hover:text-[#124b8a]"
-              >
-                <EyeIcon width={20} height={20} />
-              </button>
+              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                <PasswordToggle
+                  visible={showPassword}
+                  onToggle={() =>
+                    setShowPassword((v) => !v)
+                  }
+                  label="كلمة المرور"
+                />
+              </div>
 
             </div>
 

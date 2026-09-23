@@ -6,11 +6,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
-  EyeIcon,
   LockIcon,
   GlobeIcon,
   UserIcon,
 } from "@/components/icons";
+import { PasswordToggle } from "@/components/password-toggle";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -175,15 +175,15 @@ export default function RegisterPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 pl-12 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
             />
 
-            <button
-              type="button"
-              onClick={() =>
-                setShowPassword(!showPassword)
-              }
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-400 transition hover:bg-blue-50 hover:text-[#124b8a]"
-            >
-              <EyeIcon width={20} height={20} />
-            </button>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <PasswordToggle
+                visible={showPassword}
+                onToggle={() =>
+                  setShowPassword((v) => !v)
+                }
+                label="كلمة المرور"
+              />
+            </div>
 
           </div>
 
@@ -210,17 +210,15 @@ export default function RegisterPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 pl-12 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
             />
 
-            <button
-              type="button"
-              onClick={() =>
-                setShowConfirmPassword(
-                  !showConfirmPassword
-                )
-              }
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-400 transition hover:bg-blue-50 hover:text-[#124b8a]"
-            >
-              <EyeIcon width={20} height={20} />
-            </button>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <PasswordToggle
+                visible={showConfirmPassword}
+                onToggle={() =>
+                  setShowConfirmPassword((v) => !v)
+                }
+                label="تأكيد كلمة المرور"
+              />
+            </div>
 
           </div>
 
