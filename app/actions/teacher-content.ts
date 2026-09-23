@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
+import { readLessonVideoForm } from "@/lib/lesson-video";
 
 async function requireCourseAccess(courseId: string) {
   const allowed = await canManageCourse(courseId);
@@ -141,7 +142,6 @@ export async function teacherCreateLesson(
   await requireSectionInCourse(sectionId, courseId);
 
   const title = String(formData.get("title") ?? "").trim();
-  const contentUrl = String(formData.get("content_url") ?? "").trim();
   const orderIndex = Number(formData.get("order_index") ?? 0);
   const isFreePreview =
     formData.get("is_free_preview") === "on";
@@ -150,6 +150,8 @@ export async function teacherCreateLesson(
     throw new Error("عنوان الدرس مطلوب");
   }
 
+  const video = readLessonVideoForm(formData);
+
   const admin = createAdminClient();
 
   const { error } = await admin
@@ -157,7 +159,7 @@ export async function teacherCreateLesson(
     .insert({
       section_id: sectionId,
       title,
-      content_url: contentUrl,
+      ...video,
       order_index: orderIndex,
       is_free_preview: isFreePreview,
     });
@@ -181,7 +183,6 @@ export async function teacherUpdateLesson(
   await requireSectionInCourse(sectionId, courseId);
 
   const title = String(formData.get("title") ?? "").trim();
-  const contentUrl = String(formData.get("content_url") ?? "").trim();
   const orderIndex = Number(formData.get("order_index") ?? 0);
   const isFreePreview =
     formData.get("is_free_preview") === "on";
@@ -189,6 +190,8 @@ export async function teacherUpdateLesson(
   if (!title) {
     throw new Error("عنوان الدرس مطلوب");
   }
+
+  const video = readLessonVideoForm(formData);
 
   const admin = createAdminClient();
 
@@ -207,7 +210,7 @@ export async function teacherUpdateLesson(
     .from("lessons")
     .update({
       title,
-      content_url: contentUrl,
+      ...video,
       order_index: orderIndex,
       is_free_preview: isFreePreview,
     })

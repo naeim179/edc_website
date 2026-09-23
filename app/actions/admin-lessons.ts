@@ -3,42 +3,74 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
+import { readLessonVideoForm } from "@/lib/lesson-video";
 
 export async function createLesson(
   sectionId: string,
   courseId: string,
   formData: FormData
 ) {
-  const allowed = await canManageCourse(courseId);
+  const allowed =
+    await canManageCourse(
+      courseId
+    );
 
   if (!allowed) {
-    throw new Error("Unauthorized");
+    throw new Error(
+      "Unauthorized"
+    );
   }
 
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
-  const title = String(formData.get("title") ?? "");
-  const contentUrl = String(formData.get("content_url") ?? "");
-  const orderIndex = Number(formData.get("order_index") ?? 0);
+  const title = String(
+    formData.get("title") ?? ""
+  ).trim();
+
+  const orderIndex = Number(
+    formData.get("order_index") ??
+      0
+  );
+
   const isFreePreview =
-    formData.get("is_free_preview") === "on";
+    formData.get(
+      "is_free_preview"
+    ) === "on";
 
-  if (!title.trim()) {
-    throw new Error("Lesson title is required");
+  if (!title) {
+    throw new Error(
+      "عنوان الدرس مطلوب"
+    );
   }
 
-  const { error } = await supabase
-    .from("lessons")
-    .insert({
-      section_id: sectionId,
-      title,
-      content_url: contentUrl,
-      order_index: orderIndex,
-      is_free_preview: isFreePreview,
-    });
+  const video =
+    readLessonVideoForm(
+      formData
+    );
+
+  const { error } =
+    await supabase
+      .from("lessons")
+      .insert({
+        section_id:
+          sectionId,
+
+        title,
+
+        ...video,
+
+        order_index:
+          orderIndex,
+
+        is_free_preview:
+          isFreePreview,
+      });
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 
   revalidatePath(
@@ -51,21 +83,33 @@ export async function deleteLesson(
   courseId: string,
   sectionId: string
 ) {
-  const allowed = await canManageCourse(courseId);
+  const allowed =
+    await canManageCourse(
+      courseId
+    );
 
   if (!allowed) {
-    throw new Error("Unauthorized");
+    throw new Error(
+      "Unauthorized"
+    );
   }
 
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
-  const { error } = await supabase
-    .from("lessons")
-    .delete()
-    .eq("id", lessonId);
+  const { error } =
+    await supabase
+      .from("lessons")
+      .delete()
+      .eq(
+        "id",
+        lessonId
+      );
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 
   revalidatePath(
@@ -79,32 +123,68 @@ export async function updateLesson(
   sectionId: string,
   formData: FormData
 ) {
-  const allowed = await canManageCourse(courseId);
+  const allowed =
+    await canManageCourse(
+      courseId
+    );
 
   if (!allowed) {
-    throw new Error("Unauthorized");
+    throw new Error(
+      "Unauthorized"
+    );
   }
 
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
-  const title = String(formData.get("title") ?? "");
-  const contentUrl = String(formData.get("content_url") ?? "");
-  const orderIndex = Number(formData.get("order_index") ?? 0);
+  const title = String(
+    formData.get("title") ?? ""
+  ).trim();
+
+  const orderIndex = Number(
+    formData.get("order_index") ??
+      0
+  );
+
   const isFreePreview =
-    formData.get("is_free_preview") === "on";
+    formData.get(
+      "is_free_preview"
+    ) === "on";
 
-  const { error } = await supabase
-    .from("lessons")
-    .update({
-      title,
-      content_url: contentUrl,
-      order_index: orderIndex,
-      is_free_preview: isFreePreview,
-    })
-    .eq("id", lessonId);
+  if (!title) {
+    throw new Error(
+      "عنوان الدرس مطلوب"
+    );
+  }
+
+  const video =
+    readLessonVideoForm(
+      formData
+    );
+
+  const { error } =
+    await supabase
+      .from("lessons")
+      .update({
+        title,
+
+        ...video,
+
+        order_index:
+          orderIndex,
+
+        is_free_preview:
+          isFreePreview,
+      })
+      .eq(
+        "id",
+        lessonId
+      );
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 
   revalidatePath(

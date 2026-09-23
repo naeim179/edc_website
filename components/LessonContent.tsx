@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import CompleteLessonButton from "@/components/CompleteLessonButton";
+import LessonVideoPlayer from "@/components/lessons/LessonVideoPlayer";
 import CourseLessonSidebar from "@/components/CourseLessonSidebar";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
@@ -11,7 +12,6 @@ import {
   ExternalLinkIcon,
   PlayIcon,
 } from "@/components/icons";
-import type { LessonMedia } from "@/lib/lesson-media";
 
 type SidebarSection = {
   id: string;
@@ -32,7 +32,9 @@ type Props = {
     duration: string | null;
     sectionTitle: string | null;
     isFreePreview: boolean;
-    media: LessonMedia;
+    video_provider: string | null;
+    youtube_video_id: string | null;
+    mux_playback_id: string | null;
   };
   enrollmentId: string | null;
   completed: boolean;
@@ -59,7 +61,6 @@ export default function LessonContent({
   const isArabic = language === "ar";
 
   const isEnrolled = Boolean(enrollmentId);
-  const media = lesson.media;
 
   return (
     <div
@@ -89,54 +90,12 @@ export default function LessonContent({
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         <div className="min-w-0 space-y-5">
           <section className="overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-sm">
-            {media.type === "youtube" || media.type === "vimeo" ? (
-              <div className="aspect-video bg-black">
-                <iframe
-                  src={media.embedUrl}
-                  title={lesson.title}
-                  className="h-full w-full"
-                  loading="lazy"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                  allowFullScreen
-                  referrerPolicy="strict-origin-when-cross-origin"
-                />
-              </div>
-            ) : media.type === "video" ? (
-              <video
-                controls
-                preload="metadata"
-                src={media.src}
-                className="aspect-video w-full bg-black"
-              />
-            ) : media.type === "link" ? (
-              <div className="flex flex-col items-center gap-4 bg-blue-50 px-6 py-14 text-center">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#124b8a] text-white">
-                  <ExternalLinkIcon width={26} height={26} />
-                </span>
-
-                <p className="max-w-sm text-sm leading-7 text-slate-600">
-                  {isArabic
-                    ? "محتوى هذا الدرس يُفتح في صفحة خارجية."
-                    : "This lesson's content opens on an external page."}
-                </p>
-
-                <a
-                  href={media.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#124b8a] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
-                >
-                  {isArabic ? "فتح محتوى الدرس" : "Open lesson content"}
-                  <ExternalLinkIcon width={16} height={16} />
-                </a>
-              </div>
-            ) : (
-              <div className="bg-slate-50 px-6 py-14 text-center text-slate-500">
-                {isArabic
-                  ? "لا يوجد محتوى لهذا الدرس حالياً."
-                  : "This lesson has no content yet."}
-              </div>
-            )}
+            <LessonVideoPlayer
+              provider={lesson.video_provider}
+              youtubeVideoId={lesson.youtube_video_id}
+              muxPlaybackId={lesson.mux_playback_id}
+              title={lesson.title}
+            />
 
             <div className="space-y-4 p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2">

@@ -20,7 +20,11 @@ returns table (
   duration text,
   is_free_preview boolean,
   order_index integer,
-  section_order_index integer
+  section_order_index integer,
+  video_provider text,
+  youtube_video_id text,
+  mux_asset_id text,
+  mux_playback_id text
 )
 language sql
 stable
@@ -35,7 +39,11 @@ as $$
     l.duration::text,
     coalesce(l.is_free_preview, false),
     l.order_index,
-    s.order_index
+    s.order_index,
+    l.video_provider,
+    l.youtube_video_id,
+    l.mux_asset_id,
+    l.mux_playback_id
   from public.lessons l
   join public.sections s
     on s.id = l.section_id

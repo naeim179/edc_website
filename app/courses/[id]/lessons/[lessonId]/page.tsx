@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import LessonContent from "@/components/LessonContent";
-import { getLessonMedia } from "@/lib/lesson-media";
 import { createClient } from "@/lib/supabase/server";
 import { isSubscriptionActive } from "@/lib/subscriptions";
 
@@ -12,6 +11,10 @@ type RawLesson = {
   is_free_preview: boolean | null;
   section_id: string;
   course_id: string;
+  video_provider: string | null;
+  youtube_video_id: string | null;
+  mux_asset_id: string | null;
+  mux_playback_id: string | null;
 };
 
 type RawSection = {
@@ -133,7 +136,6 @@ export default async function LessonPage({
     sectionsResult,
     lessonsResult,
     progressResult,
-    contentResult,
   ] = await Promise.all([
     supabase
       .from("courses")
@@ -161,24 +163,9 @@ export default async function LessonPage({
           .eq("is_completed", true)
       : Promise.resolve({ data: [] }),
 
-    // رابط المحتوى بينقرأ من الجدول الأصلي، وقاعدة البيانات بترجعه
-    // فقط للمسجّل أو لدرس المعاينة المجانية أو لطاقم الدورة
-    supabase
-      .from("lessons")
-      .select("content_url")
-      .eq("id", lessonId)
-      .maybeSingle(),
+
   ]);
 
-  if (contentResult.error) {
-    throw new Error(
-      `Failed to load lesson content: ${contentResult.error.message}`
-    );
-  }
-
-  const contentUrl =
-    (contentResult.data as { content_url: string | null } | null)
-      ?.content_url ?? null;
 
   const courseTitle =
     (courseResult.data as { title: string } | null)?.title ?? "";
@@ -252,7 +239,9 @@ export default async function LessonPage({
               : null,
           sectionTitle,
           isFreePreview: Boolean(lesson.is_free_preview),
-          media: getLessonMedia(contentUrl),
+          video_provider: lesson.video_provider,
+          youtube_video_id: lesson.youtube_video_id,
+          mux_playback_id: lesson.mux_playback_id,
         }}
         enrollmentId={hasCourseAccess ? enrollmentId : null}
         completed={completedLessonIds.includes(lesson.id)}
