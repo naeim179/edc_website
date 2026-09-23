@@ -5,6 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import {
+  EyeIcon,
+  LockIcon,
+  GlobeIcon,
+  UserIcon,
+} from "@/components/icons";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,6 +20,10 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +69,6 @@ export default function RegisterPage() {
       }
 
       router.push("/login");
-
     } catch (err) {
       setError(
         err instanceof Error
@@ -73,26 +82,26 @@ export default function RegisterPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-[#f5f8fc] p-4"
+      className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c]"
       dir="rtl"
     >
-      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-lg p-8">
+      <div className="w-full max-w-md rounded-[32px] border border-white/40 bg-white/95 shadow-2xl p-8 backdrop-blur">
 
-        <div className="text-center mb-8">
+        <div className="text-center mb-7">
 
           <Image
             src="/logo/logo.png"
             alt="Your Way"
-            width={160}
-            height={160}
-            className="mx-auto mb-5 object-contain"
+            width={170}
+            height={170}
+            className="mx-auto mb-3 object-contain"
           />
 
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+          <h1 className="text-2xl font-bold text-slate-800">
             إنشاء حساب جديد
           </h1>
 
-          <p className="text-sm text-slate-400">
+          <p className="mt-2 text-sm text-slate-500">
             أنشئ حسابك وابدأ رحلة التعلم
           </p>
 
@@ -100,7 +109,7 @@ export default function RegisterPage() {
 
 
         {error && (
-          <div className="mb-5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center">
+          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
             {error}
           </div>
         )}
@@ -111,52 +120,114 @@ export default function RegisterPage() {
           className="space-y-4"
         >
 
-          <input
-            value={fullName}
-            onChange={(e) =>
-              setFullName(e.target.value)
-            }
-            placeholder="الاسم الكامل"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-right focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-          />
+          <div className="relative">
+            <UserIcon
+              width={19}
+              height={19}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              value={fullName}
+              onChange={(e) =>
+                setFullName(e.target.value)
+              }
+              placeholder="الاسم الكامل"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
+            />
+          </div>
 
 
-          <input
-            type="email"
-            value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
-            placeholder="البريد الإلكتروني"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-right focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-          />
+          <div className="relative">
+            <GlobeIcon
+              width={19}
+              height={19}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              type="email"
+              value={email}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+              placeholder="البريد الإلكتروني"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
+            />
+          </div>
 
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-            placeholder="كلمة المرور"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-right focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-          />
+          <div className="relative">
+
+            <LockIcon
+              width={19}
+              height={19}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) =>
+                setPassword(e.target.value)
+              }
+              placeholder="كلمة المرور"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 pl-12 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword(!showPassword)
+              }
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-400 transition hover:bg-blue-50 hover:text-[#124b8a]"
+            >
+              <EyeIcon width={20} height={20} />
+            </button>
+
+          </div>
 
 
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) =>
-              setConfirmPassword(e.target.value)
-            }
-            placeholder="تأكيد كلمة المرور"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-right focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-          />
+          <div className="relative">
+
+            <LockIcon
+              width={19}
+              height={19}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              type={
+                showConfirmPassword
+                  ? "text"
+                  : "password"
+              }
+              value={confirmPassword}
+              onChange={(e) =>
+                setConfirmPassword(e.target.value)
+              }
+              placeholder="تأكيد كلمة المرور"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 pl-12 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowConfirmPassword(
+                  !showConfirmPassword
+                )
+              }
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-400 transition hover:bg-blue-50 hover:text-[#124b8a]"
+            >
+              <EyeIcon width={20} height={20} />
+            </button>
+
+          </div>
 
 
           <button
             disabled={isLoading}
-            className="w-full bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold transition disabled:opacity-50"
+            className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
           >
             {isLoading
               ? "جاري إنشاء الحساب..."
@@ -166,11 +237,11 @@ export default function RegisterPage() {
         </form>
 
 
-        <p className="text-center text-sm mt-6 text-slate-500">
+        <p className="mt-6 text-center text-sm text-slate-500">
           لديك حساب؟{" "}
           <Link
             href="/login"
-            className="text-[#124b8a] font-bold hover:underline"
+            className="font-bold text-[#124b8a] hover:underline"
           >
             تسجيل الدخول
           </Link>

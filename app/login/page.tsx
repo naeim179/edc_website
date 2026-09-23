@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
-import { EyeIcon } from "@/components/icons";
+import {
+  EyeIcon,
+  LockIcon,
+  GlobeIcon,
+} from "@/components/icons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,8 +24,11 @@ export default function LoginPage() {
     password?: string;
   }>({});
 
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] =
+    useState<string | null>(null);
+
+  const [isLoading, setIsLoading] =
+    useState(false);
 
   const validateForm = () => {
     const newErrors: {
@@ -94,36 +101,38 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-[#f5f8fc] p-4"
+      className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c]"
       dir="rtl"
     >
-      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-lg p-8">
+      <div className="w-full max-w-md rounded-[32px] border border-white/40 bg-white/95 shadow-2xl p-8 backdrop-blur">
 
-        <div className="text-center mb-8">
+        <div className="text-center mb-7">
 
           <Image
             src="/logo/logo.png"
             alt="Your Way"
-            width={160}
-            height={160}
-            className="mx-auto mb-5 object-contain"
+            width={170}
+            height={170}
+            className="mx-auto mb-3 object-contain"
           />
 
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+          <h1 className="text-2xl font-bold text-slate-800">
             تسجيل الدخول
           </h1>
 
-          <p className="text-sm text-slate-400">
+          <p className="mt-2 text-sm text-slate-500">
             أدخل بيانات حسابك للمتابعة
           </p>
 
         </div>
 
+
         {serverError && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm text-center">
+          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
             {serverError}
           </div>
         )}
+
 
         <form
           onSubmit={handleSubmit}
@@ -132,24 +141,32 @@ export default function LoginPage() {
         >
 
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1.5">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               البريد الإلكتروني
             </label>
 
-            <input
-              type="email"
-              value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
-              placeholder="name@example.com"
-              disabled={isLoading}
-              className={`w-full px-4 py-2.5 rounded-xl bg-slate-50 border ${
-                errors.email
-                  ? "border-red-400"
-                  : "border-slate-200"
-              } text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
-            />
+            <div className="relative">
+              <GlobeIcon
+                width={19}
+                height={19}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+
+              <input
+                type="email"
+                value={email}
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+                placeholder="name@example.com"
+                disabled={isLoading}
+                className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                  errors.email
+                    ? "border-red-400"
+                    : "border-slate-200"
+                }`}
+              />
+            </div>
 
             {errors.email && (
               <p className="mt-1 text-xs text-red-500">
@@ -160,37 +177,67 @@ export default function LoginPage() {
 
 
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1.5">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               كلمة المرور
             </label>
 
-            <input
-              type="password"
-              value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              placeholder="••••••••"
-              disabled={isLoading}
-              className={`w-full px-4 py-2.5 rounded-xl bg-slate-50 border ${
-                errors.password
-                  ? "border-red-400"
-                  : "border-slate-200"
-              } text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
-            />
+            <div className="relative">
+
+              <LockIcon
+                width={19}
+                height={19}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
+                placeholder="••••••••"
+                disabled={isLoading}
+                className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                  errors.password
+                    ? "border-red-400"
+                    : "border-slate-200"
+                }`}
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword(!showPassword)
+                }
+                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-400 transition hover:bg-blue-50 hover:text-[#124b8a]"
+              >
+                <EyeIcon width={20} height={20} />
+              </button>
+
+            </div>
 
             {errors.password && (
               <p className="mt-1 text-xs text-red-500">
                 {errors.password}
               </p>
             )}
+
+            <div className="mt-2 text-left">
+              <Link
+                href="#"
+                className="text-sm font-semibold text-[#124b8a] hover:underline"
+              >
+                نسيت كلمة المرور؟
+              </Link>
+            </div>
+
           </div>
 
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#124b8a] hover:bg-[#0d3b6e] text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
+            className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
           >
             {isLoading
               ? "جاري تسجيل الدخول..."
@@ -204,7 +251,7 @@ export default function LoginPage() {
           ليس لديك حساب؟{" "}
           <Link
             href="/register"
-            className="text-[#124b8a] font-bold hover:underline"
+            className="font-bold text-[#124b8a] hover:underline"
           >
             إنشاء حساب جديد
           </Link>
