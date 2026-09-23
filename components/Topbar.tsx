@@ -84,8 +84,8 @@ export default function Topbar({
           <Image
             src="/logo/logo.png"
             alt="Your Way"
-            width={120}
-            height={70}
+            width={160}
+            height={160}
             className="h-6 w-auto object-contain"
           />
         </Link>

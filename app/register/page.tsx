@@ -83,8 +83,8 @@ export default function RegisterPage() {
           <Image
             src="/logo/logo.png"
             alt="Your Way"
-            width={180}
-            height={120}
+            width={160}
+            height={160}
             className="mx-auto mb-5 object-contain"
           />
 
