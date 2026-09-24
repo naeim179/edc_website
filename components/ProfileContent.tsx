@@ -39,21 +39,39 @@ export default function ProfileContent({
         : "Student";
 
 
+  const avatar =
+    displayName.charAt(0).toUpperCase();
+
+
+
   return (
     <div
-      className="max-w-5xl mx-auto w-full bg-white rounded-[28px] border border-slate-100 shadow-sm overflow-hidden"
+      className="max-w-5xl mx-auto w-full bg-white rounded-[32px] border border-slate-100 shadow-lg overflow-hidden"
       dir={isArabic ? "rtl" : "ltr"}
     >
 
-      <section className="p-8">
+
+      {/* User Header */}
+      <section className="p-8 bg-gradient-to-br from-white to-blue-50/40">
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
+
           <div className="flex items-center gap-5">
 
-            <div className="w-24 h-24 rounded-full bg-blue-50 text-[#1f5aa6] flex items-center justify-center text-4xl font-bold">
-              {displayName.charAt(0).toUpperCase()}
+
+            <div className="relative">
+
+              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#124b8a] to-[#d6b56c] p-[3px]">
+
+                <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-5xl font-black text-[#124b8a]">
+                  {avatar}
+                </div>
+
+              </div>
+
             </div>
+
 
 
             <div className="text-right">
@@ -62,70 +80,168 @@ export default function ProfileContent({
                 {displayName}
               </h1>
 
+
               <p
-                className="text-slate-500 mt-1"
+                className="text-slate-500 mt-2"
                 dir="ltr"
               >
                 {email}
               </p>
 
-              <span className="inline-block mt-3 px-4 py-1 rounded-full bg-blue-50 text-[#1f5aa6] text-sm font-bold">
+
+              <span className="inline-flex mt-3 px-4 py-1.5 rounded-full bg-blue-100 text-[#124b8a] text-sm font-bold">
                 {roleLabel}
               </span>
 
+
             </div>
 
+
           </div>
+
 
 
           {profile.role === "student" && (
             <Link
               href="/my-courses"
-              className="bg-[#1f5aa6] text-white px-6 py-3 rounded-xl font-bold text-center"
+              className="bg-[#124b8a] hover:bg-[#0d3b6e] text-white px-7 py-3 rounded-xl font-bold transition text-center shadow-sm"
             >
-              {isArabic ? "دوراتي التعليمية" : "My Courses"}
+              {isArabic
+                ? "دوراتي التعليمية"
+                : "My Courses"}
             </Link>
           )}
+
 
         </div>
 
       </section>
 
 
+
       <div className="border-t border-slate-100" />
 
 
+
+      {/* Tabs */}
       <div className="flex gap-8 px-8 pt-6 text-sm font-bold">
 
-        <button className="text-[#1f5aa6] border-b-2 border-[#1f5aa6] pb-3">
+        <button className="text-[#124b8a] border-b-2 border-[#124b8a] pb-3">
           {isArabic ? "الملف الشخصي" : "Profile"}
         </button>
 
-        <button className="text-slate-400 pb-3">
-          {isArabic ? "إعدادات الحساب" : "Account Settings"}
+
+        <button className="text-slate-400 pb-3 hover:text-[#124b8a] transition">
+          {isArabic
+            ? "إعدادات الحساب"
+            : "Account Settings"}
         </button>
 
       </div>
 
 
+
+      {/* Form */}
       <section className="p-8">
 
-        <div className="mb-6 text-right">
+        <div className="mb-6">
 
           <h2 className="text-2xl font-bold text-slate-800">
-            {isArabic ? "تعديل البيانات" : "Edit Information"}
+            {isArabic
+              ? "معلومات الحساب"
+              : "Account Information"}
           </h2>
+
 
           <p className="text-sm text-slate-500 mt-2">
             {isArabic
-              ? "حدّث معلومات حسابك الشخصية."
-              : "Update your personal account information."}
+              ? "قم بتحديث معلوماتك الشخصية."
+              : "Update your personal information."}
           </p>
 
         </div>
 
 
         <ProfileForm profile={profile} />
+
+
+      </section>
+
+
+
+      {/* Security */}
+      <section className="mx-8 mb-8 rounded-2xl border border-slate-100 bg-slate-50 p-6">
+
+        <h3 className="text-xl font-bold text-slate-800 mb-2">
+          {isArabic
+            ? "أمان الحساب"
+            : "Account Security"}
+        </h3>
+
+
+        <p className="text-sm text-slate-500 mb-5">
+          {isArabic
+            ? "يمكنك تحديث كلمة المرور من هنا."
+            : "Manage your password security."}
+        </p>
+
+
+        <Link
+          href="/forgot-password"
+          className="inline-block bg-white border border-slate-200 text-[#124b8a] px-5 py-2.5 rounded-xl font-bold hover:bg-blue-50 transition"
+        >
+          {isArabic
+            ? "تغيير كلمة المرور"
+            : "Change Password"}
+        </Link>
+
+
+      </section>
+
+
+
+      {/* Learning Stats Placeholder */}
+      <section className="mx-8 mb-8 grid md:grid-cols-3 gap-4">
+
+
+        {[
+          {
+            title: isArabic
+              ? "الدورات المسجلة"
+              : "Enrolled Courses",
+            value: "0",
+          },
+          {
+            title: isArabic
+              ? "الدروس المكتملة"
+              : "Completed Lessons",
+            value: "0",
+          },
+          {
+            title: isArabic
+              ? "نسبة الإنجاز"
+              : "Progress",
+            value: "0%",
+          },
+        ].map((item) => (
+
+          <div
+            key={item.title}
+            className="rounded-2xl border border-slate-100 bg-white shadow-sm p-5 text-center"
+          >
+
+            <p className="text-sm text-slate-500">
+              {item.title}
+            </p>
+
+            <p className="text-3xl font-black text-[#124b8a] mt-2">
+              {item.value}
+            </p>
+
+          </div>
+
+        ))}
+
 
       </section>
 
