@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -15,6 +15,25 @@ export default function ChangePasswordPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingUser, setCheckingUser] = useState(true);
+
+
+  useEffect(() => {
+    async function checkUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      setCheckingUser(false);
+    }
+
+    checkUser();
+  }, [router, supabase]);
 
 
   async function handleSubmit(
@@ -54,6 +73,15 @@ export default function ChangePasswordPage() {
     }
 
     setLoading(false);
+  }
+
+
+  if (checkingUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        جاري التحميل...
+      </div>
+    );
   }
 
 
