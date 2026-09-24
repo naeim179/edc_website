@@ -224,7 +224,7 @@ export default function LoginPage() {
 
             <div className="mt-2 text-left">
               <Link
-                href="#"
+                href="/forgot-password"
                 className="text-sm font-semibold text-[#124b8a] hover:underline"
               >
                 نسيت كلمة المرور؟
