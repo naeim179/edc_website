@@ -16,6 +16,7 @@ export default function ChangePasswordPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkingUser, setCheckingUser] = useState(true);
+  const [sent, setSent] = useState(false);
 
 
   useEffect(() => {
@@ -66,13 +67,17 @@ export default function ChangePasswordPage() {
       setError(error.message);
     } else {
       setMessage("تم تغيير كلمة المرور بنجاح ✅");
-
-      setTimeout(() => {
-        router.push("/profile");
-      }, 1500);
+      setSent(true);
     }
 
     setLoading(false);
+  }
+
+
+  async function handleRelogin() {
+    setLoading(true);
+    await supabase.auth.signOut();
+    router.push("/login");
   }
 
 
@@ -120,50 +125,81 @@ export default function ChangePasswordPage() {
 
 
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
+        {!sent ? (
 
-          <input
-            type="password"
-            placeholder="كلمة المرور الجديدة"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            className="w-full bg-slate-50 border rounded-xl p-3"
-          />
-
-
-          <input
-            type="password"
-            placeholder="تأكيد كلمة المرور"
-            value={confirm}
-            onChange={(e)=>setConfirm(e.target.value)}
-            className="w-full bg-slate-50 border rounded-xl p-3"
-          />
-
-
-
-          <button
-            disabled={loading}
-            className="w-full bg-[#124b8a] text-white rounded-xl py-3 font-bold"
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
           >
-            {loading
-              ? "جاري التحديث..."
-              : "تحديث كلمة المرور"}
-          </button>
+
+            <input
+              type="password"
+              placeholder="كلمة المرور الجديدة"
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
+              className="w-full bg-slate-50 border rounded-xl p-3"
+            />
 
 
-        </form>
+            <input
+              type="password"
+              placeholder="تأكيد كلمة المرور"
+              value={confirm}
+              onChange={(e)=>setConfirm(e.target.value)}
+              className="w-full bg-slate-50 border rounded-xl p-3"
+            />
 
 
 
-        <Link
-          href="/profile"
-          className="block text-center mt-6 text-[#124b8a] font-bold"
-        >
-          العودة للملف الشخصي
-        </Link>
+            <button
+              disabled={loading}
+              className="w-full bg-[#124b8a] text-white rounded-xl py-3 font-bold"
+            >
+              {loading
+                ? "جاري التحديث..."
+                : "تحديث كلمة المرور"}
+            </button>
+
+
+          </form>
+
+        ) : (
+
+          <div className="space-y-3">
+
+            <Link
+              href="/profile"
+              className="block w-full text-center bg-[#124b8a] text-white rounded-xl py-3 font-bold"
+            >
+              الذهاب للملف الشخصي الآن
+            </Link>
+
+            <button
+              onClick={handleRelogin}
+              disabled={loading}
+              className="w-full bg-slate-100 text-[#124b8a] rounded-xl py-3 font-bold"
+            >
+              {loading
+                ? "جاري تسجيل الخروج..."
+                : "تسجيل الدخول من جديد"}
+            </button>
+
+          </div>
+
+        )}
+
+
+
+        {!sent && (
+
+          <Link
+            href="/profile"
+            className="block text-center mt-6 text-[#124b8a] font-bold"
+          >
+            العودة للملف الشخصي
+          </Link>
+
+        )}
 
 
       </div>

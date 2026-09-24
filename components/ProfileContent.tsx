@@ -200,7 +200,7 @@ export default function ProfileContent({
 
 
         <Link
-          href="/forgot-password"
+          href="/change-password"
           className="inline-block bg-white border border-slate-200 text-[#124b8a] px-5 py-2.5 rounded-xl font-bold hover:bg-blue-50 transition"
         >
           {isArabic

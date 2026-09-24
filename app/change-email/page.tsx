@@ -13,6 +13,7 @@ export default function ChangeEmailPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
 
 
@@ -51,8 +52,38 @@ export default function ChangeEmailPage() {
         "تم إرسال رابط التأكيد إلى البريد الجديد ✅"
       );
 
+      setSent(true);
+
     }
 
+
+    setLoading(false);
+
+  }
+
+
+  async function handleResend() {
+
+    setError("");
+    setMessage("");
+    setLoading(true);
+
+    const { error } =
+      await supabase.auth.updateUser({
+        email,
+      });
+
+    if (error) {
+
+      setError(error.message);
+
+    } else {
+
+      setMessage(
+        "تم إعادة إرسال رابط التأكيد ✅"
+      );
+
+    }
 
     setLoading(false);
 
@@ -97,41 +128,72 @@ export default function ChangeEmailPage() {
 
 
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
+        {!sent ? (
 
-
-          <input
-            type="email"
-            placeholder="new@email.com"
-            value={email}
-            onChange={(e)=>setEmail(e.target.value)}
-            className="w-full bg-slate-50 border rounded-xl p-3"
-          />
-
-
-          <button
-            disabled={loading}
-            className="w-full bg-[#124b8a] text-white rounded-xl py-3 font-bold"
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
           >
-            {loading
-              ? "جاري الإرسال..."
-              : "تحديث البريد"}
-          </button>
 
 
-        </form>
+            <input
+              type="email"
+              placeholder="new@email.com"
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
+              className="w-full bg-slate-50 border rounded-xl p-3"
+            />
+
+
+            <button
+              disabled={loading}
+              className="w-full bg-[#124b8a] text-white rounded-xl py-3 font-bold"
+            >
+              {loading
+                ? "جاري الإرسال..."
+                : "تحديث البريد"}
+            </button>
+
+
+          </form>
+
+        ) : (
+
+          <div className="space-y-3">
+
+            <button
+              onClick={handleResend}
+              disabled={loading}
+              className="w-full bg-[#124b8a] text-white rounded-xl py-3 font-bold"
+            >
+              {loading
+                ? "جاري الإرسال..."
+                : "إرسال الرابط مرة أخرى"}
+            </button>
+
+            <Link
+              href="/profile"
+              className="block w-full text-center bg-slate-100 text-[#124b8a] rounded-xl py-3 font-bold"
+            >
+              العودة للملف الشخصي
+            </Link>
+
+          </div>
+
+        )}
 
 
 
-        <Link
-          href="/profile"
-          className="block text-center mt-6 text-[#124b8a] font-bold"
-        >
-          العودة للملف الشخصي
-        </Link>
+        {!sent && (
+
+          <Link
+            href="/profile"
+            className="block text-center mt-6 text-[#124b8a] font-bold"
+          >
+            العودة للملف الشخصي
+          </Link>
+
+        )}
 
 
       </div>
