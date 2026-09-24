@@ -124,17 +124,10 @@ export default function ProfileContent({
 
 
       {/* Tabs */}
-      <div className="flex gap-8 px-8 pt-6 text-sm font-bold">
+      <div className="px-8 pt-6 text-sm font-bold">
 
         <button className="text-[#124b8a] border-b-2 border-[#124b8a] pb-3">
           {isArabic ? "الملف الشخصي" : "Profile"}
-        </button>
-
-
-        <button className="text-slate-400 pb-3 hover:text-[#124b8a] transition">
-          {isArabic
-            ? "إعدادات الحساب"
-            : "Account Settings"}
         </button>
 
       </div>
@@ -163,6 +156,26 @@ export default function ProfileContent({
 
 
         <ProfileForm profile={profile} />
+
+
+        <div className="mt-8 rounded-2xl border border-slate-100 bg-slate-50 p-6">
+
+          <h3 className="text-xl font-bold text-slate-800 mb-2">
+            {isArabic ? "البريد الإلكتروني" : "Email"}
+          </h3>
+
+          <p className="text-slate-500 mb-4" dir="ltr">
+            {email}
+          </p>
+
+          <Link
+            href="/change-email"
+            className="inline-block bg-white border border-slate-200 text-[#124b8a] px-5 py-2.5 rounded-xl font-bold hover:bg-blue-50 transition"
+          >
+            {isArabic ? "تغيير البريد الإلكتروني" : "Change Email"}
+          </Link>
+
+        </div>
 
 
       </section>
