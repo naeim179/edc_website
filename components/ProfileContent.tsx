@@ -342,35 +342,7 @@ export default function ProfileContent({
 
 
 
-      {/* Learning Stats */}
-      <section className="mx-8 md:mx-10 mb-8 md:mb-10 grid sm:grid-cols-3 gap-4">
 
-
-        {stats.map((item) => (
-
-          <div
-            key={item.title}
-            className="rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition p-5 text-center"
-          >
-
-            <div className="w-10 h-10 mx-auto rounded-xl bg-[#124b8a]/10 text-[#124b8a] flex items-center justify-center mb-2">
-              {item.icon}
-            </div>
-
-            <p className="text-sm text-slate-500">
-              {item.title}
-            </p>
-
-            <p className="text-3xl font-black text-[#124b8a] mt-1">
-              {item.value}
-            </p>
-
-          </div>
-
-        ))}
-
-
-      </section>
 
 
     </div>
