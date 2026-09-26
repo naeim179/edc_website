@@ -101,20 +101,21 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c]"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4"
       dir="rtl"
     >
-      <div className="w-full max-w-md rounded-[32px] border border-white/40 bg-white/95 shadow-2xl p-8 backdrop-blur">
-
-        <div className="text-center mb-7">
-
-          <Image
-            src="/logo/logo.png"
-            alt="Your Way"
-            width={170}
-            height={170}
-            className="mx-auto mb-3 object-contain"
-          />
+      <div className="w-full max-w-md rounded-[32px] border border-white/40 bg-white/95 p-8 shadow-2xl backdrop-blur">
+        <div className="mb-7 text-center">
+          <div className="mx-auto mb-5 flex w-fit items-center justify-center">
+            <Image
+              src="/logo/logo-transparent.png"
+              alt="Your Way"
+              width={180}
+              height={180}
+              priority
+              className="h-auto w-[180px] object-contain drop-shadow-[0_12px_25px_rgba(18,75,138,0.18)]"
+            />
+          </div>
 
           <h1 className="text-2xl font-bold text-slate-800">
             تسجيل الدخول
@@ -123,9 +124,7 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-slate-500">
             أدخل بيانات حسابك للمتابعة
           </p>
-
         </div>
-
 
         {serverError && (
           <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
@@ -133,13 +132,11 @@ export default function LoginPage() {
           </div>
         )}
 
-
         <form
           onSubmit={handleSubmit}
           className="space-y-5"
           noValidate
         >
-
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               البريد الإلكتروني
@@ -175,14 +172,12 @@ export default function LoginPage() {
             )}
           </div>
 
-
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               كلمة المرور
             </label>
 
             <div className="relative">
-
               <LockIcon
                 width={19}
                 height={19}
@@ -213,7 +208,6 @@ export default function LoginPage() {
                   label="كلمة المرور"
                 />
               </div>
-
             </div>
 
             {errors.password && (
@@ -230,9 +224,7 @@ export default function LoginPage() {
                 نسيت كلمة المرور؟
               </Link>
             </div>
-
           </div>
-
 
           <button
             type="submit"
@@ -243,9 +235,7 @@ export default function LoginPage() {
               ? "جاري تسجيل الدخول..."
               : "تسجيل الدخول"}
           </button>
-
         </form>
-
 
         <div className="mt-6 text-center text-sm text-slate-500">
           ليس لديك حساب؟{" "}
@@ -256,7 +246,6 @@ export default function LoginPage() {
             إنشاء حساب جديد
           </Link>
         </div>
-
       </div>
     </div>
   );

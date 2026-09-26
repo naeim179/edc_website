@@ -81,7 +81,7 @@ export default function ResetPasswordPage() {
         <div className="text-center mb-7">
 
           <Image
-            src="/logo/logo.png"
+            src="/logo/logo-transparent.png"
             alt="Your Way"
             width={170}
             height={170}

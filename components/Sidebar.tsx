@@ -232,7 +232,7 @@ export default function Sidebar({
             <div className="flex flex-col items-center gap-3">
               <div className="rounded-2xl bg-[#ffffff] p-2.5 shadow-sm">
                 <Image
-                  src="/logo/logo.png"
+                  src="/logo/logo-transparent.png"
                   alt="Your Way"
                   width={160}
                   height={160}

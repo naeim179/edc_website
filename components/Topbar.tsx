@@ -82,7 +82,7 @@ export default function Topbar({
           className="rounded-xl bg-[#ffffff] p-1.5 shadow-sm ring-1 ring-slate-200"
         >
           <Image
-            src="/logo/logo.png"
+            src="/logo/logo-transparent.png"
             alt="Your Way"
             width={160}
             height={160}
