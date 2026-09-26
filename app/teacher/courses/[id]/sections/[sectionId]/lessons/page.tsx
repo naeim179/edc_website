@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import LessonVideoFields from "@/components/lessons/LessonVideoFields";
+import LessonTypeFields from "@/components/lessons/LessonTypeFields";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
 import {
@@ -48,6 +49,9 @@ export default async function TeacherLessonsPage({
       youtube_video_id,
       mux_asset_id,
       mux_playback_id,
+      lesson_type,
+      live_platform,
+      live_schedule,
       order_index,
       is_free_preview
     `)
@@ -98,6 +102,8 @@ export default async function TeacherLessonsPage({
             placeholder="عنوان الدرس"
             className="w-full border rounded-xl px-4 py-3"
           />
+
+          <LessonTypeFields />
 
           <LessonVideoFields courseId={id} />
 
@@ -159,23 +165,54 @@ export default async function TeacherLessonsPage({
                     className="w-full border rounded-xl px-4 py-3"
                   />
 
-                  <LessonVideoFields
-                      courseId={id}
-                    defaultProvider={
-                      lesson.video_provider === "mux"
-                        ? "mux"
-                        : "youtube"
-                    }
-                    defaultYoutubeUrl={
-                      lesson.content_url ?? ""
-                    }
-                    defaultMuxPlaybackId={
-                      lesson.mux_playback_id ?? ""
-                    }
-                    defaultMuxAssetId={
-                      lesson.mux_asset_id ?? ""
-                    }
+                  <input
+                    type="hidden"
+                    name="lesson_type"
+                    value={lesson.lesson_type ?? "recorded"}
                   />
+
+                  {lesson.lesson_type === "live" ? (
+                    <>
+                      <input
+                        name="live_platform"
+                        defaultValue={lesson.live_platform ?? ""}
+                        placeholder="منصة البث"
+                        className="w-full border rounded-xl px-4 py-3"
+                      />
+
+                      <input
+                        name="content_url"
+                        defaultValue={lesson.content_url ?? ""}
+                        placeholder="رابط الجلسة"
+                        className="w-full border rounded-xl px-4 py-3"
+                      />
+
+                      <input
+                        name="live_schedule"
+                        defaultValue={lesson.live_schedule ?? ""}
+                        placeholder="موعد الجلسة"
+                        className="w-full border rounded-xl px-4 py-3"
+                      />
+                    </>
+                  ) : (
+                    <LessonVideoFields
+                      courseId={id}
+                      defaultProvider={
+                        lesson.video_provider === "mux"
+                          ? "mux"
+                          : "youtube"
+                      }
+                      defaultYoutubeUrl={
+                        lesson.content_url ?? ""
+                      }
+                      defaultMuxPlaybackId={
+                        lesson.mux_playback_id ?? ""
+                      }
+                      defaultMuxAssetId={
+                        lesson.mux_asset_id ?? ""
+                      }
+                    />
+                  )}
 
                   <input
                     name="order_index"

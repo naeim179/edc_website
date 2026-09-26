@@ -85,6 +85,8 @@ export default async function TeacherManagePage({
 
 
 
+  console.log("ASSIGNMENTS:", JSON.stringify(assignments, null, 2));
+
   const { data: allCourses } =
     await admin
       .from("courses")
@@ -225,7 +227,13 @@ export default async function TeacherManagePage({
           <div className="space-y-3">
 
 
-          {assignments?.map((item)=>(
+          {assignments?.map((item)=>{
+
+            const course = Array.isArray(item.course)
+              ? item.course[0]
+              : item.course;
+
+            return (
 
             <div
               key={item.id}
@@ -234,12 +242,12 @@ export default async function TeacherManagePage({
 
               <span className="font-bold">
 
-                {item.course?.[0]?.title}
+                {course?.title}
 
                 {" - "}
 
                 {
-                  item.course?.[0]?.course_type === "group"
+                  course?.course_type === "group"
                   ? "Group"
                   : "Private"
                 }
@@ -270,7 +278,8 @@ export default async function TeacherManagePage({
 
             </div>
 
-          ))}
+          )
+          })}
 
 
           </div>

@@ -43,6 +43,9 @@ export default async function LessonsPage({
       youtube_video_id,
       mux_asset_id,
       mux_playback_id,
+      lesson_type,
+      live_platform,
+      live_schedule,
       is_free_preview
     `)
     .eq("section_id", sectionId)
@@ -149,23 +152,69 @@ export default async function LessonsPage({
 
 
 
-                    <LessonVideoFields
-                      courseId={id}
-                      defaultProvider={
-                        lesson.video_provider === "mux"
-                          ? "mux"
-                          : "youtube"
-                      }
-                      defaultYoutubeUrl={
-                        lesson.content_url ?? ""
-                      }
-                      defaultMuxPlaybackId={
-                        lesson.mux_playback_id ?? ""
-                      }
-                      defaultMuxAssetId={
-                        lesson.mux_asset_id ?? ""
-                      }
+                    <input
+                      type="hidden"
+                      name="lesson_type"
+                      value={lesson.lesson_type ?? "recorded"}
                     />
+
+                    {lesson.lesson_type === "live" ? (
+                      <>
+                        <div>
+                          <label className="block text-sm font-bold mb-2 text-slate-600">
+                            منصة البث
+                          </label>
+
+                          <input
+                            name="live_platform"
+                            defaultValue={lesson.live_platform ?? ""}
+                            className="w-full bg-slate-50 border rounded-xl px-4 py-3"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold mb-2 text-slate-600">
+                            رابط الجلسة
+                          </label>
+
+                          <input
+                            name="content_url"
+                            defaultValue={lesson.content_url ?? ""}
+                            className="w-full bg-slate-50 border rounded-xl px-4 py-3"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold mb-2 text-slate-600">
+                            موعد الجلسة
+                          </label>
+
+                          <input
+                            name="live_schedule"
+                            defaultValue={lesson.live_schedule ?? ""}
+                            className="w-full bg-slate-50 border rounded-xl px-4 py-3"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <LessonVideoFields
+                        courseId={id}
+                        defaultProvider={
+                          lesson.video_provider === "mux"
+                            ? "mux"
+                            : "youtube"
+                        }
+                        defaultYoutubeUrl={
+                          lesson.content_url ?? ""
+                        }
+                        defaultMuxPlaybackId={
+                          lesson.mux_playback_id ?? ""
+                        }
+                        defaultMuxAssetId={
+                          lesson.mux_asset_id ?? ""
+                        }
+                      />
+                    )}
 
 
 

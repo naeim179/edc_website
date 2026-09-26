@@ -38,6 +38,15 @@ export async function createLesson(
       "is_free_preview"
     ) === "on";
 
+  const lessonType =
+    String(formData.get("lesson_type") ?? "recorded");
+
+  const livePlatform =
+    String(formData.get("live_platform") ?? "");
+
+  const liveSchedule =
+    String(formData.get("live_schedule") ?? "");
+
   if (!title) {
     throw new Error(
       "عنوان الدرس مطلوب"
@@ -45,9 +54,18 @@ export async function createLesson(
   }
 
   const video =
-    readLessonVideoForm(
-      formData
-    );
+    lessonType === "live"
+      ? {
+          content_url:
+            String(formData.get("content_url") ?? "").trim() || null,
+          video_provider: null,
+          youtube_video_id: null,
+          mux_asset_id: null,
+          mux_playback_id: null,
+          bunny_library_id: null,
+          bunny_video_id: null,
+        }
+      : readLessonVideoForm(formData);
 
   const { error } =
     await supabase
@@ -65,6 +83,19 @@ export async function createLesson(
 
         is_free_preview:
           isFreePreview,
+
+        lesson_type:
+          lessonType,
+
+        live_platform:
+          lessonType === "live"
+            ? livePlatform
+            : null,
+
+        live_schedule:
+          lessonType === "live"
+            ? liveSchedule
+            : null,
       });
 
   if (error) {
@@ -157,10 +188,22 @@ export async function updateLesson(
     );
   }
 
+  const lessonType =
+    String(formData.get("lesson_type") ?? "recorded");
+
   const video =
-    readLessonVideoForm(
-      formData
-    );
+    lessonType === "live"
+      ? {
+          content_url:
+            String(formData.get("content_url") ?? "").trim() || null,
+          video_provider: null,
+          youtube_video_id: null,
+          mux_asset_id: null,
+          mux_playback_id: null,
+          bunny_library_id: null,
+          bunny_video_id: null,
+        }
+      : readLessonVideoForm(formData);
 
   const { error } =
     await supabase
@@ -169,6 +212,18 @@ export async function updateLesson(
         title,
 
         ...video,
+
+        lesson_type: lessonType,
+
+        live_platform:
+          lessonType === "live"
+            ? String(formData.get("live_platform") ?? "")
+            : null,
+
+        live_schedule:
+          lessonType === "live"
+            ? String(formData.get("live_schedule") ?? "")
+            : null,
 
         order_index:
           orderIndex,

@@ -146,6 +146,15 @@ export async function teacherCreateLesson(
   const isFreePreview =
     formData.get("is_free_preview") === "on";
 
+  const lessonType =
+    String(formData.get("lesson_type") ?? "recorded");
+
+  const livePlatform =
+    String(formData.get("live_platform") ?? "");
+
+  const liveSchedule =
+    String(formData.get("live_schedule") ?? "");
+
   if (!title) {
     throw new Error("عنوان الدرس مطلوب");
   }
@@ -162,6 +171,9 @@ export async function teacherCreateLesson(
       ...video,
       order_index: orderIndex,
       is_free_preview: isFreePreview,
+      lesson_type: lessonType,
+      live_platform: lessonType === "live" ? livePlatform : null,
+      live_schedule: lessonType === "live" ? liveSchedule : null,
     });
 
   if (error) {
