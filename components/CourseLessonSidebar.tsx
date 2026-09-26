@@ -53,7 +53,7 @@ export default function CourseLessonSidebar({
   return (
     <aside
       dir={isArabic ? "rtl" : "ltr"}
-      className="h-fit rounded-[26px] border border-slate-100 bg-white p-5 shadow-sm lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
+      className="h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
     >
       <h2 className="text-lg font-bold text-slate-800">
         {isArabic ? "محتوى الدورة" : "Course content"}

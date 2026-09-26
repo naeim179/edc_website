@@ -51,32 +51,16 @@ export default function HomeContent({
       : `/courses/${continueCourse.id}`
     : "/courses";
 
-  const heroShapes = (
-    <>
-      <div
-        aria-hidden="true"
-        className="absolute -end-16 -bottom-20 h-64 w-64 rotate-45 bg-white/[0.05]"
-      />
-
-      <div
-        aria-hidden="true"
-        className="absolute -start-12 -top-20 h-44 w-44 rotate-45 bg-white/[0.04]"
-      />
-    </>
-  );
-
   return (
     <div
       className="mx-auto w-full max-w-6xl space-y-8"
       dir={isArabic ? "rtl" : "ltr"}
     >
       {isAuthenticated ? (
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-6 text-white sm:p-8">
-          {heroShapes}
-
-          <div className="relative grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+        <section className="rounded-2xl border border-slate-200 bg-[#0f3f75] p-6 text-white sm:p-8">
+          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
             <div>
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-blue-100">
                 {isArabic ? "أهلاً بعودتك" : "Welcome back"}
               </p>
 
@@ -84,7 +68,7 @@ export default function HomeContent({
                 {isArabic ? "مرحباً" : "Hello"} {displayName}
               </h1>
 
-              <p className="mt-3 max-w-md leading-7 text-white/75">
+              <p className="mt-3 max-w-md leading-7 text-blue-100">
                 {isArabic
                   ? "أكمل رحلتك التعليمية من حيث توقفت."
                   : "Pick up your learning journey where you left off."}
@@ -100,7 +84,7 @@ export default function HomeContent({
                       {item.value}
                     </p>
 
-                    <p className="mt-1 text-xs leading-5 text-white/70">
+                    <p className="mt-1 text-xs leading-5 text-blue-100">
                       {item.label}
                     </p>
                   </div>
@@ -109,8 +93,8 @@ export default function HomeContent({
             </div>
 
             {continueCourse ? (
-              <div className="rounded-2xl border border-[#E8E1D4] bg-white p-5 text-[#2A2420]">
-                <p className="text-xs font-bold text-[#A69C8C]">
+              <div className="rounded-2xl bg-white p-5 text-slate-800 shadow-sm">
+                <p className="text-xs font-bold text-slate-400">
                   {isArabic
                     ? "تابع من حيث توقفت"
                     : "Continue where you left off"}
@@ -130,7 +114,7 @@ export default function HomeContent({
                     </h2>
 
                     {continueCourse.category && (
-                      <p className="mt-0.5 text-xs text-[#A69C8C]">
+                      <p className="mt-0.5 text-xs text-slate-500">
                         {continueCourse.category}
                       </p>
                     )}
@@ -139,26 +123,26 @@ export default function HomeContent({
 
                 <div className="mt-4">
                   <div className="mb-2 flex justify-between text-xs">
-                    <span className="text-[#A69C8C]">
+                    <span className="text-slate-500">
                       {isArabic
                         ? `${continueCourse.completedLessons} من ${continueCourse.totalLessons} درس`
                         : `${continueCourse.completedLessons} of ${continueCourse.totalLessons} lessons`}
                     </span>
 
-                    <span className="font-bold text-[#1B4B43]">
+                    <span className="font-bold text-[#124b8a]">
                       {continueCourse.progress}%
                     </span>
                   </div>
 
                   <div
-                    className="h-2 overflow-hidden rounded-full bg-[#F0EBE1]"
+                    className="h-2 overflow-hidden rounded-full bg-slate-100"
                     role="progressbar"
                     aria-valuenow={continueCourse.progress}
                     aria-valuemin={0}
                     aria-valuemax={100}
                   >
                     <div
-                      className="h-full rounded-full bg-[#1B4B43]"
+                      className="h-full rounded-full bg-[#124b8a]"
                       style={{
                         width: `${continueCourse.progress}%`,
                       }}
@@ -168,7 +152,7 @@ export default function HomeContent({
 
                 <Link
                   href={continueHref}
-                  className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-[#1B4B43] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#123A34]"
+                  className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-[#124b8a] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
                 >
                   <PlayIcon width={14} height={14} />
                   {continueCourse.progress > 0
@@ -181,7 +165,7 @@ export default function HomeContent({
                 </Link>
               </div>
             ) : (
-              <div className="rounded-2xl border border-[#E8E1D4] bg-white p-6 text-[#2A2420]">
+              <div className="rounded-2xl bg-white p-6 text-slate-800 shadow-sm">
                 <h2 className="text-lg font-bold">
                   {stats.enrolled > 0
                     ? isArabic
@@ -192,7 +176,7 @@ export default function HomeContent({
                     : "Start your first course"}
                 </h2>
 
-                <p className="mt-2 text-sm leading-7 text-[#6B6155]">
+                <p className="mt-2 text-sm leading-7 text-slate-500">
                   {isArabic
                     ? "تصفّح الدورات المتاحة واختر ما يناسب هدفك."
                     : "Browse the available courses and pick what fits your goal."}
@@ -200,7 +184,7 @@ export default function HomeContent({
 
                 <Link
                   href="/courses"
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1B4B43] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#123A34]"
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#124b8a] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
                 >
                   {isArabic ? "استعرض الدورات" : "Browse courses"}
                   <ArrowIcon
@@ -214,11 +198,9 @@ export default function HomeContent({
           </div>
         </section>
       ) : (
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-8 text-white sm:p-12">
-          {heroShapes}
-
-          <div className="relative max-w-2xl">
-            <p className="text-sm text-white/70">
+        <section className="rounded-2xl border border-slate-200 bg-[#0f3f75] p-8 text-white sm:p-12">
+          <div className="max-w-2xl">
+            <p className="text-sm text-blue-100">
               {isArabic
                 ? "منصتك للتعلم والتطور"
                 : "Your platform for learning and growth"}
@@ -230,7 +212,7 @@ export default function HomeContent({
                 : "Start your learning journey today"}
             </h1>
 
-            <p className="mt-4 leading-8 text-white/75">
+            <p className="mt-4 leading-8 text-blue-100">
               {isArabic
                 ? "استعرض الدورات المتاحة، أنشئ حسابك، وتابع تقدمك من مكان واحد."
                 : "Browse available courses, create your account, and track your progress in one place."}
@@ -239,7 +221,7 @@ export default function HomeContent({
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/register"
-                className="rounded-xl bg-[#C9704A] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#B15F3B]"
+                className="rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#124b8a] transition-colors hover:bg-blue-50"
               >
                 {isArabic ? "إنشاء حساب" : "Create account"}
               </Link>
@@ -257,13 +239,13 @@ export default function HomeContent({
 
       <section className="space-y-5">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-[#2A2420] sm:text-2xl">
+          <h2 className="text-xl font-bold text-slate-800 sm:text-2xl">
             {isArabic ? "أحدث الدورات" : "Latest courses"}
           </h2>
 
           <Link
             href="/courses"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1B4B43] hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#124b8a] hover:underline"
           >
             {isArabic ? "عرض جميع الدورات" : "View all courses"}
             <ArrowIcon
@@ -297,7 +279,7 @@ export default function HomeContent({
             ))}
           </div>
         ) : (
-          <div className="border-t border-[#F0EBE1] pt-8 text-center text-[#A69C8C]">
+          <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-slate-500 shadow-sm">
             {isArabic
               ? "لا توجد دورات منشورة حاليًا."
               : "No published courses yet."}

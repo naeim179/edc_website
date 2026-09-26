@@ -37,6 +37,10 @@ type Props = {
     mux_playback_id: string | null;
     bunny_library_id: string | null;
     bunny_video_id: string | null;
+    lesson_type: string | null;
+    live_platform: string | null;
+    live_schedule: string | null;
+    content_url: string | null;
   };
   enrollmentId: string | null;
   completed: boolean;
@@ -91,15 +95,51 @@ export default function LessonContent({
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         <div className="min-w-0 space-y-5">
-          <section className="overflow-hidden rounded-[28px] border border-slate-100 bg-white shadow-sm">
-            <LessonVideoPlayer
-              provider={lesson.video_provider}
-              youtubeVideoId={lesson.youtube_video_id}
-              muxPlaybackId={lesson.mux_playback_id}
-              bunnyLibraryId={lesson.bunny_library_id}
-              bunnyVideoId={lesson.bunny_video_id}
-              title={lesson.title}
-            />
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            {lesson.lesson_type === "live" ? (
+              <div className="m-6 rounded-2xl border border-blue-100 bg-blue-50 p-6">
+                <h2 className="text-xl font-bold text-[#124b8a]">
+                  {isArabic ? "درس مباشر" : "Live Lesson"}
+                </h2>
+
+                <div className="mt-4 space-y-2 text-slate-700">
+                  <p>
+                    <strong>
+                      {isArabic ? "المنصة:" : "Platform:"}
+                    </strong>{" "}
+                    {lesson.live_platform ?? "-"}
+                  </p>
+
+                  <p>
+                    <strong>
+                      {isArabic ? "الموعد:" : "Schedule:"}
+                    </strong>{" "}
+                    {lesson.live_schedule ?? "-"}
+                  </p>
+                </div>
+
+                {lesson.content_url && (
+                  <a
+                    href={lesson.content_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#124b8a] px-5 py-3 font-bold text-white hover:bg-[#0d3b6e]"
+                  >
+                    {isArabic ? "دخول الجلسة" : "Join Session"}
+                    <ExternalLinkIcon width={16} height={16} />
+                  </a>
+                )}
+              </div>
+            ) : (
+              <LessonVideoPlayer
+                provider={lesson.video_provider}
+                youtubeVideoId={lesson.youtube_video_id}
+                muxPlaybackId={lesson.mux_playback_id}
+                bunnyLibraryId={lesson.bunny_library_id}
+                bunnyVideoId={lesson.bunny_video_id}
+                title={lesson.title}
+              />
+            )}
 
             <div className="space-y-4 p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2">

@@ -34,7 +34,7 @@ export default function BuyCourseButton({
       type="button"
       disabled={pending}
       onClick={handleBuy}
-      className="w-full rounded-xl bg-[#C9704A] px-6 py-3.5 font-bold text-white transition hover:bg-[#B15F3B] disabled:cursor-not-allowed disabled:opacity-50"
+      className="w-full rounded-xl bg-[#124b8a] px-6 py-3.5 font-bold text-white transition hover:bg-[#0d3b6e] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {pending
         ? "جاري تحويلك إلى الدفع..."

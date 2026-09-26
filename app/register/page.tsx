@@ -2,9 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import AuthLayout from "@/components/auth/AuthLayout";
 import {
   LockIcon,
   GlobeIcon,
@@ -25,30 +25,60 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
 
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{
+    fullName?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
+
+  const [serverError, setServerError] =
+    useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
+
+  const validateForm = () => {
+    const newErrors: {
+      fullName?: string;
+      email?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
+
+    if (!fullName.trim()) {
+      newErrors.fullName = "الاسم مطلوب";
+    }
+
+    if (!email) {
+      newErrors.email = "البريد الإلكتروني مطلوب";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "صيغة البريد الإلكتروني غير صحيحة";
+    }
+
+    if (!password) {
+      newErrors.password = "كلمة المرور مطلوبة";
+    } else if (password.length < 6) {
+      newErrors.password =
+        "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    }
+
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = "كلمتا المرور غير متطابقتين";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
 
-    setError(null);
+    setServerError(null);
 
-    if (!fullName.trim()) {
-      setError("الاسم مطلوب");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("كلمتا المرور غير متطابقتين");
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
@@ -64,13 +94,11 @@ export default function RegisterPage() {
           },
         });
 
-      if (signUpError) {
-        throw signUpError;
-      }
+      if (signUpError) throw signUpError;
 
       router.push("/login");
     } catch (err) {
-      setError(
+      setServerError(
         err instanceof Error
           ? err.message
           : "فشل إنشاء الحساب"
@@ -81,44 +109,25 @@ export default function RegisterPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c]"
-      dir="rtl"
+    <AuthLayout
+      title="إنشاء حساب جديد"
+      description="أنشئ حسابك وابدأ رحلة التعلم"
     >
-      <div className="w-full max-w-md rounded-[32px] border border-white/40 bg-white/95 shadow-2xl p-8 backdrop-blur">
-
-        <div className="text-center mb-7">
-
-          <Image
-            src="/logo/logo-transparent.png"
-            alt="Your Way"
-            width={170}
-            height={170}
-            className="mx-auto mb-3 object-contain"
-          />
-
-          <h1 className="text-2xl font-bold text-slate-800">
-            إنشاء حساب جديد
-          </h1>
-
-          <p className="mt-2 text-sm text-slate-500">
-            أنشئ حسابك وابدأ رحلة التعلم
-          </p>
-
+      {serverError && (
+        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
+          {serverError}
         </div>
+      )}
 
-
-        {error && (
-          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
-            {error}
-          </div>
-        )}
-
-
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-5"
+        noValidate
+      >
+        <div>
+          <label className="mb-2 block text-sm font-medium text-white/90">
+            الاسم الكامل
+          </label>
 
           <div className="relative">
             <UserIcon
@@ -129,14 +138,30 @@ export default function RegisterPage() {
 
             <input
               value={fullName}
-              onChange={(e) =>
-                setFullName(e.target.value)
+              onChange={(event) =>
+                setFullName(event.target.value)
               }
               placeholder="الاسم الكامل"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
+              disabled={isLoading}
+              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-white outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                errors.fullName
+                  ? "border-red-400"
+                  : "border-slate-200"
+              }`}
             />
           </div>
 
+          {errors.fullName && (
+            <p className="mt-1 text-xs text-red-500">
+              {errors.fullName}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium text-white/90">
+            البريد الإلكتروني
+          </label>
 
           <div className="relative">
             <GlobeIcon
@@ -148,17 +173,32 @@ export default function RegisterPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
+              onChange={(event) =>
+                setEmail(event.target.value)
               }
-              placeholder="البريد الإلكتروني"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
+              placeholder="name@example.com"
+              disabled={isLoading}
+              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                errors.email
+                  ? "border-red-400"
+                  : "border-slate-200"
+              }`}
             />
           </div>
 
+          {errors.email && (
+            <p className="mt-1 text-xs text-red-500">
+              {errors.email}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium text-white/90">
+            كلمة المرور
+          </label>
 
           <div className="relative">
-
             <LockIcon
               width={19}
               height={19}
@@ -168,11 +208,16 @@ export default function RegisterPage() {
             <input
               type={showPassword ? "text" : "password"}
               value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
+              onChange={(event) =>
+                setPassword(event.target.value)
               }
-              placeholder="كلمة المرور"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 pl-12 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
+              placeholder="••••••••"
+              disabled={isLoading}
+              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                errors.password
+                  ? "border-red-400"
+                  : "border-slate-200"
+              }`}
             />
 
             <div className="absolute left-3 top-1/2 -translate-y-1/2">
@@ -184,12 +229,21 @@ export default function RegisterPage() {
                 label="كلمة المرور"
               />
             </div>
-
           </div>
 
+          {errors.password && (
+            <p className="mt-1 text-xs text-red-500">
+              {errors.password}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium text-white/90">
+            تأكيد كلمة المرور
+          </label>
 
           <div className="relative">
-
             <LockIcon
               width={19}
               height={19}
@@ -197,17 +251,18 @@ export default function RegisterPage() {
             />
 
             <input
-              type={
-                showConfirmPassword
-                  ? "text"
-                  : "password"
-              }
+              type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
-              onChange={(e) =>
-                setConfirmPassword(e.target.value)
+              onChange={(event) =>
+                setConfirmPassword(event.target.value)
               }
-              placeholder="تأكيد كلمة المرور"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pr-11 pl-12 text-right text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30"
+              placeholder="••••••••"
+              disabled={isLoading}
+              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                errors.confirmPassword
+                  ? "border-red-400"
+                  : "border-slate-200"
+              }`}
             />
 
             <div className="absolute left-3 top-1/2 -translate-y-1/2">
@@ -219,33 +274,33 @@ export default function RegisterPage() {
                 label="تأكيد كلمة المرور"
               />
             </div>
-
           </div>
 
+          {errors.confirmPassword && (
+            <p className="mt-1 text-xs text-red-500">
+              {errors.confirmPassword}
+            </p>
+          )}
+        </div>
 
-          <button
-            disabled={isLoading}
-            className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
-          >
-            {isLoading
-              ? "جاري إنشاء الحساب..."
-              : "إنشاء حساب"}
-          </button>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
+        >
+          {isLoading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
+        </button>
+      </form>
 
-        </form>
-
-
-        <p className="mt-6 text-center text-sm text-slate-500">
-          لديك حساب؟{" "}
-          <Link
-            href="/login"
-            className="font-bold text-[#124b8a] hover:underline"
-          >
-            تسجيل الدخول
-          </Link>
-        </p>
-
+      <div className="mt-6 text-center text-sm text-white/70">
+        لديك حساب؟{" "}
+        <Link
+          href="/login"
+          className="font-bold text-[#d6b56c] hover:underline"
+        >
+          تسجيل الدخول
+        </Link>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

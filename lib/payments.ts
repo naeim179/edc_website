@@ -314,6 +314,33 @@ export async function fulfillPaymentByTranRef(
       ? fulfillment[0]
       : fulfillment;
 
+  // Create chat conversation after successful payment
+  const { data: instructor } =
+    await supabase
+      .from("course_instructors")
+      .select("teacher_id")
+      .eq("course_id", order.course_id)
+      .limit(1)
+      .maybeSingle();
+
+  if (instructor?.teacher_id) {
+    const { error: conversationError } =
+      await supabase.rpc(
+        "start_conversation",
+        {
+          p_course_id: order.course_id,
+          p_teacher_id: instructor.teacher_id,
+        }
+      );
+
+    if (conversationError) {
+      console.error(
+        "Create conversation failed:",
+        conversationError.message
+      );
+    }
+  }
+
   return {
     paid: true as const,
     courseId:

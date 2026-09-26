@@ -20,6 +20,29 @@ type Props = {
   orders: Order[];
 };
 
+function formatDate(dateStr: string, isArabic: boolean) {
+  const d = new Date(dateStr);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const period = hours >= 12
+    ? (isArabic ? "م" : "PM")
+    : (isArabic ? "ص" : "AM");
+
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+
+  return isArabic
+    ? `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${period}`
+    : `${month}/${day}/${year}, ${hours}:${minutes}:${seconds} ${period}`;
+}
+
 export default function AdminOrdersContent({
   orders,
 }: Props) {
@@ -113,13 +136,7 @@ export default function AdminOrdersContent({
                     </p>
 
                     <p className="text-xs text-slate-400 mt-2">
-                      {new Date(
-                        order.created_at
-                      ).toLocaleString(
-                        isArabic
-                          ? "ar-JO"
-                          : "en-US"
-                      )}
+                      {formatDate(order.created_at, isArabic)}
                     </p>
                   </div>
 

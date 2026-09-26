@@ -75,7 +75,6 @@ type Props = {
 
 /* ---------- helpers ---------- */
 
-// جمع عربي صحيح: قسم واحد / قسمان / 3 أقسام / 11 قسمًا
 function arabicCount(
   n: number,
   forms: { one: string; two: string; few: string; many: string }
@@ -186,7 +185,6 @@ export default function CourseDetailContent({
   const { language } = useLanguage();
   const isArabic = language === "ar";
 
-
   /* ----- price ----- */
 
   const originalPrice = course.price ?? 0;
@@ -195,8 +193,7 @@ export default function CourseDetailContent({
   let finalPrice = originalPrice;
 
   if (course.discount_type === "percentage") {
-    finalPrice =
-      originalPrice - originalPrice * (discountValue / 100);
+    finalPrice = originalPrice - originalPrice * (discountValue / 100);
   }
 
   if (course.discount_type === "fixed") {
@@ -222,8 +219,7 @@ export default function CourseDetailContent({
 
   /* ----- teacher ----- */
 
-  const teacherData =
-    course.course_instructors?.[0]?.teacher ?? null;
+  const teacherData = course.course_instructors?.[0]?.teacher ?? null;
 
   const teacher = Array.isArray(teacherData)
     ? teacherData[0] ?? null
@@ -244,26 +240,20 @@ export default function CourseDetailContent({
     ),
   }));
 
-  const allLessons = orderedSections.flatMap(
-    (section) => section.lessons
-  );
+  const allLessons = orderedSections.flatMap((section) => section.lessons);
 
   const nextLesson =
-    allLessons.find(
-      (lesson) => !completedLessonIds.includes(lesson.id)
-    ) ?? null;
+    allLessons.find((lesson) => !completedLessonIds.includes(lesson.id)) ??
+    null;
 
   const firstLesson = allLessons[0] ?? null;
 
-  const isCompleted =
-    totalLessons > 0 && completedLessons >= totalLessons;
+  const isCompleted = totalLessons > 0 && completedLessons >= totalLessons;
 
   const isStarted = completedLessons > 0;
 
   const subscriptionExpired =
-    Boolean(enrollmentId) &&
-    !course.is_free &&
-    !hasCourseAccess;
+    Boolean(enrollmentId) && !course.is_free && !hasCourseAccess;
 
   const statusLabel = subscriptionExpired
     ? isArabic
@@ -284,8 +274,8 @@ export default function CourseDetailContent({
   const statusColor = subscriptionExpired
     ? "text-red-600"
     : isCompleted
-    ? "text-emerald-600"
-    : "text-[#124b8a]";
+    ? "text-emerald-700"
+    : "text-[#1B4B43]";
 
   const ctaLesson = isCompleted ? firstLesson : nextLesson;
 
@@ -301,162 +291,123 @@ export default function CourseDetailContent({
     ? "ابدأ الدورة"
     : "Start course";
 
-  // سطر المدرب المختصر داخل الهيرو
-  const instructorStrip = teacher ? (
-    <Link
-      href={`/instructors/${teacher.id}`}
-      className="mt-5 inline-flex items-center gap-3 max-w-full rounded-full bg-white/10 hover:bg-white/20 transition pe-5 ps-1.5 py-1.5"
-    >
-      <span className="w-11 h-11 rounded-full overflow-hidden bg-white/20 border-2 border-white/60 shrink-0 flex items-center justify-center">
-        {teacherProfile?.image_url ? (
-          <img
-            src={teacherProfile.image_url}
-            alt={teacher.full_name ?? "Teacher"}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <span className="font-bold text-white">
-            {(teacher.full_name ?? "T").charAt(0).toUpperCase()}
-          </span>
-        )}
-      </span>
-
-      <span className="min-w-0 text-start">
-        <span className="block text-sm font-bold text-white truncate">
-          {isArabic ? "مع " : "With "}
-          {teacher.full_name ??
-            (isArabic ? "مدرب الدورة" : "Course Instructor")}
-        </span>
-
-        <span className="flex flex-wrap gap-x-3 text-xs text-white/80">
-          {teacherProfile?.specialization && (
-            <span>{teacherProfile.specialization}</span>
-          )}
-          {teacherProfile?.experience_years != null &&
-            teacherProfile.experience_years > 0 && (
-              <span>
-                {formatYears(teacherProfile.experience_years, isArabic)}
-              </span>
-            )}
-        </span>
-      </span>
-    </Link>
-  ) : null;
-
   return (
     <div
-      className="max-w-6xl mx-auto w-full space-y-7"
+      className="mx-auto w-full max-w-5xl"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      {/* COURSE HERO */}
+      <div className="overflow-hidden rounded-3xl border border-[#E8E1D4] bg-white">
+        {/* HERO — البانر، النقطة البصرية الوحيدة القوية بالصفحة */}
 
-      <section className="bg-white rounded-[28px] border border-slate-100 shadow-sm overflow-hidden">
         {course.image_url ? (
-          <div className="relative h-64 md:h-[330px] overflow-hidden">
+          <div className="relative h-64 overflow-hidden md:h-[300px]">
             <img
               src={course.image_url}
               alt={course.title}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0F332D]/85 via-[#0F332D]/25 to-transparent" />
 
-            <div className="absolute bottom-0 inset-x-0 p-6 md:p-8 text-white">
+            <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-10">
               {course.category && (
-                <span className="inline-flex rounded-full bg-white/90 text-[#124b8a] px-4 py-2 text-xs font-bold mb-4">
+                <span className="mb-4 inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold text-[#8A3F2A]">
                   {course.category}
                 </span>
               )}
 
-              <h1 className="text-3xl md:text-4xl font-bold">
+              <h1 className="text-3xl font-bold md:text-4xl">
                 {course.title}
               </h1>
-{instructorStrip}
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-[#124b8a] to-[#0d3765] p-8 text-white">
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-6 text-white md:p-10">
+            <div
+              aria-hidden="true"
+              className="absolute -end-16 -bottom-16 h-56 w-56 rotate-45 bg-white/[0.05]"
+            />
+
+            <div
+              aria-hidden="true"
+              className="absolute -start-10 -top-16 h-40 w-40 rotate-45 bg-white/[0.04]"
+            />
+
             {course.category && (
-              <span className="inline-flex rounded-full bg-white/90 text-[#124b8a] px-4 py-2 text-xs font-bold mb-4">
+              <span className="relative mb-4 inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold text-[#8A3F2A]">
                 {course.category}
               </span>
             )}
 
-            <h1 className="text-3xl md:text-4xl font-bold">
+            <h1 className="relative text-3xl font-bold md:text-4xl">
               {course.title}
             </h1>
-{instructorStrip}
           </div>
         )}
 
-        <div className="p-6 md:p-8">
+        {/* المحتوى كله يتدفق ببعض بدون صناديق فرعية */}
+
+        <div className="p-6 md:p-10">
           {course.description && (
-            <p className="text-slate-600 leading-8 text-base md:text-lg mb-7">
+            <p className="text-base leading-8 text-[#6B6155] md:text-lg">
               {course.description}
             </p>
           )}
 
-          {/* COURSE STATS */}
+          {/* STATS — صف بسيط بفاصل عمودي بدل صناديق */}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* LESSONS */}
-
-            <div className="rounded-2xl bg-slate-50 p-5">
-              <p className="text-sm text-slate-400">
+          <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 border-y border-[#F0EBE1] py-6">
+            <div>
+              <p className="text-xs text-[#A69C8C]">
                 {isArabic ? "عدد الدروس" : "Lessons"}
               </p>
 
-              <p className="font-bold text-2xl mt-2 text-slate-900">
+              <p className="mt-1 text-2xl font-bold text-[#2A2420]">
                 {totalLessons}
               </p>
             </div>
 
-            {/* PRICE / STATUS */}
+            <div className="hidden h-10 w-px bg-[#E8E1D4] sm:block" />
 
-            <div className="rounded-2xl bg-slate-50 p-5">
+            <div>
               {enrollmentId ? (
                 <>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-xs text-[#A69C8C]">
                     {isArabic ? "الحالة" : "Status"}
                   </p>
 
-                  <p
-                    className={`font-bold text-2xl mt-2 ${statusColor}`}
-                  >
+                  <p className={`mt-1 text-2xl font-bold ${statusColor}`}>
                     {statusLabel}
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-xs text-[#A69C8C]">
                     {isArabic ? "السعر" : "Price"}
                   </p>
 
                   {course.is_free ? (
-                    <p className="font-bold text-2xl text-emerald-600 mt-2">
+                    <p className="mt-1 text-2xl font-bold text-emerald-700">
                       {isArabic ? "مجانية" : "Free"}
                     </p>
                   ) : hasDiscount ? (
-                    <div className="mt-2">
-                      <p className="text-sm text-slate-400 line-through">
-                        {originalPrice.toFixed(2)} USD
-                      </p>
-
-                      <p className="font-bold text-2xl text-emerald-600">
+                    <div className="mt-1 flex flex-wrap items-baseline gap-2">
+                      <p className="text-2xl font-bold text-emerald-700">
                         {finalPrice.toFixed(2)} USD
                       </p>
 
-                      <span className="inline-flex mt-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
+                      <span className="text-sm text-[#A69C8C] line-through">
+                        {originalPrice.toFixed(2)}
+                      </span>
+
+                      <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-bold text-red-600">
                         {discountLabel}
                       </span>
                     </div>
                   ) : (
-                    <div className="mt-2">
-                      <p className="font-bold text-2xl text-slate-900">
-                        {finalPrice.toFixed(2)} USD
-                      </p>
-
-                    </div>
+                    <p className="mt-1 text-2xl font-bold text-[#2A2420]">
+                      {finalPrice.toFixed(2)} USD
+                    </p>
                   )}
                 </>
               )}
@@ -466,19 +417,19 @@ export default function CourseDetailContent({
           {/* PROGRESS */}
 
           {enrollmentId && (
-            <div className="mt-7">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="font-bold text-[#124b8a]">
+            <div className="mt-6">
+              <div className="mb-2 flex justify-between text-sm">
+                <span className="font-bold text-[#1B4B43]">
                   {progressPercent}%
                 </span>
 
-                <span className="text-slate-500">
+                <span className="text-[#A69C8C]">
                   {completedLessons} / {totalLessons}
                 </span>
               </div>
 
               <div
-                className="h-3 bg-slate-100 rounded-full overflow-hidden"
+                className="h-3 overflow-hidden rounded-full bg-[#F0EBE1]"
                 role="progressbar"
                 aria-valuenow={progressPercent}
                 aria-valuemin={0}
@@ -486,7 +437,7 @@ export default function CourseDetailContent({
               >
                 <div
                   className={`h-full rounded-full transition-all ${
-                    isCompleted ? "bg-emerald-500" : "bg-[#124b8a]"
+                    isCompleted ? "bg-emerald-500" : "bg-[#1B4B43]"
                   }`}
                   style={{ width: `${progressPercent}%` }}
                 />
@@ -496,25 +447,23 @@ export default function CourseDetailContent({
 
           {/* SUBSCRIPTION */}
 
-          {enrollmentId &&
-            !course.is_free &&
-            subscription && (
-              <SubscriptionRenewalControls
-                courseId={course.id}
-                expiresAt={subscription.expiresAt}
-                autoRenew={subscription.autoRenew}
-                accessActive={hasCourseAccess}
-                daysRemaining={subscription.daysRemaining}
-              />
-            )}
+          {enrollmentId && !course.is_free && subscription && (
+            <SubscriptionRenewalControls
+              courseId={course.id}
+              expiresAt={subscription.expiresAt}
+              autoRenew={subscription.autoRenew}
+              accessActive={hasCourseAccess}
+              daysRemaining={subscription.daysRemaining}
+            />
+          )}
 
-          {/* ACTION: buy / enroll / continue */}
+          {/* ACTION */}
 
-          <div className="mt-7 flex justify-end">
+          <div className="mt-6 flex justify-end">
             {enrollmentId && !hasCourseAccess && !course.is_free ? (
               <Link
                 href={`/checkout/${course.id}`}
-                className="inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 py-3 transition"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#C9704A] px-6 py-3 font-bold text-white transition hover:bg-[#B15F3B]"
               >
                 {isArabic ? "تجديد الاشتراك" : "Renew subscription"}
               </Link>
@@ -522,7 +471,7 @@ export default function CourseDetailContent({
               ctaLesson ? (
                 <Link
                   href={`/courses/${course.id}/lessons/${ctaLesson.id}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#124b8a] hover:bg-[#0d3765] text-white font-bold px-6 py-3 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#124b8a]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#1B4B43] px-6 py-3 font-bold text-white transition hover:bg-[#123A34] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1B4B43]"
                 >
                   <PlayIcon />
                   {ctaLabel}
@@ -533,118 +482,178 @@ export default function CourseDetailContent({
             ) : (
               <Link
                 href={`/checkout/${course.id}`}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#087a54] hover:bg-[#066844] text-white font-bold px-6 py-3 transition"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#C9704A] px-6 py-3 font-bold text-white transition hover:bg-[#B15F3B]"
               >
                 {isArabic ? "اختر الاشتراك واشترِ الآن" : "Choose subscription"}
               </Link>
             )}
           </div>
-        </div>
-      </section>
 
-      {/* COURSE CONTENT */}
+          {/* INSTRUCTOR — بدون صندوق، مفصول بخط علوي بس */}
 
-      <section className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-6 md:p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold">
-            {isArabic ? "محتوى الدورة" : "Course Content"}
-          </h2>
+          {teacher && (
+            <div className="mt-10 border-t border-[#F0EBE1] pt-8">
+              <h2 className="mb-5 text-lg font-bold text-[#2A2420]">
+                {isArabic ? "معلم الدورة" : "Course Instructor"}
+              </h2>
 
-          <span className="text-sm text-slate-400">
-            {formatCount(orderedSections.length, isArabic, "section")}
-          </span>
-        </div>
+              <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F7F3EC] text-2xl font-bold text-[#1B4B43]">
+                  {teacherProfile?.image_url ? (
+                    <img
+                      src={teacherProfile.image_url}
+                      alt={teacher.full_name ?? "Teacher"}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    (teacher.full_name ?? "T").charAt(0).toUpperCase()
+                  )}
+                </span>
 
-        {orderedSections.map((section) => (
-          <div
-            key={section.id}
-            className="border border-slate-200 rounded-2xl mb-4 overflow-hidden"
-          >
-            <div className="bg-slate-50 p-4 flex justify-between items-center">
-              <h3 className="font-bold text-lg">{section.title}</h3>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xl font-bold text-[#2A2420]">
+                    {teacher.full_name ??
+                      (isArabic ? "مدرب الدورة" : "Course Instructor")}
+                  </h3>
 
-              <span className="text-sm text-slate-500">
-                {formatCount(section.lessons.length, isArabic, "lesson")}
+                  <p className="mt-1 flex flex-wrap gap-x-3 text-sm text-[#8A3F2A]">
+                    {teacherProfile?.specialization && (
+                      <span>{teacherProfile.specialization}</span>
+                    )}
+
+                    {teacherProfile?.experience_years != null &&
+                      teacherProfile.experience_years > 0 && (
+                        <span className="text-[#6B6155]">
+                          {formatYears(
+                            teacherProfile.experience_years,
+                            isArabic
+                          )}
+                        </span>
+                      )}
+                  </p>
+
+                  {teacherProfile?.bio && (
+                    <p className="mt-3 text-sm leading-7 text-[#6B6155]">
+                      {teacherProfile.bio}
+                    </p>
+                  )}
+                </div>
+
+                <Link
+                  href={`/instructors/${teacher.id}`}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#1B4B43] px-5 py-2.5 text-sm font-bold text-[#1B4B43] transition hover:bg-[#F7F3EC]"
+                >
+                  {isArabic ? "عرض الملف الشخصي" : "View profile"}
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* COURSE CONTENT — بدون صناديق، قائمة مفصولة بخطوط */}
+
+          <div className="mt-10 border-t border-[#F0EBE1] pt-8">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-[#2A2420] md:text-3xl">
+                {isArabic ? "محتوى الدورة" : "Course Content"}
+              </h2>
+
+              <span className="text-sm text-[#A69C8C]">
+                {formatCount(orderedSections.length, isArabic, "section")}
               </span>
             </div>
 
-            <div className="p-3 space-y-2">
-              {section.lessons.map((lesson) => {
-                const completed = completedLessonIds.includes(
-                  lesson.id
-                );
+            <div className="space-y-8">
+              {orderedSections.map((section) => (
+                <div key={section.id}>
+                  <div className="mb-3 flex items-center justify-between border-b border-[#F0EBE1] pb-3">
+                    <h3 className="text-lg font-bold text-[#2A2420]">
+                      {section.title}
+                    </h3>
 
-                const canOpen =
-                  hasCourseAccess ||
-                  Boolean(lesson.is_free_preview);
-
-                const iconStyle = completed
-                  ? "bg-emerald-100 text-emerald-600"
-                  : canOpen
-                  ? "bg-blue-100 text-[#124b8a]"
-                  : "bg-slate-200 text-slate-400";
-
-                const statusText = completed ? (
-                  <span className="text-emerald-600 font-bold">
-                    {isArabic ? "مكتمل" : "Done"}
-                  </span>
-                ) : canOpen ? (
-                  <span className="text-blue-600">
-                    {isArabic ? "غير مكتمل" : "Not done"}
-                  </span>
-                ) : (
-                  <span className="text-slate-400">
-                    {isArabic ? "مغلق" : "Locked"}
-                  </span>
-                );
-
-                const lessonContent = (
-                  <>
-                    <span className="flex items-center gap-3 min-w-0">
-                      <span
-                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${iconStyle}`}
-                      >
-                        {completed ? (
-                          <CheckIcon />
-                        ) : canOpen ? (
-                          <PlayIcon />
-                        ) : (
-                          <LockIcon />
-                        )}
-                      </span>
-
-                      <span className="font-medium text-slate-800 truncate">
-                        {lesson.title}
-                      </span>
+                    <span className="text-sm text-[#A69C8C]">
+                      {formatCount(section.lessons.length, isArabic, "lesson")}
                     </span>
-
-                    <span className="text-sm shrink-0">
-                      {statusText}
-                    </span>
-                  </>
-                );
-
-                return canOpen ? (
-                  <Link
-                    key={lesson.id}
-                    href={`/courses/${course.id}/lessons/${lesson.id}`}
-                    className="flex justify-between items-center gap-4 bg-slate-50 hover:bg-blue-50 rounded-xl p-4 transition"
-                  >
-                    {lessonContent}
-                  </Link>
-                ) : (
-                  <div
-                    key={lesson.id}
-                    className="flex justify-between items-center gap-4 bg-slate-50 rounded-xl p-4 opacity-70"
-                  >
-                    {lessonContent}
                   </div>
-                );
-              })}
+
+                  <div>
+                    {section.lessons.map((lesson) => {
+                      const completed = completedLessonIds.includes(
+                        lesson.id
+                      );
+
+                      const canOpen =
+                        hasCourseAccess || Boolean(lesson.is_free_preview);
+
+                      const iconStyle = completed
+                        ? "bg-emerald-100 text-emerald-700"
+                        : canOpen
+                        ? "bg-[#F7F3EC] text-[#1B4B43]"
+                        : "bg-[#F0EBE1] text-[#A69C8C]";
+
+                      const statusText = completed ? (
+                        <span className="font-bold text-emerald-700">
+                          {isArabic ? "مكتمل" : "Done"}
+                        </span>
+                      ) : canOpen ? (
+                        <span className="text-[#1B4B43]">
+                          {isArabic ? "غير مكتمل" : "Not done"}
+                        </span>
+                      ) : (
+                        <span className="text-[#A69C8C]">
+                          {isArabic ? "مغلق" : "Locked"}
+                        </span>
+                      );
+
+                      const lessonContent = (
+                        <>
+                          <span className="flex min-w-0 items-center gap-3">
+                            <span
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconStyle}`}
+                            >
+                              {completed ? (
+                                <CheckIcon />
+                              ) : canOpen ? (
+                                <PlayIcon />
+                              ) : (
+                                <LockIcon />
+                              )}
+                            </span>
+
+                            <span className="truncate font-medium text-[#2A2420]">
+                              {lesson.title}
+                            </span>
+                          </span>
+
+                          <span className="shrink-0 text-sm">
+                            {statusText}
+                          </span>
+                        </>
+                      );
+
+                      return canOpen ? (
+                        <Link
+                          key={lesson.id}
+                          href={`/courses/${course.id}/lessons/${lesson.id}`}
+                          className="flex items-center justify-between gap-4 border-b border-[#F0EBE1] px-1 py-4 transition last:border-b-0 hover:bg-[#F7F3EC]/60"
+                        >
+                          {lessonContent}
+                        </Link>
+                      ) : (
+                        <div
+                          key={lesson.id}
+                          className="flex items-center justify-between gap-4 border-b border-[#F0EBE1] px-1 py-4 opacity-70 last:border-b-0"
+                        >
+                          {lessonContent}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </section>
+        </div>
+      </div>
     </div>
   );
 }

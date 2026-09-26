@@ -68,6 +68,10 @@ export async function createCourse(
     formData.get("course_type") ?? ""
   );
 
+  const deliveryType = String(
+    formData.get("delivery_type") ?? "recorded"
+  );
+
   const coursePrice = Number(
     formData.get("course_price") ?? 0
   );
@@ -79,6 +83,12 @@ export async function createCourse(
     !["group", "private"].includes(courseType)
   ) {
     throw new Error("اختر نوع الدورة");
+  }
+
+  if (
+    !["recorded", "live"].includes(deliveryType)
+  ) {
+    throw new Error("اختر نوع المحتوى");
   }
 
   if (
@@ -111,6 +121,7 @@ export async function createCourse(
         category,
         image_url: imageUrl || null,
         course_type: courseType,
+        delivery_type: deliveryType,
         price: coursePrice,
         currency: "USD",
         is_free: false,
@@ -172,6 +183,10 @@ export async function updateCourse(
     formData.get("image_url") ?? ""
   ).trim();
 
+  const deliveryType = String(
+    formData.get("delivery_type") ?? "recorded"
+  );
+
   const coursePrice = Number(
     formData.get("course_price") ?? 0
   );
@@ -181,6 +196,12 @@ export async function updateCourse(
 
   const isPublished =
     formData.get("is_published") === "on";
+
+  if (
+    !["recorded", "live"].includes(deliveryType)
+  ) {
+    throw new Error("اختر نوع المحتوى");
+  }
 
   if (
     !Number.isFinite(coursePrice) ||
@@ -211,6 +232,7 @@ export async function updateCourse(
         description,
         category,
         image_url: imageUrl || null,
+        delivery_type: deliveryType,
         price: coursePrice,
         currency: "USD",
         is_free: isFree,

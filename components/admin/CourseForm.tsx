@@ -17,6 +17,7 @@ type Course = {
   is_free?: boolean;
   is_published: boolean;
   course_type?: string;
+  delivery_type?: "recorded" | "live";
   discount_type?: "percentage" | "fixed" | null;
   discount_value?: number | null;
 };
@@ -34,6 +35,10 @@ export default function CourseForm({
 
   const [courseType, setCourseType] = useState<"group" | "private">(
     course?.course_type === "private" ? "private" : "group"
+  );
+
+  const [deliveryType, setDeliveryType] = useState<"recorded" | "live">(
+    course?.delivery_type === "live" ? "live" : "recorded"
   );
 
   const [discountType, setDiscountType] = useState<
@@ -158,6 +163,36 @@ export default function CourseForm({
           </div>
         </div>
       )}
+
+      <div className="bg-white border rounded-xl p-5 space-y-5">
+        <h2 className="font-bold text-lg">
+          نوع المحتوى
+        </h2>
+
+        <label className="flex items-center gap-3 font-bold">
+          <input
+            type="radio"
+            name="delivery_type"
+            value="recorded"
+            checked={deliveryType === "recorded"}
+            onChange={() => setDeliveryType("recorded")}
+          />
+
+          دورة مسجلة
+        </label>
+
+        <label className="flex items-center gap-3 font-bold">
+          <input
+            type="radio"
+            name="delivery_type"
+            value="live"
+            checked={deliveryType === "live"}
+            onChange={() => setDeliveryType("live")}
+          />
+
+          دورة مباشرة
+        </label>
+      </div>
 
       <div className="bg-white border rounded-xl p-5 space-y-5">
         <h2 className="font-bold text-lg">

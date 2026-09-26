@@ -3,6 +3,7 @@ import AppShell from "@/components/AppShell";
 import AdminDashboardContent from "@/components/AdminDashboardContent";
 import { getUserRole } from "@/lib/auth/get-user-role";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminDashboardStats } from "@/lib/admin-dashboard";
 
 export default async function AdminDashboardPage() {
   const role = await getUserRole();
@@ -12,71 +13,17 @@ export default async function AdminDashboardPage() {
   }
 
   const supabase = await createClient();
-
-  const [
-    { count: coursesCount },
-    { count: studentsCount },
-    { count: enrollmentsCount },
-    { count: ordersCount },
-    { count: paidOrdersCount },
-    { count: failedOrdersCount },
-  ] = await Promise.all([
-    supabase
-      .from("courses")
-      .select("id", {
-        count: "exact",
-        head: true,
-      }),
-
-    supabase
-      .from("profiles")
-      .select("id", {
-        count: "exact",
-        head: true,
-      })
-      .eq("role", "student"),
-
-    supabase
-      .from("enrollments")
-      .select("id", {
-        count: "exact",
-        head: true,
-      }),
-
-    supabase
-      .from("orders")
-      .select("id", {
-        count: "exact",
-        head: true,
-      })
-      .in("status", ["paid", "failed"]),
-
-    supabase
-      .from("orders")
-      .select("id", {
-        count: "exact",
-        head: true,
-      })
-      .eq("status", "paid"),
-
-    supabase
-      .from("orders")
-      .select("id", {
-        count: "exact",
-        head: true,
-      })
-      .eq("status", "failed"),
-  ]);
+  const stats = await getAdminDashboardStats(supabase);
 
   return (
     <AppShell>
       <AdminDashboardContent
-        coursesCount={coursesCount ?? 0}
-        studentsCount={studentsCount ?? 0}
-        enrollmentsCount={enrollmentsCount ?? 0}
-        ordersCount={ordersCount ?? 0}
-        paidOrdersCount={paidOrdersCount ?? 0}
-        failedOrdersCount={failedOrdersCount ?? 0}
+        coursesCount={stats.coursesCount}
+        studentsCount={stats.studentsCount}
+        enrollmentsCount={stats.enrollmentsCount}
+        ordersCount={stats.ordersCount}
+        paidOrdersCount={stats.paidOrdersCount}
+        failedOrdersCount={stats.failedOrdersCount}
       />
     </AppShell>
   );

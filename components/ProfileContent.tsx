@@ -55,239 +55,100 @@ function LockIcon() {
   );
 }
 
-function BookIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-      <path
-        d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-      />
-      <path
-        d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-      />
-    </svg>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" />
-      <path
-        d="m8.5 12.3 2.3 2.3 4.7-4.9"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TrendIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-      <path
-        d="M4 16.5 9.5 11l3.5 3.5L20 7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M15 7h5v5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export default function ProfileContent({
   profile,
   email,
 }: ProfileContentProps) {
-
   const { language } = useLanguage();
-
   const isArabic = language === "ar";
 
-
   const displayName =
-    profile.full_name?.trim() ||
-    email.split("@")[0] ||
-    "User";
-
+    profile.full_name?.trim() || email.split("@")[0] || "User";
 
   const roleLabel =
     profile.role === "admin"
       ? isArabic
         ? "مدير المنصة"
         : "Platform Admin"
+      : profile.role === "teacher"
+      ? isArabic
+        ? "مدرس"
+        : "Teacher"
       : isArabic
-        ? "طالب"
-        : "Student";
+      ? "طالب"
+      : "Student";
 
-
-  const avatar =
-    displayName.charAt(0).toUpperCase();
-
-
-  const stats = [
-    {
-      title: isArabic ? "الدورات المسجلة" : "Enrolled Courses",
-      value: "0",
-      icon: <BookIcon />,
-    },
-    {
-      title: isArabic ? "الدروس المكتملة" : "Completed Lessons",
-      value: "0",
-      icon: <CheckCircleIcon />,
-    },
-    {
-      title: isArabic ? "نسبة الإنجاز" : "Progress",
-      value: "0%",
-      icon: <TrendIcon />,
-    },
-  ];
-
+  const avatar = displayName.charAt(0).toUpperCase();
 
   return (
     <div
-      className="max-w-5xl mx-auto w-full bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden"
+      className="mx-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
       dir={isArabic ? "rtl" : "ltr"}
     >
-
-
       {/* User Header */}
-      <section className="relative p-8 md:p-10 bg-gradient-to-br from-[#124b8a]/[0.04] via-white to-[#d6b56c]/[0.08]">
-
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-
-
+      <section className="border-b border-slate-100 p-8 md:p-10">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-5">
-
-
-            <div className="relative shrink-0">
-
-              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-[#124b8a] to-[#d6b56c] p-[3px] shadow-lg shadow-[#124b8a]/20">
-
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-4xl md:text-5xl font-black text-[#124b8a]">
-                  {avatar}
-                </div>
-
-              </div>
-
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#124b8a]/10 text-3xl font-bold text-[#124b8a] md:h-24 md:w-24 md:text-4xl">
+              {avatar}
             </div>
 
-
-
             <div>
-
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
+              <h1 className="text-2xl font-bold text-slate-800 md:text-3xl">
                 {displayName}
               </h1>
 
-
               <p
-                className="text-slate-500 mt-1.5 text-sm md:text-base"
+                className="mt-1.5 text-sm text-slate-500 md:text-base"
                 dir="ltr"
               >
                 {email}
               </p>
 
-
-              <span className="inline-flex items-center mt-3 px-4 py-1.5 rounded-full bg-[#124b8a]/10 text-[#124b8a] text-sm font-bold">
+              <span className="mt-3 inline-flex items-center rounded-full bg-[#124b8a]/10 px-4 py-1.5 text-sm font-bold text-[#124b8a]">
                 {roleLabel}
               </span>
-
-
             </div>
-
-
           </div>
-
-
 
           {profile.role === "student" && (
             <Link
               href="/my-courses"
-              className="bg-[#124b8a] hover:bg-[#0d3b6e] text-white px-7 py-3 rounded-xl font-bold transition shadow-md shadow-[#124b8a]/20 text-center"
+              className="rounded-xl bg-[#124b8a] px-7 py-3 text-center font-bold text-white transition-colors hover:bg-[#0d3b6e]"
             >
-              {isArabic
-                ? "دوراتي التعليمية"
-                : "My Courses"}
+              {isArabic ? "دوراتي التعليمية" : "My Courses"}
             </Link>
           )}
-
-
         </div>
-
       </section>
-
-
-
-      <div className="border-t border-slate-100" />
-
-
-
-      {/* Tabs */}
-      <div className="px-8 md:px-10 pt-6 text-sm font-bold">
-
-        <button className="text-[#124b8a] border-b-2 border-[#124b8a] pb-3">
-          {isArabic ? "الملف الشخصي" : "Profile"}
-        </button>
-
-      </div>
-
-
 
       {/* Personal Info Form */}
       <section className="p-8 md:p-10">
-
         <div className="mb-6">
-
-          <h2 className="text-xl md:text-2xl font-bold text-slate-800">
-            {isArabic
-              ? "معلومات الحساب"
-              : "Account Information"}
+          <h2 className="text-xl font-bold text-slate-800 md:text-2xl">
+            {isArabic ? "معلومات الحساب" : "Account Information"}
           </h2>
 
-
-          <p className="text-sm text-slate-500 mt-1.5">
+          <p className="mt-1.5 text-sm text-slate-500">
             {isArabic
               ? "قم بتحديث معلوماتك الشخصية."
               : "Update your personal information."}
           </p>
-
         </div>
 
-
         <ProfileForm profile={profile} />
-
       </section>
 
-
-
-      {/* Account Settings: Email + Security, unified cards */}
-      <section className="px-8 md:px-10 pb-8 md:pb-10">
-
-        <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-5">
+      {/* Account Settings */}
+      <section className="border-t border-slate-100 px-8 pb-8 pt-8 md:px-10 md:pb-10">
+        <h2 className="mb-5 text-xl font-bold text-slate-800 md:text-2xl">
           {isArabic ? "إعدادات الحساب" : "Account Settings"}
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-4">
-
-          {/* Email card */}
-          <div className="group rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-white hover:border-[#124b8a]/20 hover:shadow-md transition p-6 flex flex-col">
-
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#124b8a]/10 text-[#124b8a] flex items-center justify-center">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 p-6 transition-colors hover:bg-white hover:shadow-sm">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#124b8a]/10 text-[#124b8a]">
                 <MailIcon />
               </div>
               <h3 className="text-lg font-bold text-slate-800">
@@ -295,25 +156,21 @@ export default function ProfileContent({
               </h3>
             </div>
 
-            <p className="text-slate-500 mb-5 text-sm" dir="ltr">
+            <p className="mb-5 text-sm text-slate-500" dir="ltr">
               {email}
             </p>
 
             <Link
               href="/change-email"
-              className="mt-auto inline-flex justify-center bg-white border border-slate-200 text-[#124b8a] px-5 py-2.5 rounded-xl font-bold hover:bg-[#124b8a] hover:text-white hover:border-[#124b8a] transition"
+              className="mt-auto inline-flex justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-bold text-[#124b8a] transition-colors hover:bg-[#124b8a] hover:text-white"
             >
               {isArabic ? "تغيير البريد الإلكتروني" : "Change Email"}
             </Link>
-
           </div>
 
-
-          {/* Security card */}
-          <div className="group rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-white hover:border-[#124b8a]/20 hover:shadow-md transition p-6 flex flex-col">
-
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#124b8a]/10 text-[#124b8a] flex items-center justify-center">
+          <div className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 p-6 transition-colors hover:bg-white hover:shadow-sm">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#124b8a]/10 text-[#124b8a]">
                 <LockIcon />
               </div>
               <h3 className="text-lg font-bold text-slate-800">
@@ -321,7 +178,7 @@ export default function ProfileContent({
               </h3>
             </div>
 
-            <p className="text-slate-500 mb-5 text-sm">
+            <p className="mb-5 text-sm text-slate-500">
               {isArabic
                 ? "يمكنك تحديث كلمة المرور من هنا."
                 : "Manage your password security."}
@@ -329,22 +186,13 @@ export default function ProfileContent({
 
             <Link
               href="/change-password"
-              className="mt-auto inline-flex justify-center bg-white border border-slate-200 text-[#124b8a] px-5 py-2.5 rounded-xl font-bold hover:bg-[#124b8a] hover:text-white hover:border-[#124b8a] transition"
+              className="mt-auto inline-flex justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-bold text-[#124b8a] transition-colors hover:bg-[#124b8a] hover:text-white"
             >
               {isArabic ? "تغيير كلمة المرور" : "Change Password"}
             </Link>
-
           </div>
-
         </div>
-
       </section>
-
-
-
-
-
-
     </div>
   );
 }

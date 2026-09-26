@@ -1,125 +1,141 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import AuthLayout from "@/components/auth/AuthLayout";
+import { GlobeIcon } from "@/components/icons";
 
 export default function ForgotPasswordPage() {
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
-    e.preventDefault();
+  const [message, setMessage] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-    setMessage("");
-    setError("");
-    setLoading(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const { error } =
-      await supabase.auth.resetPasswordForEmail(
-        email,
-        {
-          redirectTo:
-            `${window.location.origin}/reset-password`,
-        }
-      );
+  const validateForm = () => {
+    if (!email) {
+      setEmailError("البريد الإلكتروني مطلوب");
+      return false;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setEmailError("صيغة البريد الإلكتروني غير صحيحة");
+      return false;
+    }
+
+    setEmailError(null);
+    return true;
+  };
+
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    setMessage(null);
+    setServerError(null);
+
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo: `${window.location.origin}/reset-password`,
+      }
+    );
 
     if (error) {
-      setError(error.message);
+      setServerError(error.message);
     } else {
       setMessage(
         "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني"
       );
     }
 
-    setLoading(false);
-  }
+    setIsLoading(false);
+  };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c]"
-      dir="rtl"
+    <AuthLayout
+      title="نسيت كلمة المرور؟"
+      description="أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور"
     >
-      <div className="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl">
+      {message && (
+        <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-3 text-center text-sm text-green-700">
+          {message}
+        </div>
+      )}
 
-        <div className="text-center mb-7">
-          <Image
-            src="/logo/logo-transparent.png"
-            alt="Your Way"
-            width={170}
-            height={170}
-            className="mx-auto mb-3 object-contain"
-          />
+      {serverError && (
+        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
+          {serverError}
+        </div>
+      )}
 
-          <h1 className="text-2xl font-bold text-slate-800">
-            نسيت كلمة المرور؟
-          </h1>
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-5"
+        noValidate
+      >
+        <div>
+          <label className="mb-2 block text-sm font-medium text-white/90">
+            البريد الإلكتروني
+          </label>
 
-          <p className="mt-2 text-sm text-slate-500">
-            أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور
-          </p>
+          <div className="relative">
+            <GlobeIcon
+              width={19}
+              height={19}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              type="email"
+              value={email}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              placeholder="name@example.com"
+              disabled={isLoading}
+              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                emailError
+                  ? "border-red-400"
+                  : "border-slate-200"
+              }`}
+            />
+          </div>
+
+          {emailError && (
+            <p className="mt-1 text-xs text-red-500">
+              {emailError}
+            </p>
+          )}
         </div>
 
-
-        {message && (
-          <div className="mb-5 rounded-xl bg-green-50 p-3 text-center text-sm text-green-700">
-            {message}
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-5 rounded-xl bg-red-50 p-3 text-center text-sm text-red-600">
-            {error}
-          </div>
-        )}
-
-
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
         >
+          {isLoading ? "جاري الإرسال..." : "إرسال الرابط"}
+        </button>
+      </form>
 
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e)=>
-              setEmail(e.target.value)
-            }
-            placeholder="name@example.com"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:ring-2 focus:ring-[#124b8a]/30"
-          />
-
-
-          <button
-            disabled={loading}
-            className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white hover:bg-[#0d3b6e]"
-          >
-            {loading
-              ? "جاري الإرسال..."
-              : "إرسال الرابط"}
-          </button>
-
-        </form>
-
-
-        <div className="mt-6 text-center">
-          <Link
-            href="/login"
-            className="font-bold text-[#124b8a]"
-          >
-            العودة لتسجيل الدخول
-          </Link>
-        </div>
-
+      <div className="mt-6 text-center text-sm text-white/70">
+        <Link
+          href="/login"
+          className="font-bold text-[#d6b56c] hover:underline"
+        >
+          العودة لتسجيل الدخول
+        </Link>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

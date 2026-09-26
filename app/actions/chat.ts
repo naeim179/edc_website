@@ -3,10 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export async function getOrCreateConversation(
-  courseId: string,
-  teacherId: string
-) {
+export async function startConversation(courseId: string, teacherId: string) {
   const supabase = await createClient();
 
   const {
@@ -14,46 +11,32 @@ export async function getOrCreateConversation(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("Unauthorized");
+    throw new Error("يجب تسجيل الدخول أولاً");
   }
 
-  const { data: existing, error: existingError } =
-    await supabase
-      .from("conversations")
-      .select("*")
-      .eq("course_id", courseId)
-      .eq("student_id", user.id)
-      .eq("teacher_id", teacherId)
-      .maybeSingle();
-
-  if (existingError) {
-    throw new Error(existingError.message);
-  }
-
-  if (existing) {
-    return existing;
-  }
-
-  const { data: conversation, error } =
-    await supabase
-      .from("conversations")
-      .insert({
-        course_id: courseId,
-        student_id: user.id,
-        teacher_id: teacherId,
-      })
-      .select()
-      .single();
+  const { data: conversationId, error } = await supabase.rpc(
+    "start_conversation",
+    { p_course_id: courseId, p_teacher_id: teacherId }
+  );
 
   if (error) {
-    throw new Error(error.message);
+    console.error("startConversation error:", error.message);
+    throw new Error(error.message || "تعذر بدء المحادثة");
   }
 
-  return conversation;
+  return conversationId as string;
 }
 
+export async function sendMessage(conversationId: string, content: string) {
+  const trimmed = content.trim();
 
-export async function getUserConversations() {
+  if (!trimmed) {
+    throw new Error("لا يمكن إرسال رسالة فارغة");
+  }
+  if (trimmed.length > 4000) {
+    throw new Error("الرسالة طويلة جدًا");
+  }
+
   const supabase = await createClient();
 
   const {
@@ -61,145 +44,40 @@ export async function getUserConversations() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("Unauthorized");
+    throw new Error("يجب تسجيل الدخول أولاً");
   }
 
-  const { data, error } =
-    await supabase
-      .from("conversations")
-      .select(`
-        id,
-        course_id,
-        student_id,
-        teacher_id,
-        updated_at,
-        courses (
-          id,
-          title
-        )
-      `)
-      .order(
-        "updated_at",
-        {
-          ascending: false,
-        }
-      );
+  const { error } = await supabase.from("messages").insert({
+    conversation_id: conversationId,
+    sender_id: user.id,
+    content: trimmed,
+  });
 
   if (error) {
-    throw new Error(error.message);
+    console.error("sendMessage error:", error.message, error.code, error.details, error.hint);
+    throw new Error(`تعذر إرسال الرسالة: ${error.message}`);
   }
 
-  return data ?? [];
+  revalidatePath(`/messages/${conversationId}`);
+  revalidatePath("/messages");
 }
 
-
-export async function getConversationMessages(
-  conversationId: string
-) {
+export async function markConversationRead(conversationId: string) {
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
+  if (!user) return;
 
-  const { data, error } =
-    await supabase
-      .from("messages")
-      .select("*")
-      .eq(
-        "conversation_id",
-        conversationId
-      )
-      .order(
-        "created_at",
-        {
-          ascending: true,
-        }
-      );
+  const { error } = await supabase.rpc("mark_conversation_read", {
+    p_conversation_id: conversationId,
+  });
 
   if (error) {
-    throw new Error(error.message);
+    console.error("markConversationRead error:", error.message);
   }
 
-  return data ?? [];
-}
-
-
-export async function sendMessage(
-  conversationId: string,
-  text: string
-) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  const message = text.trim();
-
-  if (!message) {
-    throw new Error("Message cannot be empty");
-  }
-
-  const { data, error } =
-    await supabase
-      .from("messages")
-      .insert({
-        conversation_id: conversationId,
-        sender_id: user.id,
-        message,
-      })
-      .select()
-      .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  revalidatePath("/teacher/messages");
-  revalidatePath("/my-courses");
-
-  return data;
-}
-
-
-export async function markMessagesAsRead(
-  conversationId: string
-) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  const { error } =
-    await supabase
-      .from("messages")
-      .update({
-        is_read: true,
-      })
-      .eq(
-        "conversation_id",
-        conversationId
-      )
-      .neq(
-        "sender_id",
-        user.id
-      );
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  revalidatePath("/messages");
 }

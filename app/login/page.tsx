@@ -104,24 +104,24 @@ export default function LoginPage() {
       className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4"
       dir="rtl"
     >
-      <div className="w-full max-w-md rounded-[32px] border border-white/40 bg-white/95 p-8 shadow-2xl backdrop-blur">
-        <div className="mb-7 text-center">
-          <div className="mx-auto mb-5 flex w-fit items-center justify-center">
+      <div className="w-full max-w-md p-8">
+        <div className="mb-10 text-center">
+          <div className="relative mx-auto mb-8 flex h-44 w-44 items-center justify-center rounded-full bg-white/90 shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
             <Image
-              src="/logo/logo-transparent.png"
+              src="/logo/logo.png"
               alt="Your Way"
-              width={180}
-              height={180}
+              width={150}
+              height={150}
               priority
-              className="h-auto w-[180px] object-contain drop-shadow-[0_12px_25px_rgba(18,75,138,0.18)]"
+              className="object-contain rounded-full"
             />
           </div>
 
-          <h1 className="text-2xl font-bold text-slate-800">
+          <h1 className="text-2xl font-bold text-white">
             تسجيل الدخول
           </h1>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-white/70">
             أدخل بيانات حسابك للمتابعة
           </p>
         </div>
@@ -138,7 +138,7 @@ export default function LoginPage() {
           noValidate
         >
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-white/90">
               البريد الإلكتروني
             </label>
 
@@ -173,7 +173,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-white/90">
               كلمة المرور
             </label>
 
@@ -219,7 +219,7 @@ export default function LoginPage() {
             <div className="mt-2 text-left">
               <Link
                 href="/forgot-password"
-                className="text-sm font-semibold text-[#124b8a] hover:underline"
+                className="text-sm font-semibold text-[#d6b56c] hover:underline"
               >
                 نسيت كلمة المرور؟
               </Link>
@@ -237,11 +237,11 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-slate-500">
+        <div className="mt-6 text-center text-sm text-white/70">
           ليس لديك حساب؟{" "}
           <Link
             href="/register"
-            className="font-bold text-[#124b8a] hover:underline"
+            className="font-bold text-[#d6b56c] hover:underline"
           >
             إنشاء حساب جديد
           </Link>

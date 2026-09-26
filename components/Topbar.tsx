@@ -62,7 +62,7 @@ export default function Topbar({
 
   return (
     <header
-      className="flex w-full flex-wrap items-center gap-3 px-1 py-1 sm:flex-nowrap"
+      className="flex w-full flex-wrap items-center gap-3 sm:flex-nowrap"
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div className="flex shrink-0 items-center gap-3 lg:hidden">
@@ -71,7 +71,7 @@ export default function Topbar({
           onClick={onMenuClick}
           aria-label={isArabic ? "فتح القائمة" : "Open menu"}
           aria-controls="app-sidebar"
-          className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+          className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50"
         >
           <MenuIcon />
         </button>
@@ -79,7 +79,7 @@ export default function Topbar({
         <Link
           href="/"
           aria-label="Your Way"
-          className="rounded-xl bg-[#ffffff] p-1.5 shadow-sm ring-1 ring-slate-200"
+          className="rounded-xl border border-slate-200 bg-white p-1.5"
         >
           <Image
             src="/logo/logo-transparent.png"
@@ -103,7 +103,7 @@ export default function Topbar({
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t.topbar.search}
             aria-label={t.topbar.search}
-            className="h-11 w-full rounded-2xl border border-slate-200 bg-white pe-4 ps-11 text-sm text-slate-700 shadow-sm transition placeholder:text-slate-400 focus:border-[#124b8a] focus:outline-none focus:ring-4 focus:ring-[#124b8a]/10"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pe-4 ps-11 text-sm text-slate-700 transition placeholder:text-slate-400 focus:border-[#124b8a] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#124b8a]/10"
           />
 
           <button
@@ -121,9 +121,9 @@ export default function Topbar({
           <>
             <Link
               href="/profile"
-              className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white py-1.5 pe-1.5 ps-1.5 shadow-sm transition-colors hover:bg-slate-50 sm:pe-4"
+              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white py-1.5 pe-1.5 ps-1.5 transition-colors hover:bg-slate-50 sm:pe-4"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#124b8a] text-sm font-bold text-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#124b8a] text-sm font-bold text-white">
                 {userName.charAt(0).toUpperCase()}
               </span>
 
@@ -142,7 +142,7 @@ export default function Topbar({
               <button
                 type="submit"
                 aria-label={t.topbar.logout}
-                className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 sm:px-4"
+                className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 sm:px-4"
               >
                 <LogoutIcon width={18} height={18} />
 
@@ -155,7 +155,7 @@ export default function Topbar({
         ) : (
           <Link
             href="/login"
-            className="flex h-11 items-center rounded-xl bg-[#124b8a] px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#0d3b6e]"
+            className="flex h-11 items-center rounded-xl bg-[#124b8a] px-5 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
           >
             {t.topbar.login}
           </Link>

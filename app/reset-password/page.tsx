@@ -75,26 +75,30 @@ export default function ResetPasswordPage() {
       dir="rtl"
     >
 
-      <div className="w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl">
+      <div className="w-full max-w-md">
+
+        <div className="text-center mb-8">
+
+          <div className="relative mx-auto mb-8 flex h-44 w-44 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
+
+            <Image
+              src="/logo/logo.png"
+              alt="Your Way"
+              width={150}
+              height={150}
+              priority
+              className="object-contain rounded-full"
+            />
+
+          </div>
 
 
-        <div className="text-center mb-7">
-
-          <Image
-            src="/logo/logo-transparent.png"
-            alt="Your Way"
-            width={170}
-            height={170}
-            className="mx-auto mb-3 object-contain"
-          />
-
-
-          <h1 className="text-2xl font-bold text-slate-800">
+          <h1 className="text-3xl font-bold text-white">
             إنشاء كلمة مرور جديدة
           </h1>
 
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-white/70">
             أدخل كلمة المرور الجديدة لحسابك
           </p>
 
@@ -125,22 +129,18 @@ export default function ResetPasswordPage() {
           <input
             type="password"
             value={password}
-            onChange={(e)=>
-              setPassword(e.target.value)
-            }
+            onChange={(e)=>setPassword(e.target.value)}
             placeholder="كلمة المرور الجديدة"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:ring-2 focus:ring-[#124b8a]/30"
+            className="w-full rounded-xl bg-white px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-[#d6b56c]"
           />
 
 
           <input
             type="password"
             value={confirmPassword}
-            onChange={(e)=>
-              setConfirmPassword(e.target.value)
-            }
+            onChange={(e)=>setConfirmPassword(e.target.value)}
             placeholder="تأكيد كلمة المرور"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:ring-2 focus:ring-[#124b8a]/30"
+            className="w-full rounded-xl bg-white px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-[#d6b56c]"
           />
 
 
@@ -163,7 +163,7 @@ export default function ResetPasswordPage() {
 
           <Link
             href="/login"
-            className="font-bold text-[#124b8a]"
+            className="font-bold text-[#d6b56c]"
           >
             العودة لتسجيل الدخول
           </Link>

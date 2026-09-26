@@ -54,7 +54,6 @@ export default function Sidebar({
   const isTeacher = role === "teacher";
   const isArabic = language === "ar";
 
-  // إغلاق القائمة بزر Esc، وعند التكبير لشاشة الكمبيوتر، وقفل تمرير الصفحة خلفها
   useEffect(() => {
     if (!open) {
       return;
@@ -93,7 +92,7 @@ export default function Sidebar({
         dashboard: "لوحة الإدارة",
         manageCourses: "إدارة الدورات",
         teachers: "المعلمون",
-        orders: "الطلبات",
+        orders: "المدفوعات",
         students: "الطلاب",
         profile: "الملف الشخصي",
         teacherDashboard: "لوحة المعلم",
@@ -109,7 +108,7 @@ export default function Sidebar({
         dashboard: "Dashboard",
         manageCourses: "Manage Courses",
         teachers: "Teachers",
-        orders: "Orders",
+        orders: "Payments",
         students: "Students",
         profile: "Profile",
         teacherDashboard: "Teacher Dashboard",
@@ -201,7 +200,6 @@ export default function Sidebar({
           : []),
       ];
 
-  // على الجوال: تنزلق من جهة البداية. على الكمبيوتر: ثابتة بجانب المحتوى.
   const hiddenTransform = isArabic
     ? "translate-x-full"
     : "-translate-x-full";
@@ -211,7 +209,7 @@ export default function Sidebar({
       <div
         onClick={onClose}
         aria-hidden="true"
-        className={`fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
+        className={`fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
           open
             ? "opacity-100"
             : "pointer-events-none opacity-0"
@@ -227,20 +225,20 @@ export default function Sidebar({
             : `invisible ${hiddenTransform}`
         }`}
       >
-        <div className="flex h-full flex-col overflow-y-auto bg-gradient-to-b from-[#124b8a] to-[#0b3260] p-5 text-white shadow-xl lg:rounded-[22px]">
-          <div className="flex items-start justify-between lg:justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="rounded-2xl bg-[#ffffff] p-2.5 shadow-sm">
+        <div className="flex h-full flex-col overflow-y-auto border border-slate-200 bg-white p-4 shadow-sm lg:rounded-2xl">
+          <div className="flex items-center justify-between px-1 pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50">
                 <Image
                   src="/logo/logo-transparent.png"
                   alt="Your Way"
-                  width={160}
-                  height={160}
-                  className="h-auto w-24 object-contain"
+                  width={80}
+                  height={80}
+                  className="h-7 w-7 object-contain"
                 />
               </div>
 
-              <span className="text-lg font-bold tracking-tight">
+              <span className="text-base font-bold tracking-tight text-slate-800">
                 {text.platform}
               </span>
             </div>
@@ -249,15 +247,17 @@ export default function Sidebar({
               type="button"
               onClick={onClose}
               aria-label={text.close}
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-white/20 lg:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-600 lg:hidden"
             >
               <CloseIcon />
             </button>
           </div>
 
+          <div className="mb-2 h-px bg-slate-100" />
+
           <nav
             aria-label={text.menu}
-            className="mt-8 flex flex-col gap-1"
+            className="mt-2 flex flex-col gap-0.5"
           >
             {items.map((item) => {
               const active = isActive(pathname, item);
@@ -268,20 +268,19 @@ export default function Sidebar({
                   href={item.href}
                   onClick={onClose}
                   aria-current={active ? "page" : undefined}
-                  className={`relative flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-colors ${
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                     active
-                      ? "bg-white/15 text-white"
-                      : "text-white/75 hover:bg-white/10 hover:text-white"
+                      ? "bg-[#124b8a]/8 text-[#124b8a]"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
                   }`}
                 >
-                  {active && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-y-2.5 start-0 w-1 rounded-full bg-[#ffb648]"
-                    />
-                  )}
-
-                  {item.icon}
+                  <span
+                    className={
+                      active ? "text-[#124b8a]" : "text-slate-400"
+                    }
+                  >
+                    {item.icon}
+                  </span>
 
                   <span>{item.label}</span>
                 </Link>

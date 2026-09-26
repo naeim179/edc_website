@@ -18,6 +18,7 @@ export type CatalogCourse = {
   isFree: boolean;
   discountType: "percentage" | "fixed" | null;
   discountValue: number | null;
+  deliveryType: "recorded" | "live";
 };
 
 type RawTeacher = { full_name: string | null };
@@ -32,6 +33,7 @@ type RawCatalogCourse = {
   is_free: boolean | null;
   discount_type: "percentage" | "fixed" | null;
   discount_value: number | null;
+  delivery_type: "recorded" | "live";
   course_instructors?:
     | { teacher?: RawTeacher | RawTeacher[] | null }[]
     | null;
@@ -48,6 +50,7 @@ const BASE_COLUMNS = `
   is_free,
   discount_type,
   discount_value,
+  delivery_type,
   sections (
     lessons (
       id
@@ -130,6 +133,7 @@ export async function fetchCatalogCourses(
       isFree: Boolean(course.is_free),
       discountType: course.discount_type,
       discountValue: course.discount_value,
+      deliveryType: course.delivery_type,
     };
   });
 }
