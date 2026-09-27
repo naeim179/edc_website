@@ -5,6 +5,11 @@ import CompleteLessonButton from "@/components/CompleteLessonButton";
 import LessonVideoPlayer from "@/components/lessons/LessonVideoPlayer";
 import CourseLessonSidebar from "@/components/CourseLessonSidebar";
 import { useLanguage } from "@/components/LanguageProvider";
+
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import CardContent from "@/components/ui/CardContent";
 import {
   ArrowIcon,
   CheckCircleIcon,
@@ -75,11 +80,11 @@ export default function LessonContent({
     >
       <nav
         aria-label={isArabic ? "مسار التنقل" : "Breadcrumb"}
-        className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500"
+        className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#A69C8C]"
       >
         <Link
           href={`/courses/${courseId}`}
-          className="font-bold text-[#124b8a] hover:underline"
+          className="font-bold text-[#1B4B43] hover:underline"
         >
           {courseTitle ||
             (isArabic ? "العودة إلى الدورة" : "Back to course")}
@@ -95,14 +100,14 @@ export default function LessonContent({
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
         <div className="min-w-0 space-y-5">
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="overflow-hidden">
             {lesson.lesson_type === "live" ? (
-              <div className="m-6 rounded-2xl border border-blue-100 bg-blue-50 p-6">
-                <h2 className="text-xl font-bold text-[#124b8a]">
+              <div className="m-6 rounded-2xl border border-[#E8E1D4] bg-[#F7F3EC] p-6">
+                <h2 className="text-xl font-bold text-[#1B4B43]">
                   {isArabic ? "درس مباشر" : "Live Lesson"}
                 </h2>
 
-                <div className="mt-4 space-y-2 text-slate-700">
+                <div className="mt-4 space-y-2 text-[#6B6155]">
                   <p>
                     <strong>
                       {isArabic ? "المنصة:" : "Platform:"}
@@ -119,15 +124,13 @@ export default function LessonContent({
                 </div>
 
                 {lesson.content_url && (
-                  <a
+                  <Button
                     href={lesson.content_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#124b8a] px-5 py-3 font-bold text-white hover:bg-[#0d3b6e]"
+                    className="mt-5"
                   >
                     {isArabic ? "دخول الجلسة" : "Join Session"}
                     <ExternalLinkIcon width={16} height={16} />
-                  </a>
+                  </Button>
                 )}
               </div>
             ) : (
@@ -141,53 +144,49 @@ export default function LessonContent({
               />
             )}
 
-            <div className="space-y-4 p-6 sm:p-8">
+            <CardContent className="space-y-4 p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-[#124b8a]">
+                <Badge variant="info">
                   {isArabic
                     ? `الدرس ${position.current} من ${position.total}`
                     : `Lesson ${position.current} of ${position.total}`}
-                </span>
+                </Badge>
 
                 {lesson.duration && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-100 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E8E1D4] bg-[#F7F3EC] px-3 py-1 text-xs font-semibold text-[#6B6155]">
                     <ClockIcon width={13} height={13} />
                     {lesson.duration}
                   </span>
                 )}
 
                 {!isEnrolled && lesson.isFreePreview && (
-                  <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                  <Badge variant="warning">
                     {isArabic ? "معاينة مجانية" : "Free preview"}
-                  </span>
+                  </Badge>
                 )}
               </div>
 
-              <h1 className="text-2xl font-bold leading-9 text-slate-900 sm:text-3xl">
+              <h1 className="text-2xl font-bold leading-9 text-[#2A2420] sm:text-3xl">
                 {lesson.title}
               </h1>
 
               {isEnrolled && enrollmentId ? (
-                <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold ${
-                      completed
-                        ? "bg-emerald-50 text-emerald-600"
-                        : "bg-slate-50 text-slate-600"
-                    }`}
-                  >
-                    {completed && (
-                      <CheckCircleIcon width={16} height={16} />
-                    )}
+                <div className="flex flex-wrap items-center gap-3 border-t border-[#F0EBE1] pt-5">
+                  <Badge variant={completed ? "success" : "default"}>
+                    <span className="flex items-center gap-1.5">
+                      {completed && (
+                        <CheckCircleIcon width={16} height={16} />
+                      )}
 
-                    {completed
-                      ? isArabic
-                        ? "تم إكمال الدرس"
-                        : "Lesson completed"
-                      : isArabic
-                      ? "الدرس غير مكتمل"
-                      : "Lesson not completed"}
-                  </span>
+                      {completed
+                        ? isArabic
+                          ? "تم إكمال الدرس"
+                          : "Lesson completed"
+                        : isArabic
+                        ? "الدرس غير مكتمل"
+                        : "Lesson not completed"}
+                    </span>
+                  </Badge>
 
                   <CompleteLessonButton
                     enrollmentId={enrollmentId}
@@ -196,30 +195,30 @@ export default function LessonContent({
                   />
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 rounded-2xl bg-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm leading-7 text-slate-600">
+                <div className="flex flex-col gap-4 rounded-2xl bg-[#F7F3EC] p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm leading-7 text-[#6B6155]">
                     {isArabic
                       ? "هذا درس مجاني للمعاينة. سجّل بالدورة لتفتح باقي الدروس وتتابع تقدمك."
                       : "This is a free preview lesson. Enroll in the course to unlock the rest and track your progress."}
                   </p>
 
-                  <Link
+                  <Button
                     href={`/courses/${courseId}`}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#124b8a] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
+                    className="shrink-0"
                   >
                     <PlayIcon width={13} height={13} />
                     {isArabic ? "عرض الدورة" : "View course"}
-                  </Link>
+                  </Button>
                 </div>
               )}
-            </div>
-          </section>
+            </CardContent>
+          </Card>
 
           <div className="flex items-center justify-between gap-3">
             {previousLessonId ? (
-              <Link
+              <Button
                 href={`/courses/${courseId}/lessons/${previousLessonId}`}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                variant="secondary"
               >
                 <ArrowIcon
                   width={16}
@@ -227,15 +226,14 @@ export default function LessonContent({
                   className="rotate-180 rtl:rotate-0"
                 />
                 {isArabic ? "الدرس السابق" : "Previous lesson"}
-              </Link>
+              </Button>
             ) : (
               <span />
             )}
 
             {nextLessonId && (
-              <Link
+              <Button
                 href={`/courses/${courseId}/lessons/${nextLessonId}`}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#124b8a] px-5 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#0d3b6e]"
               >
                 {isArabic ? "الدرس التالي" : "Next lesson"}
                 <ArrowIcon
@@ -243,7 +241,7 @@ export default function LessonContent({
                   height={16}
                   className="rtl:rotate-180"
                 />
-              </Link>
+              </Button>
             )}
           </div>
         </div>

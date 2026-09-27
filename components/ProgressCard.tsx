@@ -1,25 +1,77 @@
-'use client';
+"use client";
+
+import Card from "@/components/ui/Card";
+import CardContent from "@/components/ui/CardContent";
 
 export default function ProgressCard() {
   const stats = [
-    { label: 'الواجبات المكتملة', value: '12', icon: '✓', color: 'bg-emerald-50 text-emerald-600' },
-    { label: 'المواد المسجلة', value: '06', icon: '📖', color: 'bg-emerald-50 text-emerald-600' },
-    { label: 'الانتظام', value: '85%', icon: '📅', color: 'bg-emerald-50 text-emerald-600' },
-    { label: 'ساعات التعلم', value: '42 س', icon: '🕒', color: 'bg-emerald-50 text-emerald-600' },
+    {
+      label: "الواجبات المكتملة",
+      value: "12",
+      icon: "✓",
+    },
+    {
+      label: "المواد المسجلة",
+      value: "06",
+      icon: "📖",
+    },
+    {
+      label: "الانتظام",
+      value: "85%",
+      icon: "📅",
+    },
+    {
+      label: "ساعات التعلم",
+      value: "42 س",
+      icon: "🕒",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 w-full">
-      {stats.map((stat, idx) => (
-        <div key={idx} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-          <div className="text-right">
-            <span className="text-xs text-slate-400 block">{stat.label}</span>
-            <span className="text-lg font-bold text-slate-800">{stat.value}</span>
-          </div>
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold ${stat.color}`}>
-            {stat.icon}
-          </div>
-        </div>
+    <div className="grid w-full grid-cols-2 gap-4">
+      {stats.map((stat) => (
+        <Card
+          key={stat.label}
+          className="
+            hover:-translate-y-0.5
+          "
+        >
+          <CardContent
+            className="
+              flex
+              items-center
+              justify-between
+              gap-4
+            "
+          >
+            <div className="text-right">
+              <span className="block text-xs text-slate-500">
+                {stat.label}
+              </span>
+
+              <span className="mt-1 block text-xl font-semibold text-slate-900">
+                {stat.value}
+              </span>
+            </div>
+
+            <div
+              className="
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                rounded-xl
+                bg-blue-50
+                text-sm
+                font-semibold
+                text-[#124b8a]
+              "
+            >
+              {stat.icon}
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );

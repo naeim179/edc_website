@@ -5,6 +5,10 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { ConversationListItem } from "@/lib/chat";
 
+import Card from "@/components/ui/Card";
+import CardContent from "@/components/ui/CardContent";
+import Badge from "@/components/ui/Badge";
+
 interface Props {
   initialConversations: ConversationListItem[];
   userId: string;

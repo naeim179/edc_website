@@ -43,22 +43,41 @@ export default function MessageThread({
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
         },
-        (payload) => {
-          console.log(
-            "REALTIME INSERT received:",
-            JSON.stringify(payload.new, null, 2)
-          );
+        async (payload) => {
+          const payloadMessage = payload.new as Partial<ChatMessage>;
+
+          if (
+            payloadMessage.conversation_id &&
+            payloadMessage.conversation_id !== conversationId
+          ) {
+            return;
+          }
+
+          console.log("REALTIME EVENT:", payload.eventType);
+
+          const { data } = await supabase
+            .from("messages")
+            .select(
+              "id, conversation_id, sender_id, content, created_at, read_at"
+            )
+            .eq("conversation_id", conversationId)
+            .order("created_at", { ascending: true });
+
+          if (data) {
+            setMessages(data as ChatMessage[]);
+          }
+
           const newMessage = payload.new as ChatMessage;
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === newMessage.id)) return prev;
-            return [...prev, newMessage];
-          });
-          if (!readOnly && newMessage.sender_id !== currentUserId) {
+
+          if (
+            !readOnly &&
+            newMessage?.sender_id &&
+            newMessage.sender_id !== currentUserId
+          ) {
             markConversationRead(conversationId);
           }
         }

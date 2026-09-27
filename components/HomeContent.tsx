@@ -51,31 +51,26 @@ export default function HomeContent({
       : `/courses/${continueCourse.id}`
     : "/courses";
 
-  const heroShapes = (
-    <>
-      <div
-        aria-hidden="true"
-        className="absolute -end-16 -bottom-20 h-64 w-64 rotate-45 bg-white/[0.05]"
-      />
-
-      <div
-        aria-hidden="true"
-        className="absolute -start-12 -top-20 h-44 w-44 rotate-45 bg-white/[0.04]"
-      />
-    </>
-  );
-
   return (
     <div
-      className="mx-auto w-full max-w-6xl space-y-8"
+      className="mx-auto w-full max-w-6xl space-y-10"
       dir={isArabic ? "rtl" : "ltr"}
     >
       {isAuthenticated ? (
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-6 text-white sm:p-8">
-          {heroShapes}
+        <section className="overflow-hidden rounded-3xl border border-[#E8E1D4] bg-white">
+          {/* HERO */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#1B4B43] to-[#0F332D] px-6 py-8 text-white sm:px-10 sm:py-10">
+            <div
+              aria-hidden="true"
+              className="absolute -end-16 -bottom-20 h-64 w-64 rotate-45 bg-white/[0.05]"
+            />
 
-          <div className="relative grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-            <div>
+            <div
+              aria-hidden="true"
+              className="absolute -start-12 -top-20 h-44 w-44 rotate-45 bg-white/[0.04]"
+            />
+
+            <div className="relative">
               <p className="text-sm text-white/70">
                 {isArabic ? "أهلاً بعودتك" : "Welcome back"}
               </p>
@@ -90,68 +85,56 @@ export default function HomeContent({
                   : "Pick up your learning journey where you left off."}
               </p>
 
-              <div className="mt-6 grid grid-cols-3 gap-3">
-                {statItems.map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-xl border border-white/15 bg-white/5 p-4"
-                  >
-                    <p className="text-2xl font-bold sm:text-3xl">
-                      {item.value}
-                    </p>
+              <div className="mt-7 flex flex-wrap items-center gap-x-10 gap-y-4 border-t border-white/15 pt-6">
+                {statItems.map((item, index) => (
+                  <div key={item.label} className="flex items-center gap-10">
+                    {index > 0 && (
+                      <span className="hidden h-9 w-px bg-white/15 sm:block" />
+                    )}
 
-                    <p className="mt-1 text-xs leading-5 text-white/70">
-                      {item.label}
-                    </p>
+                    <div>
+                      <p className="text-2xl font-bold sm:text-3xl">
+                        {item.value}
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-white/65">
+                        {item.label}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
 
-            {continueCourse ? (
-              <div className="rounded-2xl border border-[#E8E1D4] bg-white p-5 text-[#2A2420]">
-                <p className="text-xs font-bold text-[#A69C8C]">
+          {/* CONTINUE LEARNING — صف متدفق بدون كرت عائم */}
+
+          {continueCourse ? (
+            <Link
+              href={continueHref}
+              className="flex flex-col gap-4 p-6 transition hover:bg-[#F7F3EC]/50 sm:flex-row sm:items-center sm:gap-6 sm:p-8"
+            >
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl sm:h-20 sm:w-20">
+                <CourseCover
+                  image={continueCourse.image}
+                  title={continueCourse.title}
+                />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-[#8A3F2A]">
                   {isArabic
                     ? "تابع من حيث توقفت"
                     : "Continue where you left off"}
                 </p>
 
-                <div className="mt-3 flex items-center gap-4">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl">
-                    <CourseCover
-                      image={continueCourse.image}
-                      title={continueCourse.title}
-                    />
-                  </div>
+                <h2 className="mt-0.5 truncate text-lg font-bold text-[#2A2420]">
+                  {continueCourse.title}
+                </h2>
 
-                  <div className="min-w-0">
-                    <h2 className="line-clamp-2 font-bold leading-6">
-                      {continueCourse.title}
-                    </h2>
-
-                    {continueCourse.category && (
-                      <p className="mt-0.5 text-xs text-[#A69C8C]">
-                        {continueCourse.category}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <div className="mb-2 flex justify-between text-xs">
-                    <span className="text-[#A69C8C]">
-                      {isArabic
-                        ? `${continueCourse.completedLessons} من ${continueCourse.totalLessons} درس`
-                        : `${continueCourse.completedLessons} of ${continueCourse.totalLessons} lessons`}
-                    </span>
-
-                    <span className="font-bold text-[#1B4B43]">
-                      {continueCourse.progress}%
-                    </span>
-                  </div>
-
+                <div className="mt-3 flex items-center gap-3">
                   <div
-                    className="h-2 overflow-hidden rounded-full bg-[#F0EBE1]"
+                    className="h-2 flex-1 overflow-hidden rounded-full bg-[#F0EBE1] sm:max-w-xs"
                     role="progressbar"
                     aria-valuenow={continueCourse.progress}
                     aria-valuemin={0}
@@ -159,30 +142,37 @@ export default function HomeContent({
                   >
                     <div
                       className="h-full rounded-full bg-[#1B4B43]"
-                      style={{
-                        width: `${continueCourse.progress}%`,
-                      }}
+                      style={{ width: `${continueCourse.progress}%` }}
                     />
                   </div>
-                </div>
 
-                <Link
-                  href={continueHref}
-                  className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-[#1B4B43] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#123A34]"
-                >
-                  <PlayIcon width={14} height={14} />
-                  {continueCourse.progress > 0
-                    ? isArabic
-                      ? "متابعة التعلم"
-                      : "Continue learning"
-                    : isArabic
-                    ? "ابدأ الدورة"
-                    : "Start course"}
-                </Link>
+                  <span className="shrink-0 text-xs font-bold text-[#1B4B43]">
+                    {continueCourse.progress}%
+                  </span>
+
+                  <span className="shrink-0 text-xs text-[#A69C8C]">
+                    {isArabic
+                      ? `${continueCourse.completedLessons}/${continueCourse.totalLessons} درس`
+                      : `${continueCourse.completedLessons}/${continueCourse.totalLessons}`}
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div className="rounded-2xl border border-[#E8E1D4] bg-white p-6 text-[#2A2420]">
-                <h2 className="text-lg font-bold">
+
+              <span className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#1B4B43] px-5 py-2.5 text-sm font-bold text-white transition group-hover:bg-[#123A34]">
+                <PlayIcon width={14} height={14} />
+                {continueCourse.progress > 0
+                  ? isArabic
+                    ? "متابعة"
+                    : "Continue"
+                  : isArabic
+                  ? "ابدأ"
+                  : "Start"}
+              </span>
+            </Link>
+          ) : (
+            <div className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+              <div>
+                <h2 className="text-lg font-bold text-[#2A2420]">
                   {stats.enrolled > 0
                     ? isArabic
                       ? "أنجزت كل دوراتك 🎉"
@@ -192,30 +182,38 @@ export default function HomeContent({
                     : "Start your first course"}
                 </h2>
 
-                <p className="mt-2 text-sm leading-7 text-[#6B6155]">
+                <p className="mt-1 text-sm leading-6 text-[#6B6155]">
                   {isArabic
                     ? "تصفّح الدورات المتاحة واختر ما يناسب هدفك."
                     : "Browse the available courses and pick what fits your goal."}
                 </p>
-
-                <Link
-                  href="/courses"
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1B4B43] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#123A34]"
-                >
-                  {isArabic ? "استعرض الدورات" : "Browse courses"}
-                  <ArrowIcon
-                    width={16}
-                    height={16}
-                    className="rtl:rotate-180"
-                  />
-                </Link>
               </div>
-            )}
-          </div>
+
+              <Link
+                href="/courses"
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#1B4B43] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#123A34]"
+              >
+                {isArabic ? "استعرض الدورات" : "Browse courses"}
+                <ArrowIcon
+                  width={16}
+                  height={16}
+                  className="rtl:rotate-180"
+                />
+              </Link>
+            </div>
+          )}
         </section>
       ) : (
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-8 text-white sm:p-12">
-          {heroShapes}
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-8 text-white sm:p-12">
+          <div
+            aria-hidden="true"
+            className="absolute -end-16 -bottom-20 h-64 w-64 rotate-45 bg-white/[0.05]"
+          />
+
+          <div
+            aria-hidden="true"
+            className="absolute -start-12 -top-20 h-44 w-44 rotate-45 bg-white/[0.04]"
+          />
 
           <div className="relative max-w-2xl">
             <p className="text-sm text-white/70">

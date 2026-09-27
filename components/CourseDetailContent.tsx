@@ -5,6 +5,11 @@ import EnrollButton from "@/components/EnrollButton";
 import SubscriptionRenewalControls from "@/components/SubscriptionRenewalControls";
 import { useLanguage } from "@/components/LanguageProvider";
 
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import ContactTeacherButton from "@/components/chat/ContactTeacherButton";
+import ProgressBar from "@/components/ui/ProgressBar";
+
 type Lesson = {
   id: string;
   title: string;
@@ -428,20 +433,7 @@ export default function CourseDetailContent({
                 </span>
               </div>
 
-              <div
-                className="h-3 overflow-hidden rounded-full bg-[#F0EBE1]"
-                role="progressbar"
-                aria-valuenow={progressPercent}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    isCompleted ? "bg-emerald-500" : "bg-[#1B4B43]"
-                  }`}
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
+              <ProgressBar value={progressPercent} />
             </div>
           )}
 
@@ -461,21 +453,20 @@ export default function CourseDetailContent({
 
           <div className="mt-6 flex justify-end">
             {enrollmentId && !hasCourseAccess && !course.is_free ? (
-              <Link
+              <Button
                 href={`/checkout/${course.id}`}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#C9704A] px-6 py-3 font-bold text-white transition hover:bg-[#B15F3B]"
+                variant="warning"
               >
                 {isArabic ? "تجديد الاشتراك" : "Renew subscription"}
-              </Link>
+              </Button>
             ) : hasCourseAccess ? (
               ctaLesson ? (
-                <Link
+                <Button
                   href={`/courses/${course.id}/lessons/${ctaLesson.id}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#1B4B43] px-6 py-3 font-bold text-white transition hover:bg-[#123A34] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1B4B43]"
                 >
                   <PlayIcon />
                   {ctaLabel}
-                </Link>
+                </Button>
               ) : null
             ) : course.is_free ? (
               <EnrollButton courseId={course.id} />
@@ -539,12 +530,19 @@ export default function CourseDetailContent({
                   )}
                 </div>
 
-                <Link
-                  href={`/instructors/${teacher.id}`}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#1B4B43] px-5 py-2.5 text-sm font-bold text-[#1B4B43] transition hover:bg-[#F7F3EC]"
-                >
-                  {isArabic ? "عرض الملف الشخصي" : "View profile"}
-                </Link>
+                <div className="flex flex-wrap gap-3">
+                  <ContactTeacherButton
+                    courseId={course.id}
+                    teacherId={teacher.id}
+                  />
+
+                  <Link
+                    href={`/instructors/${teacher.id}`}
+                    className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#1B4B43] px-5 py-2.5 text-sm font-bold text-[#1B4B43] transition hover:bg-[#F7F3EC]"
+                  >
+                    {isArabic ? "عرض الملف الشخصي" : "View profile"}
+                  </Link>
+                </div>
               </div>
             </div>
           )}

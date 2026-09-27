@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import CourseCatalogCard from "@/components/CourseCatalogCard";
 import { useLanguage } from "@/components/LanguageProvider";
+
+import Card from "@/components/ui/Card";
+import CardContent from "@/components/ui/CardContent";
 import type { CatalogCourse } from "@/lib/course-catalog";
 
 type Props = {
@@ -113,21 +116,23 @@ export default function CoursesContent({
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
-          <h2 className="mb-2 text-lg font-bold text-slate-700">
-            {isArabic ? "لا توجد دورات" : "No courses"}
-          </h2>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <h2 className="mb-2 text-lg font-semibold text-slate-700">
+              {isArabic ? "لا توجد دورات" : "No courses"}
+            </h2>
 
-          <p className="text-sm text-slate-500">
-            {searchQuery
-              ? isArabic
-                ? "لم نجد دورات مطابقة لعملية البحث."
-                : "No courses matched your search."
-              : isArabic
-              ? "لا توجد دورات منشورة حاليًا."
-              : "No published courses available."}
-          </p>
-        </div>
+            <p className="text-sm text-slate-500">
+              {searchQuery
+                ? isArabic
+                  ? "لم نجد دورات مطابقة لعملية البحث."
+                  : "No courses matched your search."
+                : isArabic
+                ? "لا توجد دورات منشورة حاليًا."
+                : "No published courses available."}
+            </p>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

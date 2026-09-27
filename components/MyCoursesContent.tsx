@@ -6,6 +6,10 @@ import Link from "next/link";
 import CourseCard from "@/components/CourseCard";
 import { useLanguage } from "@/components/LanguageProvider";
 
+import Card from "@/components/ui/Card";
+import CardContent from "@/components/ui/CardContent";
+import Button from "@/components/ui/Button";
+
 type Course = {
   id: string;
   title: string;
@@ -71,24 +75,26 @@ export default function MyCoursesContent({
             : "My Courses"}
         </h1>
 
-        <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
-          <h2 className="mb-2 text-lg font-bold text-slate-700">
-            {isArabic
-              ? "سجّل دخولك لعرض دوراتك"
-              : "Login to view your courses"}
-          </h2>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <h2 className="mb-2 text-lg font-semibold text-slate-700">
+              {isArabic
+                ? "سجّل دخولك لعرض دوراتك"
+                : "Login to view your courses"}
+            </h2>
 
-          <Link
-            href="/login"
-            className={
-              primaryButton
-            }
-          >
-            {isArabic
-              ? "تسجيل الدخول"
-              : "Login"}
-          </Link>
-        </div>
+            <Link
+              href="/login"
+              className={
+                primaryButton
+              }
+            >
+              {isArabic
+                ? "تسجيل الدخول"
+                : "Login"}
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -302,32 +308,34 @@ export default function MyCoursesContent({
           )}
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
-          <h2 className="mb-2 text-lg font-bold text-slate-700">
-            {courses.length ===
-            0
-              ? isArabic
-                ? "لا توجد دورات مسجلة"
-                : "No enrolled courses"
-              : isArabic
-              ? "لا توجد دورات في هذا التصنيف"
-              : "No courses in this filter"}
-          </h2>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <h2 className="mb-2 text-lg font-semibold text-slate-700">
+              {courses.length ===
+              0
+                ? isArabic
+                  ? "لا توجد دورات مسجلة"
+                  : "No enrolled courses"
+                : isArabic
+                ? "لا توجد دورات في هذا التصنيف"
+                : "No courses in this filter"}
+            </h2>
 
-          {courses.length ===
-            0 && (
-            <Link
-              href="/courses"
-              className={
-                primaryButton
-              }
-            >
-              {isArabic
-                ? "استعرض الدورات"
-                : "Browse Courses"}
-            </Link>
-          )}
-        </div>
+            {courses.length ===
+              0 && (
+              <Link
+                href="/courses"
+                className={
+                  primaryButton
+                }
+              >
+                {isArabic
+                  ? "استعرض الدورات"
+                  : "Browse Courses"}
+              </Link>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

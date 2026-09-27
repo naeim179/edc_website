@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
+
 import CourseCover from "@/components/CourseCover";
 import { useLanguage } from "@/components/LanguageProvider";
+
+import Card from "@/components/ui/Card";
+import CardContent from "@/components/ui/CardContent";
+import Badge from "@/components/ui/Badge";
+import ProgressBar from "@/components/ui/ProgressBar";
+
 import {
   ArrowIcon,
   BookIcon,
   CheckCircleIcon,
 } from "@/components/icons";
+
 import { formatLessons } from "@/lib/course-format";
 import { computePrice } from "@/lib/course-pricing";
 
@@ -70,80 +78,96 @@ export default function CourseCatalogCard({
     : "View course";
 
   return (
-    <article
+    <Card
+      className="
+        group
+        overflow-hidden
+        hover:-translate-y-1
+      "
       dir={isArabic ? "rtl" : "ltr"}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-[#E8E1D4] bg-white transition-colors duration-300 hover:border-[#1B4B43]/30"
     >
       <Link
         href={`/courses/${id}`}
-        tabIndex={-1}
-        aria-hidden="true"
         className="relative block aspect-[16/9] overflow-hidden"
       >
-        <CourseCover image={image} title={title} />
+        <CourseCover
+          image={image}
+          title={title}
+        />
 
         {deliveryType && (
-          <span className="absolute start-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-[#8A3F2A] backdrop-blur">
-            {deliveryType === "live"
-              ? isArabic
-                ? "دورة مباشرة"
-                : "Live"
-              : isArabic
-              ? "دورة مسجلة"
-              : "Recorded"}
+          <span className="absolute start-3 top-3">
+            <Badge variant="warning">
+              {deliveryType === "live"
+                ? isArabic
+                  ? "دورة مباشرة"
+                  : "Live"
+                : isArabic
+                ? "دورة مسجلة"
+                : "Recorded"}
+            </Badge>
           </span>
         )}
 
         {enrolled && (
-          <span
-            className={`absolute end-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold text-white ${
-              done ? "bg-emerald-600" : "bg-[#1B4B43]"
-            }`}
-          >
-            {done && <CheckCircleIcon width={14} height={14} />}
+          <span className="absolute end-3 top-3">
+            <Badge variant={done ? "success" : "info"}>
+              <span className="flex items-center gap-1">
+                {done && (
+                  <CheckCircleIcon
+                    width={14}
+                    height={14}
+                  />
+                )}
 
-            {done
-              ? isArabic
-                ? "مكتملة"
-                : "Completed"
-              : isArabic
-              ? "مسجل"
-              : "Enrolled"}
+                {done
+                  ? isArabic
+                    ? "مكتملة"
+                    : "Completed"
+                  : isArabic
+                  ? "مسجل"
+                  : "Enrolled"}
+              </span>
+            </Badge>
           </span>
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <CardContent
+        className="
+          flex
+          flex-1
+          flex-col
+          gap-4
+        "
+      >
         {category && (
-          <span className="inline-flex w-fit items-center gap-1.5 text-xs font-bold text-[#8A3F2A]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C9704A]" />
+          <Badge variant="default">
             {category}
-          </span>
+          </Badge>
         )}
 
-        <h3 className="line-clamp-2 text-lg font-bold leading-7 text-[#2A2420]">
+        <h3 className="line-clamp-2 text-lg font-semibold text-slate-900">
           <Link
             href={`/courses/${id}`}
-            className="transition-colors hover:text-[#1B4B43]"
+            className="hover:text-[#124b8a]"
           >
             {title}
           </Link>
         </h3>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[#6B6155]">
+        <div className="flex flex-wrap gap-4 text-sm text-slate-500">
           {instructor && (
-            <span className="inline-flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F7F3EC] text-xs font-bold text-[#1B4B43]">
+            <span className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-[#124b8a]">
                 {instructor.charAt(0).toUpperCase()}
               </span>
 
-              <span className="max-w-[10rem] truncate">
-                {instructor}
-              </span>
+              {instructor}
             </span>
           )}
 
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold">
+          <span className="flex items-center gap-1">
             <BookIcon width={14} height={14} />
             {formatLessons(lessons, isArabic)}
           </span>
@@ -152,73 +176,65 @@ export default function CourseCatalogCard({
         {enrolled && (
           <div>
             <div className="mb-2 flex justify-between text-xs">
-              <span className="text-[#A69C8C]">
+              <span className="text-slate-500">
                 {isArabic ? "التقدم" : "Progress"}
               </span>
 
-              <span
-                className={`font-bold ${
-                  done ? "text-emerald-600" : "text-[#1B4B43]"
-                }`}
-              >
+              <span className="font-semibold text-[#124b8a]">
                 {progress}%
               </span>
             </div>
 
-            <div
-              className="h-2 w-full overflow-hidden rounded-full bg-[#F0EBE1]"
-              role="progressbar"
-              aria-valuenow={progress}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            >
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  done ? "bg-emerald-500" : "bg-[#1B4B43]"
-                }`}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+            <ProgressBar value={progress} />
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-[#F0EBE1] pt-4">
+        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
           {enrolled ? (
             <span />
           ) : pricing.isFree ? (
-            <span className="text-lg font-bold text-emerald-700">
+            <span className="text-lg font-bold text-emerald-600">
               {isArabic ? "مجانية" : "Free"}
             </span>
           ) : (
-            <div className="flex flex-col leading-tight">
+            <div>
               {pricing.hasDiscount && (
-                <span className="flex items-center gap-2 text-xs">
-                  <span className="text-[#A69C8C] line-through">
+                <div className="flex gap-2 text-xs">
+                  <span className="line-through text-slate-400">
                     {pricing.original.toFixed(2)}
                   </span>
 
-                  <span className="rounded-full bg-red-50 px-2 py-0.5 font-bold text-red-600">
-                    {isArabic
-                      ? `خصم ${pricing.discountPercent}%`
-                      : `${pricing.discountPercent}% off`}
-                  </span>
-                </span>
+                  <Badge variant="danger">
+                    {pricing.discountPercent}%
+                  </Badge>
+                </div>
               )}
 
-              <p className="text-lg font-bold text-[#2A2420]">
-                {pricing.final.toFixed(2)}{" "}
-                <span className="text-xs font-semibold text-[#A69C8C]">
-                  USD
-                </span>
+              <p className="text-lg font-bold text-slate-900">
+                {pricing.final.toFixed(2)} USD
               </p>
             </div>
           )}
 
           <Link
             href={`/courses/${id}`}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1B4B43] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#123A34]"
+            className="
+              inline-flex
+              items-center
+              justify-center
+              gap-2
+              rounded-xl
+              bg-[#124b8a]
+              px-4
+              py-2.5
+              text-sm
+              font-semibold
+              text-white
+              hover:bg-[#0d3b6e]
+            "
           >
             {label}
+
             <ArrowIcon
               width={16}
               height={16}
@@ -226,7 +242,7 @@ export default function CourseCatalogCard({
             />
           </Link>
         </div>
-      </div>
-    </article>
+      </CardContent>
+    </Card>
   );
 }

@@ -4,6 +4,10 @@ import Link from "next/link";
 import ProfileForm from "@/components/ProfileForm";
 import { useLanguage } from "@/components/LanguageProvider";
 
+import Card from "@/components/ui/Card";
+import CardContent from "@/components/ui/CardContent";
+import Button from "@/components/ui/Button";
+
 type ProfileContentProps = {
   profile: {
     full_name: string | null;
@@ -112,12 +116,12 @@ export default function ProfileContent({
           </div>
 
           {profile.role === "student" && (
-            <Link
+            <Button
               href="/my-courses"
-              className="rounded-xl bg-[#124b8a] px-7 py-3 text-center font-bold text-white transition-colors hover:bg-[#0d3b6e]"
+              className="px-7"
             >
               {isArabic ? "دوراتي التعليمية" : "My Courses"}
-            </Link>
+            </Button>
           )}
         </div>
       </section>
@@ -146,7 +150,8 @@ export default function ProfileContent({
         </h2>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 p-6 transition-colors hover:bg-white hover:shadow-sm">
+          <Card>
+            <CardContent className="flex flex-col p-6">
             <div className="mb-3 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#124b8a]/10 text-[#124b8a]">
                 <MailIcon />
@@ -166,9 +171,11 @@ export default function ProfileContent({
             >
               {isArabic ? "تغيير البريد الإلكتروني" : "Change Email"}
             </Link>
-          </div>
+          </CardContent>
+          </Card>
 
-          <div className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50 p-6 transition-colors hover:bg-white hover:shadow-sm">
+          <Card>
+            <CardContent className="flex flex-col p-6">
             <div className="mb-3 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#124b8a]/10 text-[#124b8a]">
                 <LockIcon />
@@ -190,7 +197,8 @@ export default function ProfileContent({
             >
               {isArabic ? "تغيير كلمة المرور" : "Change Password"}
             </Link>
-          </div>
+          </CardContent>
+          </Card>
         </div>
       </section>
     </div>
