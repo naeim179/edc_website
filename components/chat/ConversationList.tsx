@@ -45,7 +45,10 @@ export default function ConversationList({
               teacher_unread_count?: number;
             };
             const exists = prev.some((c) => c.id === updated.id);
-            if (!exists) return prev; // محادثة جديدة كليًا - بتحتاج refresh من السيرفر لجلب أسماء
+            if (!exists) {
+              window.location.reload();
+              return prev;
+            }
             return prev
               .map((c) =>
                 c.id === updated.id
@@ -87,9 +90,38 @@ export default function ConversationList({
           href={`/messages/${conv.id}`}
           className="flex items-center justify-between py-4 px-2 hover:bg-slate-50"
         >
-          <div>
-            <p className="font-bold">{conv.other_party_name}</p>
-            <p className="text-sm text-slate-500">{conv.course_title}</p>
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-100 flex items-center justify-center">
+            {conv.other_party_avatar ? (
+              <img
+                src={conv.other_party_avatar}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="text-xl">👤</span>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-bold truncate">
+                {conv.other_party_name}
+              </p>
+
+              {conv.last_message_at && (
+                <span className="text-[11px] text-slate-400 shrink-0">
+                  {new Date(conv.last_message_at).toLocaleDateString("ar", {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </span>
+              )}
+            </div>
+
+            <p className="text-sm text-slate-500 truncate">
+              {conv.course_title}
+            </p>
+
             {conv.last_message_preview && (
               <p className="text-sm text-slate-400 mt-1 line-clamp-1">
                 {conv.last_message_preview}

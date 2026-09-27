@@ -24,11 +24,16 @@ export async function updateProfile(
     formData.get("phone") ?? ""
   );
 
+  const avatarUrl = String(
+    formData.get("avatar_url") ?? ""
+  );
+
   const { error } = await supabase
     .from("profiles")
     .update({
       full_name: fullName,
       phone,
+      avatar_url: avatarUrl || null,
     })
     .eq("id", user.id);
 

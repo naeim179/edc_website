@@ -10,6 +10,7 @@ export interface ConversationListItem {
   unread_count: number; // محسوب حسب دور المستخدم الحالي
   course_title: string;
   other_party_name: string;
+  other_party_avatar: string | null;
 }
 
 
@@ -23,8 +24,15 @@ type ConversationRow = {
   student_unread_count?: number | null;
   teacher_unread_count?: number | null;
   course?: { title: string | null }[] | null;
-  student?: { full_name: string | null }[] | null;
-  teacher?: { full_name: string | null }[] | null;
+  student?: {
+    full_name: string | null;
+    avatar_url: string | null;
+  }[] | null;
+
+  teacher?: {
+    full_name: string | null;
+    avatar_url: string | null;
+  }[] | null;
 };
 
 export interface ChatMessage {
@@ -34,6 +42,14 @@ export interface ChatMessage {
   content: string;
   created_at: string;
   read_at: string | null;
+
+  message_type: "text" | "image" | "file";
+  attachment_url: string | null;
+  attachment_name: string | null;
+  attachment_size: number | null;
+
+  edited_at: string | null;
+  deleted_at: string | null;
 }
 
 export async function getConversationsForUser(
@@ -56,8 +72,8 @@ export async function getConversationsForUser(
       student_unread_count,
       teacher_unread_count,
       course:courses ( title ),
-      student:profiles!conversations_student_id_fkey ( full_name ),
-      teacher:profiles!conversations_teacher_id_fkey ( full_name )
+      student:profiles!conversations_student_id_fkey ( full_name, avatar_url ),
+      teacher:profiles!conversations_teacher_id_fkey ( full_name, avatar_url )
     `
     )
     .eq(matchColumn, userId)
@@ -84,6 +100,11 @@ export async function getConversationsForUser(
       role === "student"
         ? row.teacher?.[0]?.full_name ?? "المدرس"
         : row.student?.[0]?.full_name ?? "الطالب",
+
+    other_party_avatar:
+      role === "student"
+        ? row.teacher?.[0]?.avatar_url ?? null
+        : row.student?.[0]?.avatar_url ?? null,
   }));
 }
 
@@ -102,8 +123,8 @@ export async function getAllConversationsForAdmin(
       last_message_at,
       last_message_preview,
       course:courses ( title ),
-      student:profiles!conversations_student_id_fkey ( full_name ),
-      teacher:profiles!conversations_teacher_id_fkey ( full_name )
+      student:profiles!conversations_student_id_fkey ( full_name, avatar_url ),
+      teacher:profiles!conversations_teacher_id_fkey ( full_name, avatar_url )
     `
     )
     .order("last_message_at", { ascending: false, nullsFirst: false });
@@ -123,6 +144,9 @@ export async function getAllConversationsForAdmin(
     unread_count: 0,
     course_title: row.course?.[0]?.title ?? "",
     other_party_name: `${row.student?.[0]?.full_name ?? "طالب"} ↔ ${row.teacher?.[0]?.full_name ?? "مدرس"}`,
+
+    other_party_avatar:
+      row.student?.[0]?.avatar_url ?? null,
   }));
 }
 
@@ -132,7 +156,23 @@ export async function getConversationById(
 ) {
   const { data, error } = await supabase
     .from("conversations")
-    .select("id, student_id, teacher_id, course_id")
+    .select(`
+      id,
+      student_id,
+      teacher_id,
+      course_id,
+      course:courses (
+        title
+      ),
+      student:profiles!conversations_student_id_fkey (
+        full_name,
+        avatar_url
+      ),
+      teacher:profiles!conversations_teacher_id_fkey (
+        full_name,
+        avatar_url
+      )
+    `)
     .eq("id", conversationId)
     .single();
 
@@ -146,7 +186,20 @@ export async function getMessages(
 ): Promise<ChatMessage[]> {
   const { data, error } = await supabase
     .from("messages")
-    .select("id, conversation_id, sender_id, content, created_at, read_at")
+    .select(`
+      id,
+      conversation_id,
+      sender_id,
+      content,
+      created_at,
+      read_at,
+      message_type,
+      attachment_url,
+      attachment_name,
+      attachment_size,
+      edited_at,
+      deleted_at
+    `)
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
 

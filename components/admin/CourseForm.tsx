@@ -1,5 +1,7 @@
 "use client";
 
+import ImageUploader from "@/components/ui/ImageUploader";
+
 import { useState } from "react";
 import {
   createCourse,
@@ -117,17 +119,25 @@ export default function CourseForm({
           صورة الدورة
         </label>
 
-        <input
-          name="image_url"
-          type="url"
-          defaultValue={course?.image_url ?? ""}
-          placeholder="https://example.com/course-image.jpg"
-          className="w-full rounded-xl border px-4 py-3"
+        <ImageUploader
+          value={course?.image_url ?? null}
+          onChange={(url) => {
+            const input = document.querySelector(
+              'input[name="image_url"]'
+            ) as HTMLInputElement;
+
+            if (input) {
+              input.value = url;
+            }
+          }}
+          folder="courses"
         />
 
-        <p className="text-xs text-slate-400 mt-2">
-          ضع رابط مباشر للصورة.
-        </p>
+        <input
+          type="hidden"
+          name="image_url"
+          defaultValue={course?.image_url ?? ""}
+        />
       </div>
 
       {!isEditing && (

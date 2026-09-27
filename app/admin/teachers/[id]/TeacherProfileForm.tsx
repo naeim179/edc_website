@@ -1,5 +1,7 @@
 "use client";
 
+import ImageUploader from "@/components/ui/ImageUploader";
+
 import {
   updateTeacherProfile
 } from "@/app/actions/teacher-profile";
@@ -47,13 +49,24 @@ export default function TeacherProfileForm({
           رابط صورة المدرس
         </label>
 
+        <ImageUploader
+          value={profile?.image_url ?? null}
+          onChange={(url) => {
+            const input = document.querySelector(
+              'input[name="image_url"]'
+            ) as HTMLInputElement;
+
+            if (input) {
+              input.value = url;
+            }
+          }}
+          folder="teachers"
+        />
+
         <input
+          type="hidden"
           name="image_url"
-          defaultValue={
-            profile?.image_url ?? ""
-          }
-          placeholder="https://..."
-          className="w-full border rounded-xl px-4 py-3"
+          defaultValue={profile?.image_url ?? ""}
         />
 
       </div>

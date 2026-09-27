@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateProfile } from "@/app/actions/profile";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 export default function ProfileForm({
   profile,
@@ -9,6 +10,7 @@ export default function ProfileForm({
   profile: {
     full_name: string | null;
     phone: string | null;
+    avatar_url: string | null;
   };
 }) {
 
@@ -17,6 +19,9 @@ export default function ProfileForm({
     useState<string | null>(null);
   const [error, setError] =
     useState<string | null>(null);
+
+  const [avatarUrl, setAvatarUrl] =
+    useState(profile.avatar_url);
 
 
   async function handleSubmit(
@@ -32,6 +37,11 @@ export default function ProfileForm({
 
     const formData =
       new FormData(event.currentTarget);
+
+    formData.set(
+      "avatar_url",
+      avatarUrl ?? ""
+    );
 
 
     try {
@@ -71,6 +81,12 @@ export default function ProfileForm({
       dir="rtl"
     >
 
+
+      <ImageUploader
+        value={avatarUrl}
+        onChange={setAvatarUrl}
+        folder="profiles"
+      />
 
       <div className="grid md:grid-cols-2 gap-5">
 

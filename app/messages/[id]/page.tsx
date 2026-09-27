@@ -17,24 +17,11 @@ export default async function ConversationPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log("DEBUG user:", user?.id, user?.email);
-  console.log("DEBUG conversationId param:", id);
-
   if (!user) {
     redirect("/login");
   }
 
   const role = await getUserRole();
-  console.log("DEBUG role:", role);
-
-  const { data: rawConversation, error: rawError } = await supabase
-    .from("conversations")
-    .select("id, student_id, teacher_id, course_id")
-    .eq("id", id)
-    .single();
-
-  console.log("DEBUG rawConversation:", rawConversation);
-  console.log("DEBUG rawError:", rawError);
 
   const conversation = await getConversationById(supabase, id);
 
@@ -54,11 +41,12 @@ export default async function ConversationPage({
 
   return (
     <AppShell>
-      <div className="max-w-3xl mx-auto h-[calc(100vh-120px)] flex flex-col">
+      <div className="mx-auto w-full max-w-3xl h-[calc(100vh-80px)] md:h-[calc(100vh-120px)] flex flex-col">
         <MessageThread
           conversationId={id}
           initialMessages={messages}
           currentUserId={user.id}
+          conversation={conversation}
           readOnly={isAdmin && !isParticipant}
         />
       </div>
