@@ -27,13 +27,15 @@ type Props = {
 export default function CourseCover({ image, title }: Props) {
   if (image) {
     return (
-      <Image
-        src={image}
-        alt=""
-        fill
-        sizes="(max-width: 768px) 100vw, 400px"
-        className="object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
-      />
+      <div className="relative h-full w-full overflow-hidden">
+        <Image
+          src={image}
+          alt=""
+          fill
+          sizes="(max-width: 768px) 100vw, 400px"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
+        />
+      </div>
     );
   }
 
