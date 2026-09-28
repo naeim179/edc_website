@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requirePermission } from "@/lib/auth/admin-access";
 
 export async function resetStudentProgress(
   studentId: string,
   enrollmentId: string
 ) {
-  await requireAdmin();
+  await requirePermission("manage_students");
 
   const supabase = await createClient();
 
@@ -29,7 +29,7 @@ export async function removeStudentEnrollment(
   studentId: string,
   enrollmentId: string
 ) {
-  await requireAdmin();
+  await requirePermission("manage_students");
 
   const supabase = await createClient();
 
@@ -47,7 +47,7 @@ export async function removeStudentEnrollment(
 }
 
 export async function extendStudentSubscription(formData: FormData) {
-  await requireAdmin();
+  await requirePermission("manage_students");
 
   const studentId = String(formData.get("studentId") ?? "");
   const courseId = String(formData.get("courseId") ?? "");

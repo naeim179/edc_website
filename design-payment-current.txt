@@ -1,0 +1,1586 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+
+import BuyCourseButton from "@/components/BuyCourseButton";
+
+type Props = {
+  courseId: string;
+  title: string;
+  monthlyPriceUsd: number;
+};
+
+function ArrowBackIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14M5 12l6-6M5 12l6 6" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
+      <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+    </svg>
+  );
+}
+
+export default function SubscriptionCheckout({
+  courseId,
+  title,
+  monthlyPriceUsd,
+}: Props) {
+  const [months, setMonths] = useState<1 | 3>(1);
+  const [autoRenew, setAutoRenew] = useState(false);
+
+  const totalUsd = Number((monthlyPriceUsd * months).toFixed(2));
+
+  const plans: { value: 1 | 3; label: string; totalLabel: string }[] = [
+    {
+      value: 1,
+      label: "شهر واحد",
+      totalLabel: `${monthlyPriceUsd.toFixed(2)} USD / شهر`,
+    },
+    {
+      value: 3,
+      label: "3 أشهر",
+      totalLabel: `${(monthlyPriceUsd * 3).toFixed(2)} USD إجمالي`,
+    },
+  ];
+
+  return (
+    <div dir="rtl" className="mx-auto w-full max-w-5xl">
+      <Link
+        href={`/courses/${courseId}`}
+        className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[#6B6155] transition hover:text-[#1B4B43]"
+      >
+        <ArrowBackIcon />
+        العودة إلى الدورة
+      </Link>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
+        <section className="rounded-2xl border border-[#E8E1D4] bg-white p-6 md:p-8">
+          <div className="mb-8 border-b border-[#F0EBE1] pb-6">
+            <p className="text-xs font-bold text-[#C9704A]">
+              {title}
+            </p>
+
+            <h1 className="mt-1 text-2xl font-bold text-[#2A2420] md:text-3xl">
+              اشتراك الدورة
+            </h1>
+
+            <p className="mt-2 text-sm text-[#A69C8C]">
+              اختر المدة المناسبة لك، وأكمل الدفع بأمان
+            </p>
+          </div>
+
+          <div>
+            <h2 className="mb-3 font-bold text-[#2A2420]">مدة الاشتراك</h2>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {plans.map((plan) => {
+                const active = months === plan.value;
+
+                return (
+                  <button
+                    key={plan.value}
+                    type="button"
+                    onClick={() => setMonths(plan.value)}
+                    className={`rounded-2xl border p-5 text-right transition ${
+                      active
+                        ? "border-[#1B4B43] bg-[#F7F3EC] ring-2 ring-[#1B4B43]/15"
+                        : "border-[#E8E1D4] hover:border-[#D9CDB6]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#2A2420]">
+                        {plan.label}
+                      </span>
+
+                      <span
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                          active
+                            ? "border-[#1B4B43] bg-[#1B4B43]"
+                            : "border-[#D9CDB6]"
+                        }`}
+                      >
+                        {active && (
+                          <span className="h-2 w-2 rounded-full bg-white" />
+                        )}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm text-[#8A3F2A]">
+                      {plan.totalLabel}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between rounded-2xl border border-[#E8E1D4] bg-[#F7F3EC] p-5">
+            <div>
+              <p className="text-sm text-[#A69C8C]">عملة الدفع</p>
+
+              <p className="mt-1 font-bold text-[#2A2420]">
+                دولار أمريكي (USD)
+              </p>
+            </div>
+
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-xl font-bold text-[#1B4B43]">
+              $
+            </span>
+          </div>
+
+          <label className="mt-6 flex cursor-pointer items-start justify-between gap-4 rounded-2xl bg-[#F7F3EC] p-4">
+            <span>
+              <span className="block font-bold text-[#2A2420]">
+                تفعيل التجديد التلقائي
+              </span>
+
+              <span className="mt-1 block text-sm leading-6 text-[#6B6155]">
+                سيتم التجديد بنفس العملة التي اخترتها في هذه العملية.
+              </span>
+            </span>
+
+            <span className="relative mt-0.5 inline-flex h-7 w-12 shrink-0 items-center">
+              <input
+                type="checkbox"
+                checked={autoRenew}
+                onChange={(event) => setAutoRenew(event.target.checked)}
+                className="peer sr-only"
+              />
+
+              <span className="absolute inset-0 rounded-full bg-[#D9CDB6] transition-colors peer-checked:bg-[#1B4B43]" />
+
+              <span className="absolute start-1 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-[-1.25rem] rtl:peer-checked:translate-x-[1.25rem]" />
+            </span>
+          </label>
+
+          {autoRenew && (
+            <div className="mt-3 rounded-xl bg-[#F7F3EC] p-3 text-xs leading-6 text-[#1B4B43]">
+              إذا أردت تغيير العملة لاحقًا، أوقف التجديد التلقائي ثم جدّد بالعملة الجديدة.
+            </div>
+          )}
+        </section>
+
+        <aside className="rounded-2xl border border-[#E8E1D4] bg-white p-6 lg:sticky lg:top-4">
+          <h2 className="text-lg font-bold text-[#2A2420]">ملخص الطلب</h2>
+
+          <div className="mt-5 space-y-3 text-sm">
+            <div className="flex justify-between gap-4">
+              <span className="text-[#A69C8C]">الدورة</span>
+              <span className="max-w-[10rem] truncate font-semibold text-[#2A2420]">
+                {title}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-[#A69C8C]">المدة</span>
+              <span className="font-semibold text-[#2A2420]">
+                {months === 1 ? "شهر واحد" : "3 أشهر"}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-[#A69C8C]">السعر الشهري</span>
+              <span className="font-semibold text-[#2A2420]">
+                {monthlyPriceUsd.toFixed(2)} USD
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 border-t border-[#F0EBE1] pt-5">
+            <p className="text-sm text-[#A69C8C]">الإجمالي المستحق</p>
+
+            <p className="mt-1 text-3xl font-bold text-[#2A2420]">
+              {totalUsd.toFixed(2)}{" "}
+              <span className="text-sm font-semibold text-[#A69C8C]">
+                USD
+              </span>
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <BuyCourseButton
+              courseId={courseId}
+              subscriptionMonths={months}
+              autoRenew={autoRenew}
+              label={`دفع ${totalUsd.toFixed(2)} USD`}
+            />
+          </div>
+
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#A69C8C]">
+            <LockIcon />
+            دفع آمن عبر PayTabs
+          </div>
+
+          <p className="mt-2 text-center text-xs leading-5 text-[#A69C8C]">
+            لن يتم تفعيل أو تمديد الاشتراك إلا بعد تأكيد نجاح الدفع.
+          </p>
+        </aside>
+      </div>
+    </div>
+  );
+}
+"use client";
+
+import { useLanguage } from "@/components/LanguageProvider";
+
+type Order = {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  user_id: string;
+  created_at: string;
+  student?: string;
+  studentName?: string;
+  courses: {
+    title?: string;
+  }[];
+};
+
+type Props = {
+  orders: Order[];
+};
+
+function formatDate(dateStr: string, isArabic: boolean, t: any) {
+  const d = new Date(dateStr);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const period = hours >= 12
+    ? (isArabic ? t.admin.pm : "PM")
+    : (isArabic ? t.admin.am : "AM");
+
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+
+  return isArabic
+    ? `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${period}`
+    : `${month}/${day}/${year}, ${hours}:${minutes}:${seconds} ${period}`;
+}
+
+export default function AdminOrdersContent({
+  orders,
+}: Props) {
+  const { language, t } = useLanguage();
+
+  const isArabic = language === "ar";
+
+  function getStatusLabel(status: string) {
+    if (status === "paid") {
+      return t.admin.paid;
+    }
+
+    if (status === "failed") {
+      return t.admin.failedStatus;
+    }
+
+    return status;
+  }
+
+  function getStatusClass(status: string) {
+    if (status === "paid") {
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    }
+
+    if (status === "failed") {
+      return "bg-red-50 text-red-700 border-red-200";
+    }
+
+    return "bg-slate-50 text-slate-700 border-slate-200";
+  }
+
+  return (
+    <div
+      className="max-w-6xl mx-auto w-full space-y-6"
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      <div className="bg-white rounded-2xl border p-6 text-right">
+        <h1 className="text-2xl font-bold">
+          {t.admin.payments}
+        </h1>
+
+        <p className="text-slate-500 mt-2">
+          {t.admin.paymentsDescription}
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {orders.length > 0 ? (
+          orders.map((order) => {
+            const courseTitle =
+              order.courses?.[0]?.title ??
+              (t.admin.courseNotFound);
+
+            return (
+              <div
+                key={order.id}
+                className="bg-white rounded-xl border p-5 text-right"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <h2 className="font-bold text-slate-800">
+                      {courseTitle}
+                    </h2>
+
+                    <p className="text-sm text-slate-500 mt-2">
+                      {t.admin.student}
+                      :{" "}
+                      {order.studentName ??
+                        "Unknown"}
+                    </p>
+
+                    <p className="text-sm text-slate-500 mt-2">
+                      {t.admin.amount}
+                      :{" "}
+                      {order.amount}{" "}
+                      {order.currency}
+                    </p>
+
+                    <p className="text-xs text-slate-400 mt-2">
+                      {formatDate(order.created_at, isArabic, t)}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`inline-flex border rounded-full px-3 py-1 text-sm font-bold ${getStatusClass(
+                      order.status
+                    )}`}
+                  >
+                    {getStatusLabel(
+                      order.status
+                    )}
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="bg-white border rounded-xl p-6 text-right text-slate-500">
+            {t.admin.noPaymentResults}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+"use client";
+
+import { useLanguage } from "@/components/LanguageProvider";
+
+type Card = {
+  title: string;
+  value: number;
+  description: string;
+  icon: string;
+};
+
+type AdminDashboardContentProps = {
+  coursesCount: number;
+  studentsCount: number;
+  enrollmentsCount: number;
+  ordersCount: number;
+  paidOrdersCount: number;
+  failedOrdersCount: number;
+  show?: {
+    courses: boolean;
+    students: boolean;
+    enrollments: boolean;
+    orders: boolean;
+  };
+};
+
+export default function AdminDashboardContent({
+  coursesCount,
+  studentsCount,
+  enrollmentsCount,
+  ordersCount,
+  paidOrdersCount,
+  failedOrdersCount,
+  show = { courses: true, students: true, enrollments: true, orders: true },
+}: AdminDashboardContentProps) {
+  const { language, t } = useLanguage();
+
+  const isArabic = language === "ar";
+
+  const allCards: Card[] = [
+    {
+      title: t.admin.courses,
+      value: coursesCount,
+      description: t.admin.totalCourses,
+      icon: "📚",
+    },
+    {
+      title: t.admin.students,
+      value: studentsCount,
+      description: t.admin.registeredStudents,
+      icon: "👨‍🎓",
+    },
+    {
+      title: t.admin.enrollments,
+      value: enrollmentsCount,
+      description: t.admin.courseEnrollments,
+      icon: "📝",
+    },
+    {
+      title: t.admin.payments,
+      value: ordersCount,
+      description: `${paidOrdersCount} ${t.admin.successful} - ${failedOrdersCount} ${t.admin.failed}`,
+      icon: "💳",
+    },
+  ];
+
+  const cards = allCards.filter(
+    (_, index) =>
+      [show.courses, show.students, show.enrollments, show.orders][index]
+  );
+
+  return (
+    <div
+      className="max-w-6xl mx-auto w-full space-y-6"
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8 shadow-sm">
+        <h1 className="text-3xl font-bold">
+          {t.admin.dashboard}
+        </h1>
+
+        <p className="mt-3 text-blue-100">
+          {t.admin.dashboardDescription}
+        </p>
+      </section>
+
+
+      <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {cards.map((card) => (
+          <div
+            key={card.title}
+            className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-5"
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-3xl">
+                {card.icon}
+              </span>
+
+              <div className="text-right">
+                <p className="text-sm text-slate-500">
+                  {card.title}
+                </p>
+
+                <p className="text-3xl font-bold text-slate-800 mt-2">
+                  {card.value}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-400 mt-4">
+              {card.description}
+            </p>
+          </div>
+        ))}
+      </section>
+
+
+      <section className="bg-white rounded-[26px] border border-slate-100 shadow-sm p-6">
+        <h2 className="text-xl font-bold text-slate-800 mb-4">
+          {t.admin.quickManagement}
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-4">
+          {[
+            [
+              t.admin.manageCourses,
+              t.admin.manageCoursesDescription,
+            ],
+            [
+              t.admin.students,
+              t.admin.manageStudentsDescription,
+            ],
+            [
+              t.admin.payments,
+              t.admin.managePaymentsDescription,
+            ],
+          ].map(([title, desc]) => (
+            <div
+              key={title}
+              className="bg-slate-50 rounded-xl p-4 text-right"
+            >
+              <p className="font-bold text-slate-700">
+                {title}
+              </p>
+
+              <p className="text-sm text-slate-500 mt-1">
+                {desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+import type { ReactNode } from "react";
+import { createClient } from "@/lib/supabase/server";
+import AppShellClient from "@/components/AppShellClient";
+
+type AppShellProps = {
+  children: ReactNode;
+};
+
+export default async function AppShell({
+  children,
+}: AppShellProps) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let fullName: string | null = null;
+  let role: string | null = null;
+  let avatarUrl: string | null = null;
+  let isSuperAdmin = false;
+  let permissions: string[] | null = null;
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, role, avatar_url, is_super_admin, permissions")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    fullName = profile?.full_name ?? null;
+    role = profile?.role ?? null;
+    avatarUrl = profile?.avatar_url ?? null;
+
+    if (profile?.role === "admin") {
+      isSuperAdmin = !!profile.is_super_admin;
+      permissions = (profile.permissions ?? []) as string[];
+    }
+  }
+
+  const displayName =
+    fullName?.trim() ||
+    user?.email?.split("@")[0] ||
+    "User";
+
+  return (
+    <AppShellClient
+      role={role}
+      isAuthenticated={Boolean(user)}
+      isSuperAdmin={isSuperAdmin}
+      permissions={permissions}
+      userName={displayName}
+      avatarUrl={avatarUrl}
+    >
+      {children}
+    </AppShellClient>
+  );
+}
+"use client";
+
+import { useCallback, useState, type ReactNode } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
+import Sidebar from "@/components/Sidebar";
+import Topbar from "@/components/Topbar";
+
+type Props = {
+  children: ReactNode;
+  role: string | null;
+  isAuthenticated: boolean;
+  isSuperAdmin?: boolean;
+  permissions?: string[] | null;
+  userName: string;
+  avatarUrl: string | null;
+};
+
+export default function AppShellClient({
+  children,
+  role,
+  isAuthenticated,
+  isSuperAdmin = false,
+  permissions = null,
+  userName,
+  avatarUrl,
+}: Props) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { language } = useLanguage();
+  const isArabic = language === "ar";
+
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const openMenu = useCallback(() => setMenuOpen(true), []);
+
+  return (
+    <div
+      className="min-h-screen bg-[#F5F1EA] text-[#1F1F1F] flex gap-6 p-3 sm:p-4"
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      <Sidebar
+        role={role}
+        isAuthenticated={isAuthenticated}
+        isSuperAdmin={isSuperAdmin}
+        permissions={permissions}
+        open={menuOpen}
+        onClose={closeMenu}
+      />
+
+      <main className="flex-1 min-w-0 space-y-6 overflow-x-clip">
+        <Topbar
+          isAuthenticated={isAuthenticated}
+          userName={userName}
+          role={role}
+          avatarUrl={avatarUrl}
+          onMenuClick={openMenu}
+        />
+
+        {children}
+      </main>
+    </div>
+  );
+}
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
+import {
+  BookIcon,
+  CapIcon,
+  CloseIcon,
+  DashboardIcon,
+  HomeIcon,
+  ReceiptIcon,
+  UserIcon,
+  UsersIcon,
+} from "@/components/icons";
+
+type SidebarProps = {
+  role?: string | null;
+  isAuthenticated?: boolean;
+  /** للأدمن: هل هو سوبر أدمن؟ */
+  isSuperAdmin?: boolean;
+  /** صلاحيات الأدمن المقيّد. null = غير محددة، فتظهر كل الأقسام */
+  permissions?: string[] | null;
+  /** يستخدم فقط على الجوال (القائمة المنزلقة) */
+  open?: boolean;
+  onClose?: () => void;
+};
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: ReactNode;
+  exact?: boolean;
+};
+
+function isActive(pathname: string, item: NavItem) {
+  if (item.exact) {
+    return pathname === item.href;
+  }
+
+  return (
+    pathname === item.href || pathname.startsWith(`${item.href}/`)
+  );
+}
+
+export default function Sidebar({
+  role = null,
+  isAuthenticated = false,
+  isSuperAdmin = false,
+  permissions = null,
+  open = false,
+  onClose,
+}: SidebarProps) {
+  const pathname = usePathname();
+  const { language, t } = useLanguage();
+
+  const isAdmin = role === "admin";
+  const isTeacher = role === "teacher";
+  const isArabic = language === "ar";
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose?.();
+      }
+    };
+
+    const media = window.matchMedia("(min-width: 1024px)");
+
+    const onMediaChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        onClose?.();
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    document.addEventListener("keydown", onKey);
+    media.addEventListener("change", onMediaChange);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+      media.removeEventListener("change", onMediaChange);
+    };
+  }, [open, onClose]);
+
+  const text = t.sidebar;
+
+  const items: NavItem[] = isAdmin
+    ? [
+        {
+          href: "/admin",
+          label: text.dashboard,
+          icon: <DashboardIcon />,
+          exact: true,
+        },
+        {
+          href: "/admin/courses",
+          label: text.manageCourses,
+          icon: <BookIcon />,
+        },
+        {
+          href: "/admin/teachers",
+          label: text.teachers,
+          icon: <CapIcon />,
+        },
+        {
+          href: "/admin/orders",
+          label: text.orders,
+          icon: <ReceiptIcon />,
+        },
+        {
+          href: "/admin/students",
+          label: text.students,
+          icon: <UsersIcon />,
+        },
+        {
+          href: "/profile",
+          label: text.profile,
+          icon: <UserIcon />,
+        },
+      ]
+    : isTeacher
+    ? [
+        {
+          href: "/teacher/courses",
+          label: text.teacherDashboard,
+          icon: <DashboardIcon />,
+        },
+        {
+          href: "/teacher/profile",
+          label: text.teacherProfile,
+          icon: <CapIcon />,
+        },
+        {
+          href: "/profile",
+          label: text.profile,
+          icon: <UserIcon />,
+        },
+      ]
+    : [
+        {
+          href: "/",
+          label: text.home,
+          icon: <HomeIcon />,
+          exact: true,
+        },
+        {
+          href: "/courses",
+          label: text.courses,
+          icon: <BookIcon />,
+        },
+        ...(isAuthenticated
+          ? [
+              {
+                href: "/my-courses",
+                label: text.myCourses,
+                icon: <CapIcon />,
+              },
+              {
+                href: "/profile",
+                label: text.profile,
+                icon: <UserIcon />,
+              },
+            ]
+          : []),
+      ];
+
+  const permissionByHref: Record<string, string> = {
+    "/admin/courses": "manage_courses",
+    "/admin/teachers": "manage_teachers",
+    "/admin/orders": "view_orders",
+    "/admin/students": "manage_students",
+  };
+
+  const visibleItems: NavItem[] = isAdmin
+    ? items.filter((item) => {
+        const needed = permissionByHref[item.href];
+        if (!needed || isSuperAdmin || permissions === null) return true;
+        return permissions.includes(needed);
+      })
+    : items;
+
+  if (isAdmin && isSuperAdmin) {
+    const at = visibleItems.findIndex((item) => item.href === "/profile");
+    visibleItems.splice(at === -1 ? visibleItems.length : at, 0, {
+      href: "/admin/staff",
+      label: t.staff.navLabel,
+      icon: <ShieldIcon />,
+    });
+  }
+
+  const hiddenTransform = isArabic
+    ? "translate-x-full"
+    : "-translate-x-full";
+
+  return (
+    <>
+      <div
+        onClick={onClose}
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
+          open
+            ? "opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}
+      />
+
+      <aside
+        id="app-sidebar"
+        dir={isArabic ? "rtl" : "ltr"}
+        className={`fixed inset-y-0 start-0 z-50 w-72 max-w-[85vw] transition-[transform,visibility] duration-300 motion-reduce:transition-none lg:sticky lg:inset-auto lg:top-4 lg:z-auto lg:h-[calc(100vh-2rem)] lg:w-64 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:self-start lg:visible ${
+          open
+            ? "visible translate-x-0"
+            : `invisible ${hiddenTransform}`
+        }`}
+      >
+        <div
+          className="flex h-full flex-col overflow-y-auto border p-4 lg:rounded-2xl"
+          style={{
+            backgroundColor: "var(--brand-surface)",
+            borderColor: "var(--brand-border)",
+          }}
+        >
+          <div className="flex items-center justify-between px-1 pb-4">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: "var(--brand-ink-soft)" }}
+              >
+                <Image
+                  src="/logo/logo-transparent.png"
+                  alt="Your Way"
+                  width={80}
+                  height={80}
+                  className="h-7 w-7 object-contain"
+                />
+              </div>
+
+              <span
+                className="text-base font-bold tracking-tight"
+                style={{ color: "var(--brand-text)" }}
+              >
+                {text.platform}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={text.close}
+              className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors lg:hidden"
+              style={{ color: "var(--brand-text-faint)" }}
+            >
+              <CloseIcon />
+            </button>
+          </div>
+
+          <div
+            className="mb-2 h-px"
+            style={{ backgroundColor: "var(--brand-border-soft)" }}
+          />
+
+          <nav
+            aria-label={text.menu}
+            className="mt-2 flex flex-col gap-0.5"
+          >
+            {visibleItems.map((item) => {
+              const active = isActive(pathname, item);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  aria-current={active ? "page" : undefined}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
+                  style={
+                    active
+                      ? {
+                          backgroundColor: "var(--brand-ink)",
+                          color: "#FFFFFF",
+                        }
+                      : { color: "var(--brand-text-muted)" }
+                  }
+                >
+                  <span
+                    style={{
+                      color: active
+                        ? "#FFFFFF"
+                        : "var(--brand-text-faint)",
+                    }}
+                  >
+                    {item.icon}
+                  </span>
+
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M12 3l8 3v6c0 4.5-3.2 8.3-8 9-4.8-.7-8-4.5-8-9V6l8-3z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  );
+}
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { signOut } from "@/app/actions/auth";
+import DisplaySettings from "@/components/DisplaySettings";
+import { useLanguage } from "@/components/LanguageProvider";
+import {
+  LogoutIcon,
+  MenuIcon,
+  SearchIcon,
+} from "@/components/icons";
+
+type TopbarProps = {
+  isAuthenticated: boolean;
+  userName: string;
+  role: string | null;
+  avatarUrl: string | null;
+  /** يفتح القائمة الجانبية على الجوال */
+  onMenuClick?: () => void;
+};
+
+export default function Topbar({
+  isAuthenticated,
+  userName,
+  role,
+  avatarUrl,
+  onMenuClick,
+}: TopbarProps) {
+  const router = useRouter();
+  const { language, t } = useLanguage();
+
+  const [query, setQuery] = useState("");
+
+  const isArabic = language === "ar";
+
+  const roleLabel =
+    role === "admin"
+      ? t.topbar.admin
+      : role === "student"
+      ? t.topbar.student
+      : role === "teacher"
+      ? isArabic
+        ? "مدرس"
+        : "Teacher"
+      : t.topbar.user;
+
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
+      router.push("/courses");
+      return;
+    }
+
+    router.push(
+      `/courses?q=${encodeURIComponent(trimmedQuery)}`
+    );
+  }
+
+  return (
+    <header
+      className="flex w-full flex-wrap items-center gap-3 rounded-2xl border p-3 sm:flex-nowrap"
+      style={{
+        backgroundColor: "var(--brand-surface)",
+        borderColor: "var(--brand-border)",
+      }}
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      <div className="flex shrink-0 items-center gap-3 lg:hidden">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label={isArabic ? "فتح القائمة" : "Open menu"}
+          aria-controls="app-sidebar"
+          className="flex h-11 w-11 items-center justify-center rounded-xl border transition-colors"
+          style={{
+            borderColor: "var(--brand-border)",
+            color: "var(--brand-text-muted)",
+          }}
+        >
+          <MenuIcon />
+        </button>
+
+        <Link
+          href="/"
+          aria-label="Your Way"
+          className="rounded-xl border p-1.5"
+          style={{ borderColor: "var(--brand-border)" }}
+        >
+          <Image
+            src="/logo/logo-transparent.png"
+            alt="Your Way"
+            width={160}
+            height={160}
+            className="h-6 w-auto object-contain"
+          />
+        </Link>
+      </div>
+
+      <form
+        onSubmit={handleSearch}
+        role="search"
+        className="order-last w-full sm:order-none sm:w-auto sm:max-w-md sm:flex-1"
+      >
+        <div className="relative">
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t.topbar.search}
+            aria-label={t.topbar.search}
+            className="h-11 w-full rounded-xl border pe-4 ps-11 text-sm outline-none transition focus:ring-4"
+            style={{
+              borderColor: "var(--brand-border)",
+              backgroundColor: "var(--brand-bg)",
+              color: "var(--brand-text)",
+            }}
+          />
+
+          <button
+            type="submit"
+            aria-label={isArabic ? "بحث" : "Search"}
+            className="absolute start-3.5 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: "var(--brand-text-faint)" }}
+          >
+            <SearchIcon width={18} height={18} />
+          </button>
+        </div>
+      </form>
+
+      <div className="ms-auto flex shrink-0 items-center gap-2 sm:gap-3">
+        {isAuthenticated ? (
+          <>
+            <Link
+              href="/profile"
+              className="flex items-center gap-3 rounded-xl border py-1.5 pe-1.5 ps-1.5 transition-colors sm:pe-4"
+              style={{ borderColor: "var(--brand-border)" }}
+            >
+              <span
+                className="flex h-9 w-9 overflow-hidden items-center justify-center rounded-lg text-sm font-bold text-white"
+                style={{ backgroundColor: "var(--brand-ink)" }}
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  userName.charAt(0).toUpperCase()
+                )}
+              </span>
+
+              <span className="hidden min-w-0 flex-col text-start leading-tight sm:flex">
+                <span
+                  className="max-w-[9rem] truncate text-sm font-bold"
+                  style={{ color: "var(--brand-text)" }}
+                >
+                  {userName}
+                </span>
+
+                <span
+                  className="text-xs"
+                  style={{ color: "var(--brand-text-faint)" }}
+                >
+                  {roleLabel}
+                </span>
+              </span>
+            </Link>
+
+            <form action={signOut}>
+              <button
+                type="submit"
+                aria-label={t.topbar.logout}
+                className="flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold transition-colors sm:px-4"
+                style={{
+                  borderColor: "var(--brand-border)",
+                  color: "var(--brand-text-muted)",
+                }}
+              >
+                <LogoutIcon width={18} height={18} />
+
+                <span className="hidden sm:inline">
+                  {t.topbar.logout}
+                </span>
+              </button>
+            </form>
+          </>
+        ) : (
+          <Link
+            href="/login"
+            className="flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white transition-colors"
+            style={{ backgroundColor: "var(--brand-ink)" }}
+          >
+            {t.topbar.login}
+          </Link>
+        )}
+
+        <DisplaySettings />
+      </div>
+    </header>
+  );
+}
+import AppShell from "@/components/AppShell";
+import AdminOrdersContent from "@/components/AdminOrdersContent";
+import { getAdminOrders } from "@/app/actions/admin-orders";
+
+export default async function AdminOrdersPage() {
+  const orders = await getAdminOrders();
+
+  return (
+    <AppShell>
+      <AdminOrdersContent
+        orders={orders ?? []}
+      />
+    </AppShell>
+  );
+}
+import { createAdminClient } from "@/lib/supabase/admin";
+import { queryTransaction } from "@/lib/paytabs";
+
+export async function fulfillPaymentByTranRef(
+  tranRef: string,
+  callbackToken?: string | null
+) {
+  const result =
+    await queryTransaction(
+      tranRef
+    );
+
+  const responseStatus =
+    result?.payment_result
+      ?.response_status as
+      | string
+      | undefined;
+
+  const orderId =
+    result?.cart_id as
+      | string
+      | undefined;
+
+  if (!orderId) {
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
+  }
+
+  const supabase =
+    createAdminClient();
+
+  const {
+    data: order,
+    error: orderError,
+  } = await supabase
+    .from("orders")
+    .select(`
+      id,
+      user_id,
+      course_id,
+      status,
+      amount,
+      currency,
+      subscription_months,
+      auto_renew_requested,
+      fulfilled_at
+    `)
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (
+    orderError ||
+    !order
+  ) {
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
+  }
+
+  if (
+    responseStatus === "P" ||
+    responseStatus === "H"
+  ) {
+    if (
+      order.status !== "paid" &&
+      order.status !== "pending"
+    ) {
+      const {
+        error,
+      } = await supabase
+        .from("orders")
+        .update({
+          status: "pending",
+        })
+        .eq("id", order.id);
+
+      if (error) {
+        throw new Error(
+          error.message
+        );
+      }
+    }
+
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
+  }
+
+  if (
+    responseStatus !== "A"
+  ) {
+    if (
+      responseStatus &&
+      order.status !== "paid"
+    ) {
+      const {
+        error,
+      } = await supabase
+        .from("orders")
+        .update({
+          status: "failed",
+          paytabs_tran_ref:
+            tranRef,
+        })
+        .eq("id", order.id);
+
+      if (error) {
+        throw new Error(
+          error.message
+        );
+      }
+    }
+
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
+  }
+
+  const paytabsAmount =
+    Number(
+      result?.cart_amount
+    );
+
+  const orderAmount =
+    Number(order.amount);
+
+  const paytabsCurrency =
+    typeof result?.cart_currency ===
+    "string"
+      ? result.cart_currency
+          .toUpperCase()
+      : "";
+
+  const orderCurrency =
+    typeof order.currency ===
+    "string"
+      ? order.currency
+          .toUpperCase()
+      : "";
+
+  const amountMatches =
+    Number.isFinite(
+      paytabsAmount
+    ) &&
+    Number.isFinite(
+      orderAmount
+    ) &&
+    Math.abs(
+      paytabsAmount -
+        orderAmount
+    ) < 0.001;
+
+  const currencyMatches =
+    paytabsCurrency !== "" &&
+    paytabsCurrency ===
+      orderCurrency;
+
+  if (
+    !amountMatches ||
+    !currencyMatches
+  ) {
+    if (
+      order.status !== "paid"
+    ) {
+      const {
+        error,
+      } = await supabase
+        .from("orders")
+        .update({
+          status: "failed",
+          paytabs_tran_ref:
+            tranRef,
+        })
+        .eq("id", order.id);
+
+      if (error) {
+        throw new Error(
+          error.message
+        );
+      }
+    }
+
+    return {
+      paid: false as const,
+      courseId: null as string | null,
+      expiresAt: null as string | null,
+      autoRenew: false,
+    };
+  }
+
+  const queryToken =
+    typeof result?.token ===
+    "string"
+      ? result.token
+      : null;
+
+  const token =
+    callbackToken ||
+    queryToken ||
+    null;
+
+  const {
+    data: fulfillment,
+    error: fulfillmentError,
+  } = await supabase.rpc(
+    "fulfill_subscription_order",
+    {
+      p_order_id: order.id,
+      p_tran_ref: tranRef,
+      p_token: token,
+    }
+  );
+
+  if (fulfillmentError) {
+    throw new Error(
+      fulfillmentError.message
+    );
+  }
+
+  /*
+   * callback and return page can race.
+   * If return fulfilled first without a token,
+   * callback can safely attach the verified token later.
+   */
+  if (
+    order.auto_renew_requested &&
+    token
+  ) {
+    const {
+      data: subscription,
+    } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq(
+        "student_id",
+        order.user_id
+      )
+      .eq(
+        "course_id",
+        order.course_id
+      )
+      .maybeSingle();
+
+    if (subscription) {
+      const {
+        error: tokenError,
+      } = await supabase
+        .from(
+          "subscription_payment_tokens"
+        )
+        .upsert(
+          {
+            subscription_id:
+              subscription.id,
+            token,
+            token_tran_ref:
+              tranRef,
+            updated_at:
+              new Date()
+                .toISOString(),
+          },
+          {
+            onConflict:
+              "subscription_id",
+          }
+        );
+
+      if (tokenError) {
+        throw new Error(
+          tokenError.message
+        );
+      }
+
+      const {
+        error: autoRenewError,
+      } = await supabase
+        .from("subscriptions")
+        .update({
+          auto_renew: true,
+          updated_at:
+            new Date()
+              .toISOString(),
+        })
+        .eq(
+          "id",
+          subscription.id
+        );
+
+      if (autoRenewError) {
+        throw new Error(
+          autoRenewError.message
+        );
+      }
+    }
+  }
+
+  const row =
+    Array.isArray(
+      fulfillment
+    )
+      ? fulfillment[0]
+      : fulfillment;
+
+  // Create chat conversation after successful payment
+  const { data: instructor } =
+    await supabase
+      .from("course_instructors")
+      .select("teacher_id")
+      .eq("course_id", order.course_id)
+      .limit(1)
+      .maybeSingle();
+
+  if (instructor?.teacher_id) {
+    const { error: conversationError } =
+      await supabase.rpc(
+        "start_conversation",
+        {
+          p_course_id: order.course_id,
+          p_teacher_id: instructor.teacher_id,
+        }
+      );
+
+    if (conversationError) {
+      console.error(
+        "Create conversation failed:",
+        conversationError.message
+      );
+    }
+  }
+
+  return {
+    paid: true as const,
+    courseId:
+      order.course_id as string,
+
+    expiresAt:
+      row?.subscription_expires_at ??
+      null,
+
+    autoRenew:
+      Boolean(
+        row?.subscription_auto_renew
+      ) ||
+      Boolean(
+        order.auto_renew_requested &&
+          token
+      ),
+  };
+}

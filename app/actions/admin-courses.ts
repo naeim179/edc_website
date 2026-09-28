@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requirePermission } from "@/lib/auth/admin-access";
 
 function getDiscount(
   formData: FormData
@@ -44,7 +44,7 @@ function getDiscount(
 export async function createCourse(
   formData: FormData
 ) {
-  await requireAdmin();
+  await requirePermission("manage_courses");
 
   const supabase = await createClient();
 
@@ -142,7 +142,7 @@ export async function createCourse(
 export async function deleteCourse(
   courseId: string
 ) {
-  await requireAdmin();
+  await requirePermission("manage_courses");
 
   const supabase = await createClient();
 
@@ -163,7 +163,7 @@ export async function updateCourse(
   courseId: string,
   formData: FormData
 ) {
-  await requireAdmin();
+  await requirePermission("manage_courses");
 
   const supabase = await createClient();
 

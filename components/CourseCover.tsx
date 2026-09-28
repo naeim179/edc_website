@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BookIcon } from "@/components/icons";
 
 const GRADIENTS = [
@@ -26,11 +27,12 @@ type Props = {
 export default function CourseCover({ image, title }: Props) {
   if (image) {
     return (
-      <img
+      <Image
         src={image}
         alt=""
-        loading="lazy"
-        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
+        fill
+        sizes="(max-width: 768px) 100vw, 400px"
+        className="object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
       />
     );
   }

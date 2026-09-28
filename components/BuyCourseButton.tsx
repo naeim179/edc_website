@@ -7,11 +7,13 @@ export default function BuyCourseButton({
   courseId,
   subscriptionMonths = 1,
   autoRenew = false,
+  paymentMethod = "paytabs",
   label = "متابعة إلى الدفع",
 }: {
   courseId: string;
   subscriptionMonths?: 1 | 3;
   autoRenew?: boolean;
+  paymentMethod?: "paytabs" | "paypal" | "cliq";
   label?: string;
 }) {
   const [pending, startTransition] =

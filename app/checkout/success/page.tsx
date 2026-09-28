@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { fulfillPaymentByTranRef } from "@/lib/payments";
+import CliqPaymentUpload from "@/components/CliqPaymentUpload";
 
 type SearchParams = {
   tranRef?: string;
   course?: string;
+  method?: string;
+  order?: string;
 };
 
 export default async function CheckoutSuccessPage({
@@ -13,6 +16,12 @@ export default async function CheckoutSuccessPage({
 }) {
   const params =
     await searchParams;
+
+  const isCliq =
+    params.method === "cliq";
+
+  const orderId =
+    params.order ?? null;
 
   let paid = false;
 
@@ -72,7 +81,37 @@ export default async function CheckoutSuccessPage({
       className="max-w-lg mx-auto mt-20 text-center bg-white border rounded-[26px] p-8 shadow-sm"
       dir="rtl"
     >
-      {paid ? (
+      {isCliq ? (
+        <>
+          <h1 className="text-2xl font-bold text-[#087a54] mb-4">
+            الدفع عبر CliQ
+          </h1>
+
+          <p className="text-slate-600 mb-4">
+            قم بتحويل المبلغ إلى حساب CliQ التالي ثم ارفع إثبات التحويل.
+          </p>
+
+          <div className="bg-slate-50 rounded-xl p-5 text-right mb-5">
+            <p className="font-bold">
+              اسم الحساب: Your Way
+            </p>
+
+            <p className="mt-2">
+              رقم CliQ: YOUR_CLIQ_NUMBER
+            </p>
+
+            <p className="mt-2 text-sm text-slate-500">
+              سيتم تفعيل الدورة بعد مراجعة التحويل.
+            </p>
+          </div>
+
+          {orderId && (
+            <CliqPaymentUpload
+              orderId={orderId}
+            />
+          )}
+        </>
+      ) : paid ? (
         <>
           <h1 className="text-2xl font-bold text-[#087a54] mb-4">
             تم الدفع وتفعيل الاشتراك

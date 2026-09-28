@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import Link from "next/link";
 import EnrollButton from "@/components/EnrollButton";
 import SubscriptionRenewalControls from "@/components/SubscriptionRenewalControls";
@@ -306,10 +308,12 @@ export default function CourseDetailContent({
 
         {course.image_url ? (
           <div className="relative h-64 overflow-hidden md:h-[300px]">
-            <img
+            <Image
               src={course.image_url}
               alt={course.title}
-              className="h-full w-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 900px"
+              className="object-cover"
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-[#0F332D]/85 via-[#0F332D]/25 to-transparent" />
@@ -491,10 +495,12 @@ export default function CourseDetailContent({
               <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                 <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F7F3EC] text-2xl font-bold text-[#1B4B43]">
                   {teacherProfile?.image_url ? (
-                    <img
+                    <Image
                       src={teacherProfile.image_url}
                       alt={teacher.full_name ?? "Teacher"}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="64px"
+                      className="object-cover"
                     />
                   ) : (
                     (teacher.full_name ?? "T").charAt(0).toUpperCase()

@@ -10,12 +10,16 @@ export default function Card({
   return (
     <div
       className={`
-        rounded-2xl
-        border border-[#E8E1D4]
+        rounded-3xl
+        border
+        border-slate-200
         bg-white
-        transition-colors
+        shadow-sm
+        transition-all
         duration-300
-        hover:border-[#1B4B43]/30
+        hover:-translate-y-1
+        hover:shadow-lg
+        hover:border-emerald-200
         ${className}
       `}
       {...props}

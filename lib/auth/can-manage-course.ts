@@ -7,24 +7,23 @@ export async function canManageCourse(courseId: string) {
     data: { user },
   } = await supabase.auth.getUser();
 
-
   if (!user) {
     return false;
   }
 
-
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, is_super_admin, permissions")
     .eq("id", user.id)
     .single();
 
-
-
-  if (profile?.role === "admin") {
+  if (
+    profile?.role === "admin" &&
+    (profile.is_super_admin ||
+      (profile.permissions ?? []).includes("manage_courses"))
+  ) {
     return true;
   }
-
 
   const { data: assignment } = await supabase
     .from("course_instructors")
@@ -32,8 +31,6 @@ export async function canManageCourse(courseId: string) {
     .eq("course_id", courseId)
     .eq("teacher_id", user.id)
     .maybeSingle();
-
-
 
   return !!assignment;
 }

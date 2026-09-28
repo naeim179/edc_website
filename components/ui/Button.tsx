@@ -12,43 +12,56 @@ type ButtonProps = {
   href?: string;
   variant?: ButtonVariant;
   className?: string;
+  disabled?: boolean;
+  type?: "button" | "submit";
 };
 
 const variants = {
   primary:
-    "bg-[#1B4B43] text-white hover:bg-[#123A34]",
+    "bg-[#08744f] text-white hover:bg-[#065c3e] shadow-sm hover:shadow-md",
 
   secondary:
-    "bg-[#F7F3EC] text-[#2A2420] hover:bg-[#F0EBE1]",
+    "bg-slate-100 text-slate-800 hover:bg-slate-200",
 
   danger:
     "bg-red-600 text-white hover:bg-red-700",
 
   warning:
-    "bg-[#C9704A] text-white hover:bg-[#B15F3B]",
+    "bg-[#c9704a] text-white hover:bg-[#b15f3b]",
 };
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors";
+  "inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
 
 export default function Button({
   children,
   href,
   variant = "primary",
   className = "",
+  disabled,
+  type = "button",
 }: ButtonProps) {
-  const styles = `${base} ${variants[variant]} ${className}`;
+
+  const styles =
+    `${base} ${variants[variant]} ${className}`;
 
   if (href) {
     return (
-      <Link href={href} className={styles}>
+      <Link
+        href={href}
+        className={styles}
+      >
         {children}
       </Link>
     );
   }
 
   return (
-    <button className={styles}>
+    <button
+      type={type}
+      disabled={disabled}
+      className={styles}
+    >
       {children}
     </button>
   );

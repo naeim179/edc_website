@@ -1,6 +1,8 @@
 "use client";
 
 import { useLanguage } from "@/components/LanguageProvider";
+import { useMemo, useState } from "react";
+
 
 type Order = {
   id: string;
@@ -20,7 +22,16 @@ type Props = {
   orders: Order[];
 };
 
-function formatDate(dateStr: string, isArabic: boolean, t: any) {
+function formatDate(
+  dateStr: string,
+  isArabic: boolean,
+  t: {
+    admin: {
+      pm: string;
+      am: string;
+    };
+  }
+) {
   const d = new Date(dateStr);
 
   const day = String(d.getDate()).padStart(2, "0");
@@ -49,6 +60,12 @@ export default function AdminOrdersContent({
   const { language, t } = useLanguage();
 
   const isArabic = language === "ar";
+
+  const [filter, setFilter] =
+    useState<"all" | "pending" | "paid" | "failed">("all");
+
+  const [search, setSearch] =
+    useState("");
 
   function getStatusLabel(status: string) {
     if (status === "paid") {
@@ -89,9 +106,62 @@ export default function AdminOrdersContent({
         </p>
       </div>
 
+      <div className="bg-[var(--brand-surface)] rounded-2xl border p-5 flex flex-wrap gap-3 justify-between">
+
+        <input
+          value={search}
+          onChange={(e)=>setSearch(e.target.value)}
+          placeholder="Search student or course..."
+          className="rounded-xl border px-4 py-2"
+        />
+
+        <div className="flex gap-2 flex-wrap">
+          {[
+            ["all","All"],
+            ["pending","Pending"],
+            ["paid","Paid"],
+            ["failed","Failed"],
+          ].map(([key,label])=>(
+            <button
+              key={key}
+              onClick={() =>
+                setFilter(
+                  key as "all" | "pending" | "paid" | "failed"
+                )
+              }
+              className={
+                `rounded-xl px-4 py-2 font-bold border ${
+                  filter===key
+                  ? "bg-[#1B4B43] text-white"
+                  : "bg-white"
+                }`
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+      </div>
+
       <div className="space-y-4">
         {orders.length > 0 ? (
-          orders.map((order) => {
+          orders
+          .filter((order) => {
+            const matches =
+              filter === "all" ||
+              order.status === filter;
+
+            const text =
+              `${order.studentName ?? ""} ${order.courses?.[0]?.title ?? ""}`
+              .toLowerCase();
+
+            return (
+              matches &&
+              text.includes(search.toLowerCase())
+            );
+          })
+          .map((order) => {
             const courseTitle =
               order.courses?.[0]?.title ??
               (t.admin.courseNotFound);
@@ -99,7 +169,7 @@ export default function AdminOrdersContent({
             return (
               <div
                 key={order.id}
-                className="bg-white rounded-xl border p-5 text-right"
+                className="bg-[var(--brand-surface)] rounded-2xl border p-6 shadow-sm hover:shadow-md transition-shadow text-right"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>

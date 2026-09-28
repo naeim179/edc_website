@@ -12,8 +12,8 @@ export default function CardContent({
   return (
     <div
       className={`
-        px-5
-        py-4
+        p-5
+        md:p-6
         ${className}
       `}
     >

@@ -64,7 +64,19 @@ export default function Topbar({
 
   return (
     <header
-      className="flex w-full flex-wrap items-center gap-3 rounded-2xl border p-3 sm:flex-nowrap"
+      className="
+        flex
+        w-full
+        flex-wrap
+        items-center
+        gap-3
+        rounded-3xl
+        border
+        p-3
+        sm:flex-nowrap
+        shadow-sm
+        backdrop-blur-xl
+      "
       style={{
         backgroundColor: "var(--brand-surface)",
         borderColor: "var(--brand-border)",
@@ -77,7 +89,17 @@ export default function Topbar({
           onClick={onMenuClick}
           aria-label={isArabic ? "فتح القائمة" : "Open menu"}
           aria-controls="app-sidebar"
-          className="flex h-11 w-11 items-center justify-center rounded-xl border transition-colors"
+          className="
+            flex
+            h-11
+            w-11
+            items-center
+            justify-center
+            rounded-2xl
+            border
+            transition-all
+            hover:shadow-md
+          "
           style={{
             borderColor: "var(--brand-border)",
             color: "var(--brand-text-muted)",
@@ -114,7 +136,18 @@ export default function Topbar({
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t.topbar.search}
             aria-label={t.topbar.search}
-            className="h-11 w-full rounded-xl border pe-4 ps-11 text-sm outline-none transition focus:ring-4"
+            className="
+              h-12
+              w-full
+              rounded-2xl
+              border
+              pe-4
+              ps-11
+              text-sm
+              outline-none
+              transition
+              focus:ring-4
+            "
             style={{
               borderColor: "var(--brand-border)",
               backgroundColor: "var(--brand-bg)",
@@ -138,7 +171,19 @@ export default function Topbar({
           <>
             <Link
               href="/profile"
-              className="flex items-center gap-3 rounded-xl border py-1.5 pe-1.5 ps-1.5 transition-colors sm:pe-4"
+              className="
+                flex
+                items-center
+                gap-3
+                rounded-2xl
+                border
+                py-1.5
+                pe-1.5
+                ps-1.5
+                transition-all
+                hover:shadow-md
+                sm:pe-4
+              "
               style={{ borderColor: "var(--brand-border)" }}
             >
               <span
@@ -146,9 +191,11 @@ export default function Topbar({
                 style={{ backgroundColor: "var(--brand-ink)" }}
               >
                 {avatarUrl ? (
-                  <img
+                  <Image
                     src={avatarUrl}
                     alt=""
+                    width={36}
+                    height={36}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -177,7 +224,20 @@ export default function Topbar({
               <button
                 type="submit"
                 aria-label={t.topbar.logout}
-                className="flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold transition-colors sm:px-4"
+                className="
+                  flex
+                  h-11
+                  items-center
+                  gap-2
+                  rounded-2xl
+                  border
+                  px-3
+                  text-sm
+                  font-semibold
+                  transition-all
+                  hover:shadow-md
+                  sm:px-4
+                "
                 style={{
                   borderColor: "var(--brand-border)",
                   color: "var(--brand-text-muted)",

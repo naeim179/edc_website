@@ -52,6 +52,9 @@ export default function SubscriptionCheckout({
   const [months, setMonths] = useState<1 | 3>(1);
   const [autoRenew, setAutoRenew] = useState(false);
 
+  const [paymentMethod, setPaymentMethod] =
+    useState<"paytabs" | "paypal" | "cliq">("paytabs");
+
   const totalUsd = Number((monthlyPriceUsd * months).toFixed(2));
 
   const plans: { value: 1 | 3; label: string; totalLabel: string }[] = [
@@ -222,10 +225,58 @@ export default function SubscriptionCheckout({
           </div>
 
           <div className="mt-6">
+            <h2 className="mb-3 font-bold text-[#2A2420]">
+              طريقة الدفع
+            </h2>
+
+            <div className="grid gap-3 sm:grid-cols-3 mb-6">
+              {[
+                {
+                  id:"paytabs",
+                  title:"PayTabs",
+                  icon:"💳",
+                },
+                {
+                  id:"paypal",
+                  title:"PayPal",
+                  icon:"🅿️",
+                },
+                {
+                  id:"cliq",
+                  title:"CliQ",
+                  icon:"📱",
+                },
+              ].map((method)=>(
+                <button
+                  key={method.id}
+                  type="button"
+                  onClick={() =>
+                    setPaymentMethod(
+                      method.id as "paytabs" | "paypal" | "cliq"
+                    )
+                  }
+                  className={`rounded-2xl border p-4 transition ${
+                    paymentMethod === method.id
+                    ? "border-[#1B4B43] bg-[#F7F3EC]"
+                    : "border-[#E8E1D4]"
+                  }`}
+                >
+                  <div className="text-2xl">
+                    {method.icon}
+                  </div>
+
+                  <p className="mt-2 font-bold">
+                    {method.title}
+                  </p>
+                </button>
+              ))}
+            </div>
+
             <BuyCourseButton
               courseId={courseId}
               subscriptionMonths={months}
               autoRenew={autoRenew}
+              paymentMethod={paymentMethod}
               label={`دفع ${totalUsd.toFixed(2)} USD`}
             />
           </div>

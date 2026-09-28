@@ -537,3 +537,134 @@ html[data-theme="eye"] {
   background: var(--brand-bg) !important;
   color: var(--brand-text) !important;
 }
+
+
+/* ===== YOUR WAY UI FOUNDATION V2 ===== */
+
+:root {
+  --surface: #ffffff;
+  --surface-soft: #f8faf9;
+  --border-soft: #e6ece9;
+  --brand-primary: #08744f;
+  --brand-secondary: #0f9d70;
+  --text-primary: #13201b;
+  --text-secondary: #68706d;
+  --radius-xl: 22px;
+  --radius-lg: 16px;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(255,255,255,.95),
+      transparent 45%
+    ),
+    linear-gradient(
+      180deg,
+      #edf5f2,
+      #f6f8f7
+    );
+}
+
+
+/* flexible containers */
+
+.app {
+  width: min(100% - 40px, 1440px);
+  height: auto;
+  min-height: calc(100vh - 60px);
+  padding: 20px;
+  grid-template-columns: 250px minmax(0,1fr);
+}
+
+
+.sidebar {
+  height: calc(100vh - 100px);
+  position: sticky;
+  top:20px;
+}
+
+
+.main {
+  width:auto;
+  height:auto;
+  min-height: calc(100vh - 100px);
+}
+
+
+/* universal cards */
+
+.card,
+[class*="rounded-2xl"] {
+  border-color: var(--border-soft);
+}
+
+
+button {
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease,
+    background-color .15s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+
+/* inputs */
+
+input,
+textarea,
+select {
+  border-color:#e1e8e5;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline:none;
+  border-color:var(--brand-primary);
+  box-shadow:
+    0 0 0 4px rgba(8,116,79,.12);
+}
+
+
+/* smoother scrolling */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color:#b8cbc3 transparent;
+}
+
+
+@media(max-width:900px){
+
+  body {
+    padding:10px;
+  }
+
+  .app {
+    display:block;
+    width:100%;
+    padding:12px;
+  }
+
+  .sidebar {
+    position:relative;
+    height:auto;
+    margin-bottom:15px;
+  }
+
+  .main {
+    width:100%;
+  }
+
+}
+

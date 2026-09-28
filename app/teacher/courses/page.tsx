@@ -3,6 +3,26 @@ import TeacherCoursesContent from "@/components/TeacherCoursesContent";
 import { createClient } from "@/lib/supabase/server";
 import { requireTeacher } from "@/lib/auth/require-teacher";
 
+
+type TeacherAssignment = {
+  id: string;
+  course_id: string;
+  courses: {
+    id: string;
+    title: string;
+    description: string | null;
+    course_type: string | null;
+    price: number | null;
+    currency: string | null;
+    sections: {
+      id: string;
+      lessons: {
+        id: string;
+      }[];
+    }[];
+  }[];
+};
+
 export default async function TeacherCoursesPage() {
   const user = await requireTeacher();
 
@@ -37,7 +57,7 @@ export default async function TeacherCoursesPage() {
   return (
     <AppShell>
       <TeacherCoursesContent
-        assignments={(assignments ?? []) as any}
+        assignments={(assignments ?? []) as TeacherAssignment[]}
       />
     </AppShell>
   );

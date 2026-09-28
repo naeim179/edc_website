@@ -8,7 +8,6 @@ import { useLanguage } from "@/components/LanguageProvider";
 
 import Card from "@/components/ui/Card";
 import CardContent from "@/components/ui/CardContent";
-import Button from "@/components/ui/Button";
 
 type Course = {
   id: string;

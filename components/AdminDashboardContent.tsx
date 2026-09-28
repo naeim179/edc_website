@@ -16,6 +16,12 @@ type AdminDashboardContentProps = {
   ordersCount: number;
   paidOrdersCount: number;
   failedOrdersCount: number;
+  show?: {
+    courses: boolean;
+    students: boolean;
+    enrollments: boolean;
+    orders: boolean;
+  };
 };
 
 export default function AdminDashboardContent({
@@ -25,12 +31,13 @@ export default function AdminDashboardContent({
   ordersCount,
   paidOrdersCount,
   failedOrdersCount,
+  show = { courses: true, students: true, enrollments: true, orders: true },
 }: AdminDashboardContentProps) {
   const { language, t } = useLanguage();
 
   const isArabic = language === "ar";
 
-  const cards: Card[] = [
+  const allCards: Card[] = [
     {
       title: t.admin.courses,
       value: coursesCount,
@@ -57,12 +64,23 @@ export default function AdminDashboardContent({
     },
   ];
 
+  const cards = allCards.filter(
+    (_, index) =>
+      [show.courses, show.students, show.enrollments, show.orders][index]
+  );
+
   return (
     <div
       className="max-w-6xl mx-auto w-full space-y-6"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8 shadow-sm">
+      <section
+  className="rounded-[28px] p-8 shadow-sm text-white"
+  style={{
+    background:
+      "linear-gradient(135deg,var(--brand-ink),#2D6A5A)",
+  }}
+>
         <h1 className="text-3xl font-bold">
           {t.admin.dashboard}
         </h1>
@@ -77,7 +95,7 @@ export default function AdminDashboardContent({
         {cards.map((card) => (
           <div
             key={card.title}
-            className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-5"
+            className="bg-[var(--brand-surface)] rounded-2xl border shadow-sm p-5 hover:shadow-md transition-shadow"
           >
             <div className="flex justify-between items-center">
               <span className="text-3xl">
@@ -103,7 +121,7 @@ export default function AdminDashboardContent({
       </section>
 
 
-      <section className="bg-white rounded-[26px] border border-slate-100 shadow-sm p-6">
+      <section className="bg-[var(--brand-surface)] rounded-2xl border shadow-sm p-6">
         <h2 className="text-xl font-bold text-slate-800 mb-4">
           {t.admin.quickManagement}
         </h2>

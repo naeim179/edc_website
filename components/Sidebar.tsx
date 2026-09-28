@@ -19,6 +19,10 @@ import {
 type SidebarProps = {
   role?: string | null;
   isAuthenticated?: boolean;
+  /** للأدمن: هل هو سوبر أدمن؟ */
+  isSuperAdmin?: boolean;
+  /** صلاحيات الأدمن المقيّد. null = غير محددة، فتظهر كل الأقسام */
+  permissions?: string[] | null;
   /** يستخدم فقط على الجوال (القائمة المنزلقة) */
   open?: boolean;
   onClose?: () => void;
@@ -44,6 +48,8 @@ function isActive(pathname: string, item: NavItem) {
 export default function Sidebar({
   role = null,
   isAuthenticated = false,
+  isSuperAdmin = false,
+  permissions = null,
   open = false,
   onClose,
 }: SidebarProps) {
@@ -108,7 +114,7 @@ export default function Sidebar({
         },
         {
           href: "/admin/orders",
-          label: text.orders,
+          label: text.payments,
           icon: <ReceiptIcon />,
         },
         {
@@ -168,6 +174,30 @@ export default function Sidebar({
           : []),
       ];
 
+  const permissionByHref: Record<string, string> = {
+    "/admin/courses": "manage_courses",
+    "/admin/teachers": "manage_teachers",
+    "/admin/orders": "view_orders",
+    "/admin/students": "manage_students",
+  };
+
+  const visibleItems: NavItem[] = isAdmin
+    ? items.filter((item) => {
+        const needed = permissionByHref[item.href];
+        if (!needed || isSuperAdmin || permissions === null) return true;
+        return permissions.includes(needed);
+      })
+    : items;
+
+  if (isAdmin && isSuperAdmin) {
+    const at = visibleItems.findIndex((item) => item.href === "/profile");
+    visibleItems.splice(at === -1 ? visibleItems.length : at, 0, {
+      href: "/admin/staff",
+      label: t.staff.navLabel,
+      icon: <ShieldIcon />,
+    });
+  }
+
   const hiddenTransform = isArabic
     ? "translate-x-full"
     : "-translate-x-full";
@@ -194,13 +224,23 @@ export default function Sidebar({
         }`}
       >
         <div
-          className="flex h-full flex-col overflow-y-auto border p-4 lg:rounded-2xl"
+          className="
+  flex
+  h-full
+  flex-col
+  overflow-y-auto
+  border
+  p-4
+  rounded-3xl
+  backdrop-blur-xl
+  shadow-sm
+"
           style={{
             backgroundColor: "var(--brand-surface)",
             borderColor: "var(--brand-border)",
           }}
         >
-          <div className="flex items-center justify-between px-1 pb-4">
+          <div className="flex items-center justify-between px-1 pb-5">
             <div className="flex items-center gap-2.5">
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
@@ -241,9 +281,9 @@ export default function Sidebar({
 
           <nav
             aria-label={text.menu}
-            className="mt-2 flex flex-col gap-0.5"
+            className="mt-4 flex flex-col gap-1"
           >
-            {items.map((item) => {
+            {visibleItems.map((item) => {
               const active = isActive(pathname, item);
 
               return (
@@ -252,14 +292,29 @@ export default function Sidebar({
                   href={item.href}
                   onClick={onClose}
                   aria-current={active ? "page" : undefined}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
+                  className="
+  group
+  flex
+  items-center
+  gap-3
+  rounded-2xl
+  px-3.5
+  py-3
+  text-sm
+  font-semibold
+  transition-all
+  duration-200
+  hover:translate-x-1
+"
                   style={
                     active
                       ? {
                           backgroundColor: "var(--brand-ink)",
                           color: "#FFFFFF",
                         }
-                      : { color: "var(--brand-text-muted)" }
+                      : {
+                          color: "var(--brand-text-muted)",
+                        }
                   }
                 >
                   <span
@@ -280,5 +335,23 @@ export default function Sidebar({
         </div>
       </aside>
     </>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M12 3l8 3v6c0 4.5-3.2 8.3-8 9-4.8-.7-8-4.5-8-9V6l8-3z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
   );
 }

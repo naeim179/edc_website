@@ -1,5 +1,6 @@
 "use server";
 
+import { hasAdminPermission } from "@/lib/auth/admin-access";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +22,7 @@ async function assertAdmin() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.role !== "admin") {
+  if (profile?.role !== "admin" || !(await hasAdminPermission("manage_teachers"))) {
     throw new Error("Only admins can manage teachers");
   }
 }

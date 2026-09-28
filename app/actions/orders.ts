@@ -18,10 +18,16 @@ const SITE_URL =
 
 type SubscriptionMonths = 1 | 3;
 
+type PaymentMethod =
+  | "paytabs"
+  | "paypal"
+  | "cliq";
+
 export async function createOrder(
   courseId: string,
   subscriptionMonths: SubscriptionMonths = 1,
-  autoRenew = false
+  autoRenew = false,
+  paymentMethod: PaymentMethod = "paytabs"
 ) {
   if (
     subscriptionMonths !== 1 &&
@@ -257,6 +263,12 @@ export async function createOrder(
     throw new Error(
       error?.message ??
         "تعذر إنشاء الطلب"
+    );
+  }
+
+  if (paymentMethod === "cliq") {
+    redirect(
+      `/checkout/success?order=${newOrder.id}&method=cliq`
     );
   }
 

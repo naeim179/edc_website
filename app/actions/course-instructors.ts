@@ -1,5 +1,6 @@
 "use server";
 
+import { hasAdminPermission } from "@/lib/auth/admin-access";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -28,7 +29,7 @@ export async function assignTeacherToCourse(
     .single();
 
 
-  if (profile?.role !== "admin") {
+  if (profile?.role !== "admin" || !(await hasAdminPermission("manage_courses"))) {
     throw new Error("Only admins can assign teachers");
   }
 
