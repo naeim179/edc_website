@@ -27,21 +27,21 @@ export default function HomeContent({
   continueCourse,
   courses,
 }: Props) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isArabic = language === "ar";
 
   const statItems = [
     {
       value: stats.enrolled,
-      label: isArabic ? "دورات مسجلة" : "Enrolled courses",
+      label: t.home.enrolledCourses,
     },
     {
       value: stats.completedLessons,
-      label: isArabic ? "دروس مكتملة" : "Lessons completed",
+      label: t.home.completedLessons,
     },
     {
       value: stats.completedCourses,
-      label: isArabic ? "دورات مكتملة" : "Courses completed",
+      label: t.home.completedCourses,
     },
   ];
 
@@ -51,32 +51,50 @@ export default function HomeContent({
       : `/courses/${continueCourse.id}`
     : "/courses";
 
+  const heroShapes = (
+    <>
+      <div
+        aria-hidden="true"
+        className="absolute -end-16 -bottom-20 h-64 w-64 rotate-45 bg-white/[0.05]"
+      />
+
+      <div
+        aria-hidden="true"
+        className="absolute -start-12 -top-20 h-44 w-44 rotate-45 bg-white/[0.04]"
+      />
+    </>
+  );
+
   return (
     <div
       className="mx-auto w-full max-w-6xl space-y-10"
       dir={isArabic ? "rtl" : "ltr"}
     >
       {isAuthenticated ? (
-        <section className="overflow-hidden rounded-3xl border border-[#E8E1D4] bg-white">
+        <section
+          className="overflow-hidden rounded-3xl border"
+          style={{
+            borderColor: "var(--brand-border)",
+            backgroundColor: "var(--brand-surface)",
+          }}
+        >
           {/* HERO */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#1B4B43] to-[#0F332D] px-6 py-8 text-white sm:px-10 sm:py-10">
-            <div
-              aria-hidden="true"
-              className="absolute -end-16 -bottom-20 h-64 w-64 rotate-45 bg-white/[0.05]"
-            />
-
-            <div
-              aria-hidden="true"
-              className="absolute -start-12 -top-20 h-44 w-44 rotate-45 bg-white/[0.04]"
-            />
+          <div
+            className="relative overflow-hidden px-6 py-8 text-white sm:px-10 sm:py-10"
+            style={{
+              backgroundImage:
+                "linear-gradient(135deg, var(--brand-ink), var(--brand-ink-hover))",
+            }}
+          >
+            {heroShapes}
 
             <div className="relative">
               <p className="text-sm text-white/70">
-                {isArabic ? "أهلاً بعودتك" : "Welcome back"}
+                {t.home.welcomeBack}
               </p>
 
               <h1 className="mt-1 text-3xl font-bold leading-tight sm:text-4xl">
-                {isArabic ? "مرحباً" : "Hello"} {displayName}
+                {t.home.hello} {displayName}
               </h1>
 
               <p className="mt-3 max-w-md leading-7 text-white/75">
@@ -93,7 +111,7 @@ export default function HomeContent({
                     )}
 
                     <div>
-                      <p className="text-2xl font-bold sm:text-3xl">
+                      <p className="text-2xl font-bold text-white sm:text-3xl">
                         {item.value}
                       </p>
 
@@ -107,12 +125,16 @@ export default function HomeContent({
             </div>
           </div>
 
-          {/* CONTINUE LEARNING — صف متدفق بدون كرت عائم */}
+          {/* CONTINUE LEARNING */}
 
           {continueCourse ? (
             <Link
               href={continueHref}
-              className="flex flex-col gap-4 p-6 transition hover:bg-[#F7F3EC]/50 sm:flex-row sm:items-center sm:gap-6 sm:p-8"
+              className="m-6 flex flex-col gap-5 rounded-2xl border p-5 transition sm:flex-row sm:items-center sm:p-6"
+              style={{
+                borderColor: "var(--brand-border)",
+                backgroundColor: "var(--brand-bg)",
+              }}
             >
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl sm:h-20 sm:w-20">
                 <CourseCover
@@ -122,35 +144,51 @@ export default function HomeContent({
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-[#8A3F2A]">
+                <p
+                  className="text-xs font-bold"
+                  style={{ color: "var(--brand-clay)" }}
+                >
                   {isArabic
                     ? "تابع من حيث توقفت"
                     : "Continue where you left off"}
                 </p>
 
-                <h2 className="mt-0.5 truncate text-lg font-bold text-[#2A2420]">
+                <h2
+                  className="mt-0.5 truncate text-lg font-bold"
+                  style={{ color: "var(--brand-text)" }}
+                >
                   {continueCourse.title}
                 </h2>
 
                 <div className="mt-3 flex items-center gap-3">
                   <div
-                    className="h-2 flex-1 overflow-hidden rounded-full bg-[#F0EBE1] sm:max-w-xs"
+                    className="h-2 flex-1 overflow-hidden rounded-full sm:max-w-xs"
+                    style={{ backgroundColor: "var(--brand-border-soft)" }}
                     role="progressbar"
                     aria-valuenow={continueCourse.progress}
                     aria-valuemin={0}
                     aria-valuemax={100}
                   >
                     <div
-                      className="h-full rounded-full bg-[#1B4B43]"
-                      style={{ width: `${continueCourse.progress}%` }}
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${continueCourse.progress}%`,
+                        backgroundColor: "var(--brand-ink)",
+                      }}
                     />
                   </div>
 
-                  <span className="shrink-0 text-xs font-bold text-[#1B4B43]">
+                  <span
+                    className="shrink-0 text-xs font-bold"
+                    style={{ color: "var(--brand-ink)" }}
+                  >
                     {continueCourse.progress}%
                   </span>
 
-                  <span className="shrink-0 text-xs text-[#A69C8C]">
+                  <span
+                    className="shrink-0 text-xs"
+                    style={{ color: "var(--brand-text-faint)" }}
+                  >
                     {isArabic
                       ? `${continueCourse.completedLessons}/${continueCourse.totalLessons} درس`
                       : `${continueCourse.completedLessons}/${continueCourse.totalLessons}`}
@@ -158,7 +196,10 @@ export default function HomeContent({
                 </div>
               </div>
 
-              <span className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#1B4B43] px-5 py-2.5 text-sm font-bold text-white transition group-hover:bg-[#123A34]">
+              <span
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition"
+                style={{ backgroundColor: "var(--brand-ink)" }}
+              >
                 <PlayIcon width={14} height={14} />
                 {continueCourse.progress > 0
                   ? isArabic
@@ -172,7 +213,10 @@ export default function HomeContent({
           ) : (
             <div className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
               <div>
-                <h2 className="text-lg font-bold text-[#2A2420]">
+                <h2
+                  className="text-lg font-bold"
+                  style={{ color: "var(--brand-text)" }}
+                >
                   {stats.enrolled > 0
                     ? isArabic
                       ? "أنجزت كل دوراتك 🎉"
@@ -182,7 +226,10 @@ export default function HomeContent({
                     : "Start your first course"}
                 </h2>
 
-                <p className="mt-1 text-sm leading-6 text-[#6B6155]">
+                <p
+                  className="mt-1 text-sm leading-6"
+                  style={{ color: "var(--brand-text-muted)" }}
+                >
                   {isArabic
                     ? "تصفّح الدورات المتاحة واختر ما يناسب هدفك."
                     : "Browse the available courses and pick what fits your goal."}
@@ -191,9 +238,10 @@ export default function HomeContent({
 
               <Link
                 href="/courses"
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#1B4B43] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#123A34]"
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white transition-colors"
+                style={{ backgroundColor: "var(--brand-ink)" }}
               >
-                {isArabic ? "استعرض الدورات" : "Browse courses"}
+                {t.home.browseCourses}
                 <ArrowIcon
                   width={16}
                   height={16}
@@ -204,16 +252,14 @@ export default function HomeContent({
           )}
         </section>
       ) : (
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-8 text-white sm:p-12">
-          <div
-            aria-hidden="true"
-            className="absolute -end-16 -bottom-20 h-64 w-64 rotate-45 bg-white/[0.05]"
-          />
-
-          <div
-            aria-hidden="true"
-            className="absolute -start-12 -top-20 h-44 w-44 rotate-45 bg-white/[0.04]"
-          />
+        <section
+          className="relative overflow-hidden rounded-3xl p-8 text-white sm:p-12"
+          style={{
+            backgroundImage:
+              "linear-gradient(135deg, var(--brand-ink), var(--brand-ink-hover))",
+          }}
+        >
+          {heroShapes}
 
           <div className="relative max-w-2xl">
             <p className="text-sm text-white/70">
@@ -237,9 +283,10 @@ export default function HomeContent({
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/register"
-                className="rounded-xl bg-[#C9704A] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#B15F3B]"
+                className="rounded-xl px-6 py-3 text-sm font-bold text-white transition-colors"
+                style={{ backgroundColor: "var(--brand-terracotta)" }}
               >
-                {isArabic ? "إنشاء حساب" : "Create account"}
+                {t.home.createAccount}
               </Link>
 
               <Link
@@ -253,17 +300,27 @@ export default function HomeContent({
         </section>
       )}
 
-      <section className="space-y-5">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-[#2A2420] sm:text-2xl">
-            {isArabic ? "أحدث الدورات" : "Latest courses"}
+      <section className="space-y-6">
+        <div
+          className="flex items-center justify-between gap-4 rounded-2xl border px-5 py-4"
+          style={{
+            borderColor: "var(--brand-border)",
+            backgroundColor: "var(--brand-surface)",
+          }}
+        >
+          <h2
+            className="text-xl font-bold sm:text-2xl"
+            style={{ color: "var(--brand-text)" }}
+          >
+            {t.home.latestCourses}
           </h2>
 
           <Link
             href="/courses"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1B4B43] hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
+            style={{ color: "var(--brand-ink)" }}
           >
-            {isArabic ? "عرض جميع الدورات" : "View all courses"}
+            {t.home.viewAllCourses}
             <ArrowIcon
               width={16}
               height={16}
@@ -273,7 +330,7 @@ export default function HomeContent({
         </div>
 
         {courses.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
               <CourseCatalogCard
                 key={course.id}
@@ -295,7 +352,13 @@ export default function HomeContent({
             ))}
           </div>
         ) : (
-          <div className="border-t border-[#F0EBE1] pt-8 text-center text-[#A69C8C]">
+          <div
+            className="border-t pt-8 text-center"
+            style={{
+              borderColor: "var(--brand-border-soft)",
+              color: "var(--brand-text-faint)",
+            }}
+          >
             {isArabic
               ? "لا توجد دورات منشورة حاليًا."
               : "No published courses yet."}

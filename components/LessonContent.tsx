@@ -68,7 +68,7 @@ export default function LessonContent({
   nextLessonId,
   position,
 }: Props) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isArabic = language === "ar";
 
   const isEnrolled = Boolean(enrollmentId);

@@ -27,7 +27,7 @@ export default function AdminLessonsContent({
   lessons,
 }: Props) {
 
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const isArabic = language === "ar";
 
@@ -41,15 +41,11 @@ export default function AdminLessonsContent({
       <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">
 
         <h1 className="text-3xl font-bold">
-          {isArabic
-            ? "إدارة الدروس"
-            : "Manage Lessons"}
+          {t.admin.manageLessons}
         </h1>
 
         <p className="mt-2 text-blue-100">
-          {isArabic
-            ? `القسم: ${sectionTitle}`
-            : `Section: ${sectionTitle}`}
+          {`${t.admin.section}: ${sectionTitle}`}
         </p>
 
       </section>
@@ -93,12 +89,8 @@ export default function AdminLessonsContent({
                     }`}
                   >
                     {lesson.is_free_preview
-                      ? isArabic
-                        ? "معاينة مجانية"
-                        : "Free Preview"
-                      : isArabic
-                        ? "مغلق"
-                        : "Locked"}
+                      ? t.admin.freePreview
+                      : t.admin.locked}
                   </span>
 
 
@@ -118,9 +110,7 @@ export default function AdminLessonsContent({
                   <div>
 
                     <label className="block text-sm font-bold mb-2 text-slate-600">
-                      {isArabic
-                        ? "عنوان الدرس"
-                        : "Lesson title"}
+                      {t.admin.lessonTitle}
                     </label>
 
                     <input
@@ -137,9 +127,7 @@ export default function AdminLessonsContent({
                   <div>
 
                     <label className="block text-sm font-bold mb-2 text-slate-600">
-                      {isArabic
-                        ? "رابط المحتوى"
-                        : "Content URL"}
+                      {t.admin.contentUrl}
                     </label>
 
                     <input
@@ -155,9 +143,7 @@ export default function AdminLessonsContent({
                   <div>
 
                     <label className="block text-sm font-bold mb-2 text-slate-600">
-                      {isArabic
-                        ? "ترتيب الدرس"
-                        : "Lesson order"}
+                      {t.admin.lessonOrder}
                     </label>
 
                     <input
@@ -173,9 +159,7 @@ export default function AdminLessonsContent({
 
                   <label className="flex justify-end gap-2 items-center text-sm font-bold text-slate-700">
 
-                    {isArabic
-                      ? "معاينة مجانية"
-                      : "Free Preview"}
+                    {t.admin.freePreview}
 
                     <input
                       type="checkbox"
@@ -193,9 +177,7 @@ export default function AdminLessonsContent({
                     type="submit"
                     className="w-full bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold"
                   >
-                    {isArabic
-                      ? "حفظ التعديل"
-                      : "Save Changes"}
+                    {t.admin.saveChanges}
                   </button>
 
 
@@ -221,9 +203,7 @@ export default function AdminLessonsContent({
       ) : (
 
         <div className="bg-white rounded-2xl border p-10 text-center text-slate-500">
-          {isArabic
-            ? "لا توجد دروس حالياً."
-            : "No lessons available."}
+          {t.admin.noLessons}
         </div>
 
       )}

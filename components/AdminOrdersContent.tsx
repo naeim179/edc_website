@@ -20,7 +20,7 @@ type Props = {
   orders: Order[];
 };
 
-function formatDate(dateStr: string, isArabic: boolean) {
+function formatDate(dateStr: string, isArabic: boolean, t: any) {
   const d = new Date(dateStr);
 
   const day = String(d.getDate()).padStart(2, "0");
@@ -32,8 +32,8 @@ function formatDate(dateStr: string, isArabic: boolean) {
   const seconds = String(d.getSeconds()).padStart(2, "0");
 
   const period = hours >= 12
-    ? (isArabic ? "م" : "PM")
-    : (isArabic ? "ص" : "AM");
+    ? (isArabic ? t.admin.pm : "PM")
+    : (isArabic ? t.admin.am : "AM");
 
   hours = hours % 12;
   if (hours === 0) hours = 12;
@@ -46,21 +46,17 @@ function formatDate(dateStr: string, isArabic: boolean) {
 export default function AdminOrdersContent({
   orders,
 }: Props) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const isArabic = language === "ar";
 
   function getStatusLabel(status: string) {
     if (status === "paid") {
-      return isArabic
-        ? "تم الدفع بنجاح"
-        : "Paid";
+      return t.admin.paid;
     }
 
     if (status === "failed") {
-      return isArabic
-        ? "فشل الدفع"
-        : "Failed";
+      return t.admin.failedStatus;
     }
 
     return status;
@@ -85,15 +81,11 @@ export default function AdminOrdersContent({
     >
       <div className="bg-white rounded-2xl border p-6 text-right">
         <h1 className="text-2xl font-bold">
-          {isArabic
-            ? "عمليات الدفع"
-            : "Payments"}
+          {t.admin.payments}
         </h1>
 
         <p className="text-slate-500 mt-2">
-          {isArabic
-            ? "تظهر هنا فقط نتائج الدفع الناجحة أو الفاشلة. لا تحتاج أي عملية إلى موافقة يدوية."
-            : "Only successful or failed payment results appear here. No manual approval is required."}
+          {t.admin.paymentsDescription}
         </p>
       </div>
 
@@ -102,9 +94,7 @@ export default function AdminOrdersContent({
           orders.map((order) => {
             const courseTitle =
               order.courses?.[0]?.title ??
-              (isArabic
-                ? "دورة غير موجودة"
-                : "Course not found");
+              (t.admin.courseNotFound);
 
             return (
               <div
@@ -118,25 +108,21 @@ export default function AdminOrdersContent({
                     </h2>
 
                     <p className="text-sm text-slate-500 mt-2">
-                      {isArabic
-                        ? "الطالب"
-                        : "Student"}
+                      {t.admin.student}
                       :{" "}
                       {order.studentName ??
                         "Unknown"}
                     </p>
 
                     <p className="text-sm text-slate-500 mt-2">
-                      {isArabic
-                        ? "المبلغ"
-                        : "Amount"}
+                      {t.admin.amount}
                       :{" "}
                       {order.amount}{" "}
                       {order.currency}
                     </p>
 
                     <p className="text-xs text-slate-400 mt-2">
-                      {formatDate(order.created_at, isArabic)}
+                      {formatDate(order.created_at, isArabic, t)}
                     </p>
                   </div>
 
@@ -155,9 +141,7 @@ export default function AdminOrdersContent({
           })
         ) : (
           <div className="bg-white border rounded-xl p-6 text-right text-slate-500">
-            {isArabic
-              ? "لا توجد نتائج دفع حتى الآن"
-              : "No payment results yet"}
+            {t.admin.noPaymentResults}
           </div>
         )}
       </div>

@@ -4,10 +4,12 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import AuthLayout from "@/components/auth/AuthLayout";
+import { useLanguage } from "@/components/LanguageProvider";
 import { GlobeIcon } from "@/components/icons";
 
 export default function ForgotPasswordPage() {
   const supabase = createClient();
+  const { t } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -19,12 +21,12 @@ export default function ForgotPasswordPage() {
 
   const validateForm = () => {
     if (!email) {
-      setEmailError("البريد الإلكتروني مطلوب");
+      setEmailError(t.auth.emailRequired);
       return false;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setEmailError("صيغة البريد الإلكتروني غير صحيحة");
+      setEmailError(t.auth.invalidEmail);
       return false;
     }
 
@@ -55,7 +57,7 @@ export default function ForgotPasswordPage() {
       setServerError(error.message);
     } else {
       setMessage(
-        "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني"
+        t.auth.resetLinkSent
       );
     }
 
@@ -64,8 +66,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      title="نسيت كلمة المرور؟"
-      description="أدخل بريدك الإلكتروني لإعادة تعيين كلمة المرور"
+      title={t.auth.forgotTitle}
+      description={t.auth.forgotDescription}
     >
       {message && (
         <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-3 text-center text-sm text-green-700">
@@ -124,7 +126,7 @@ export default function ForgotPasswordPage() {
           disabled={isLoading}
           className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
         >
-          {isLoading ? "جاري الإرسال..." : "إرسال الرابط"}
+          {isLoading ? t.auth.sending : t.auth.sendLink}
         </button>
       </form>
 

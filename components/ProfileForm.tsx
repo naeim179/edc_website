@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 import { updateProfile } from "@/app/actions/profile";
 import ImageUploader from "@/components/ui/ImageUploader";
 
@@ -13,6 +14,9 @@ export default function ProfileForm({
     avatar_url: string | null;
   };
 }) {
+  const { language, t } = useLanguage();
+  const isArabic = language === "ar";
+
 
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] =
@@ -48,15 +52,11 @@ export default function ProfileForm({
 
       await updateProfile(formData);
 
-      setMessage(
-        "تم تحديث بياناتك بنجاح ✅"
-      );
+      setMessage(t.profile.profileUpdated);
 
     } catch {
 
-      setError(
-        "حدث خطأ أثناء تحديث البيانات"
-      );
+      setError(t.profile.profileError);
 
     } finally {
 
@@ -78,7 +78,7 @@ export default function ProfileForm({
     <form
       onSubmit={handleSubmit}
       className="space-y-6"
-      dir="rtl"
+      dir={isArabic ? "rtl" : "ltr"}
     >
 
 
@@ -103,7 +103,7 @@ export default function ProfileForm({
             defaultValue={
               profile.full_name ?? ""
             }
-            placeholder="أدخل اسمك"
+            placeholder={t.profile.enterName}
             disabled={isSaving}
             className={inputClass}
           />
@@ -186,8 +186,8 @@ export default function ProfileForm({
         >
 
           {isSaving
-            ? "جاري الحفظ..."
-            : "حفظ التغييرات"}
+            ? t.profile.savingChanges
+            : t.profile.saveChanges}
 
         </button>
 

@@ -26,7 +26,7 @@ export default function AdminSectionsContent({
   sections,
 }: Props) {
 
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const isArabic = language === "ar";
 
@@ -43,14 +43,12 @@ export default function AdminSectionsContent({
           href={`/admin/courses/${courseId}/edit`}
           className="text-sm text-blue-100 font-bold hover:text-white"
         >
-          {isArabic ? "العودة للدورة" : "Back to course"}
+          {t.admin.backToCourse}
         </Link>
 
 
         <h1 className="text-3xl font-bold mt-5">
-          {isArabic
-            ? "محتوى الدورة"
-            : "Course Content"}
+          {t.admin.courseContent}
         </h1>
 
 
@@ -120,9 +118,7 @@ export default function AdminSectionsContent({
                   <div>
 
                     <label className="block text-sm font-bold text-slate-600 mb-2">
-                      {isArabic
-                        ? "اسم القسم"
-                        : "Section name"}
+                      {t.admin.sectionName}
                     </label>
 
 
@@ -140,9 +136,7 @@ export default function AdminSectionsContent({
                   <div>
 
                     <label className="block text-sm font-bold text-slate-600 mb-2">
-                      {isArabic
-                        ? "ترتيب القسم"
-                        : "Section order"}
+                      {t.admin.sectionOrder}
                     </label>
 
 
@@ -163,9 +157,7 @@ export default function AdminSectionsContent({
                     type="submit"
                     className="w-full bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold transition"
                   >
-                    {isArabic
-                      ? "حفظ التعديل"
-                      : "Save Changes"}
+                    {t.admin.saveChanges}
                   </button>
 
 
@@ -179,9 +171,7 @@ export default function AdminSectionsContent({
                     href={`/admin/courses/${courseId}/sections/${section.id}/lessons`}
                     className="flex-1 text-center bg-emerald-50 hover:bg-emerald-100 text-[#087a54] py-3 rounded-xl font-bold"
                   >
-                    {isArabic
-                      ? "إدارة الدروس"
-                      : "Manage Lessons"}
+                    {t.admin.manageLessons}
                   </Link>
 
 
@@ -190,9 +180,7 @@ export default function AdminSectionsContent({
                       type="submit"
                       className="px-5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold"
                     >
-                      {isArabic
-                        ? "حذف"
-                        : "Delete"}
+                      {t.admin.delete}
                     </button>
                   </form>
 
@@ -211,9 +199,7 @@ export default function AdminSectionsContent({
       ) : (
 
         <div className="bg-white rounded-2xl border p-10 text-center text-slate-500">
-          {isArabic
-            ? "لا توجد أقسام بعد."
-            : "No sections yet."}
+          {t.admin.noSections}
         </div>
 
       )}

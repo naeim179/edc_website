@@ -20,7 +20,7 @@ export default function AdminStudentsContent({
   students,
 }: Props) {
 
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const isArabic = language === "ar";
 
@@ -34,15 +34,11 @@ export default function AdminStudentsContent({
       <div className="bg-white rounded-2xl border p-6 text-right">
 
         <h1 className="text-2xl font-bold text-slate-800">
-          {isArabic
-            ? "إدارة الطلاب"
-            : "Students Management"}
+          {t.admin.studentsManagement}
         </h1>
 
         <p className="text-slate-500 mt-2">
-          {isArabic
-            ? "عرض الطلاب والدورات المسجلين بها"
-            : "View students and their enrolled courses"}
+          {t.admin.studentsDescription}
         </p>
 
       </div>
@@ -57,25 +53,19 @@ export default function AdminStudentsContent({
             <tr>
 
               <th className="p-4">
-                {isArabic ? "الاسم" : "Name"}
+                {t.admin.name}
               </th>
 
               <th className="p-4">
-                {isArabic
-                  ? "عدد الدورات"
-                  : "Courses Count"}
+                {t.admin.coursesCount}
               </th>
 
               <th className="p-4">
-                {isArabic
-                  ? "تاريخ التسجيل"
-                  : "Registration Date"}
+                {t.admin.registrationDate}
               </th>
 
               <th className="p-4">
-                {isArabic
-                  ? "الإجراءات"
-                  : "Actions"}
+                {t.admin.actions}
               </th>
 
             </tr>
@@ -95,9 +85,7 @@ export default function AdminStudentsContent({
                 <td className="p-4 font-bold">
 
                   {student.full_name ??
-                    (isArabic
-                      ? "بدون اسم"
-                      : "No name")}
+                    t.admin.noName}
 
                 </td>
 
@@ -127,9 +115,7 @@ export default function AdminStudentsContent({
                     className="inline-block bg-[#087a54] text-white px-4 py-2 rounded-lg text-sm font-bold"
                   >
 
-                    {isArabic
-                      ? "عرض التفاصيل"
-                      : "View Details"}
+                    {t.admin.viewDetails}
 
                   </Link>
 

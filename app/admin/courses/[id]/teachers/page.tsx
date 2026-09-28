@@ -1,6 +1,7 @@
 import AppShell from "@/components/AppShell";
 import { createClient } from "@/lib/supabase/server";
 import AssignTeacherForm from "./AssignTeacherForm";
+import { translations } from "@/lib/i18n";
 
 
 export default async function CourseTeachersPage({
@@ -10,6 +11,7 @@ export default async function CourseTeachersPage({
 }) {
 
   const { id } = await params;
+  const t = translations.ar;
 
   const supabase = await createClient();
 
@@ -47,7 +49,7 @@ export default async function CourseTeachersPage({
       >
 
         <h1 className="text-2xl font-bold mb-6">
-          إدارة معلمي الدورة
+          {t.admin.manageTeachers}
         </h1>
 
 
@@ -62,7 +64,7 @@ export default async function CourseTeachersPage({
 
 
           <h2 className="font-bold mb-4">
-            المعلمين الحاليين
+            {t.admin.currentTeachers}
           </h2>
 
 
@@ -75,7 +77,7 @@ export default async function CourseTeachersPage({
             >
 
               👨‍🏫{" "}
-              {item.teacher?.[0]?.full_name ?? "بدون اسم"}
+              {item.teacher?.[0]?.full_name ?? t.admin.noName}
 
             </div>
 
@@ -87,7 +89,7 @@ export default async function CourseTeachersPage({
             assignedTeachers.length === 0) && (
 
             <p className="text-slate-500">
-              لا يوجد معلمين معينين
+              {t.admin.noAssignedTeachers}
             </p>
 
           )}

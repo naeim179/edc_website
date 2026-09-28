@@ -23,7 +23,7 @@ export default function AdminCoursesContent({
   courses,
 }: Props) {
 
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const isArabic = language === "ar";
 
@@ -42,23 +42,19 @@ export default function AdminCoursesContent({
             href="/admin/courses/new"
             className="bg-white text-[#124b8a] px-5 py-3 rounded-xl font-bold"
           >
-            + {isArabic ? "إضافة دورة" : "Add Course"}
+            + {t.admin.addCourseButton}
           </Link>
 
 
           <div className="text-right">
 
             <h1 className="text-3xl font-bold">
-              {isArabic
-                ? "إدارة الدورات"
-                : "Manage Courses"}
+              {t.admin.manageCourses}
             </h1>
 
 
             <p className="mt-2 text-blue-100">
-              {isArabic
-                ? "إضافة وتعديل وإدارة محتوى الدورات."
-                : "Add, edit and manage course content."}
+              {t.admin.manageCoursesText}
             </p>
 
           </div>
@@ -88,7 +84,7 @@ export default function AdminCoursesContent({
 
                 <p className="text-sm text-slate-500 mt-2">
                   {course.category ??
-                    (isArabic ? "بدون تصنيف" : "No category")}
+                    t.admin.noCategory}
                 </p>
 
               </div>
@@ -104,8 +100,8 @@ export default function AdminCoursesContent({
                   }`}
                 >
                   {course.is_published
-                    ? isArabic ? "منشورة" : "Published"
-                    : isArabic ? "مسودة" : "Draft"}
+                    ? t.admin.published
+                    : t.admin.draft}
                 </span>
 
 
@@ -137,7 +133,7 @@ export default function AdminCoursesContent({
                   href={`/admin/courses/${course.id}/edit`}
                   className="text-center bg-slate-100 hover:bg-slate-200 rounded-xl py-2 text-sm font-bold"
                 >
-                  {isArabic ? "تعديل" : "Edit"}
+                  {t.admin.edit}
                 </Link>
 
 
@@ -145,7 +141,7 @@ export default function AdminCoursesContent({
                   href={`/admin/courses/${course.id}/sections`}
                   className="text-center bg-emerald-50 hover:bg-emerald-100 text-[#087a54] rounded-xl py-2 text-sm font-bold"
                 >
-                  {isArabic ? "المحتوى" : "Content"}
+                  {t.admin.content}
                 </Link>
 
               </div>
@@ -167,9 +163,7 @@ export default function AdminCoursesContent({
       ) : (
 
         <div className="bg-white rounded-2xl p-10 text-center border">
-          {isArabic
-            ? "لا توجد دورات حالياً."
-            : "No courses available."}
+          {t.admin.noCoursesAvailable}
         </div>
 
       )}

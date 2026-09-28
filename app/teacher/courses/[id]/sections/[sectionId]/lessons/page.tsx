@@ -3,6 +3,8 @@ import AppShell from "@/components/AppShell";
 import LessonVideoFields from "@/components/lessons/LessonVideoFields";
 import LessonTypeFields from "@/components/lessons/LessonTypeFields";
 import { createAdminClient } from "@/lib/supabase/admin";
+import TeacherLessonsHeader from "@/components/TeacherLessonsHeader";
+import TeacherLessonPlaceholders from "@/components/TeacherLessonPlaceholders";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
 import {
   teacherCreateLesson,
@@ -72,20 +74,9 @@ export default async function TeacherLessonsPage({
         dir="rtl"
       >
         <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">
-          <Link
-            href={`/teacher/courses/${id}/sections`}
-            className="text-blue-100 font-bold"
-          >
-            العودة للأقسام
-          </Link>
-
-          <h1 className="text-3xl font-bold mt-5">
-            إدارة الدروس
-          </h1>
-
-          <p className="mt-2 text-blue-100">
-            القسم: {section.title}
-          </p>
+          <TeacherLessonsHeader
+            sectionTitle={section.title}
+/>
         </section>
 
         <form
@@ -99,7 +90,7 @@ export default async function TeacherLessonsPage({
           <input
             name="title"
             required
-            placeholder="عنوان الدرس"
+            placeholder={TeacherLessonPlaceholders.title}
             className="w-full border rounded-xl px-4 py-3"
           />
 
@@ -176,21 +167,21 @@ export default async function TeacherLessonsPage({
                       <input
                         name="live_platform"
                         defaultValue={lesson.live_platform ?? ""}
-                        placeholder="منصة البث"
+                        placeholder={TeacherLessonPlaceholders.platform}
                         className="w-full border rounded-xl px-4 py-3"
                       />
 
                       <input
                         name="content_url"
                         defaultValue={lesson.content_url ?? ""}
-                        placeholder="رابط الجلسة"
+                        placeholder={TeacherLessonPlaceholders.sessionLink}
                         className="w-full border rounded-xl px-4 py-3"
                       />
 
                       <input
                         name="live_schedule"
                         defaultValue={lesson.live_schedule ?? ""}
-                        placeholder="موعد الجلسة"
+                        placeholder={TeacherLessonPlaceholders.schedule}
                         className="w-full border rounded-xl px-4 py-3"
                       />
                     </>

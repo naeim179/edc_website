@@ -26,45 +26,33 @@ export default function AdminDashboardContent({
   paidOrdersCount,
   failedOrdersCount,
 }: AdminDashboardContentProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const isArabic = language === "ar";
 
   const cards: Card[] = [
     {
-      title: isArabic ? "الدورات" : "Courses",
+      title: t.admin.courses,
       value: coursesCount,
-      description: isArabic
-        ? "إجمالي الدورات التعليمية"
-        : "Total educational courses",
+      description: t.admin.totalCourses,
       icon: "📚",
     },
     {
-      title: isArabic ? "الطلاب" : "Students",
+      title: t.admin.students,
       value: studentsCount,
-      description: isArabic
-        ? "عدد الطلاب المسجلين"
-        : "Registered students",
+      description: t.admin.registeredStudents,
       icon: "👨‍🎓",
     },
     {
-      title: isArabic
-        ? "التسجيلات"
-        : "Enrollments",
+      title: t.admin.enrollments,
       value: enrollmentsCount,
-      description: isArabic
-        ? "عدد التسجيلات بالدورات"
-        : "Course enrollments",
+      description: t.admin.courseEnrollments,
       icon: "📝",
     },
     {
-      title: isArabic
-        ? "عمليات الدفع"
-        : "Payments",
+      title: t.admin.payments,
       value: ordersCount,
-      description: isArabic
-        ? `${paidOrdersCount} ناجحة - ${failedOrdersCount} فاشلة`
-        : `${paidOrdersCount} successful - ${failedOrdersCount} failed`,
+      description: `${paidOrdersCount} ${t.admin.successful} - ${failedOrdersCount} ${t.admin.failed}`,
       icon: "💳",
     },
   ];
@@ -76,17 +64,14 @@ export default function AdminDashboardContent({
     >
       <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8 shadow-sm">
         <h1 className="text-3xl font-bold">
-          {isArabic
-            ? "لوحة التحكم"
-            : "Dashboard"}
+          {t.admin.dashboard}
         </h1>
 
         <p className="mt-3 text-blue-100">
-          {isArabic
-            ? "إدارة منصة Your Way ومتابعة أداء الطلاب والدورات."
-            : "Manage Your Way platform and track student and course performance."}
+          {t.admin.dashboardDescription}
         </p>
       </section>
+
 
       <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {cards.map((card) => (
@@ -117,38 +102,25 @@ export default function AdminDashboardContent({
         ))}
       </section>
 
+
       <section className="bg-white rounded-[26px] border border-slate-100 shadow-sm p-6">
         <h2 className="text-xl font-bold text-slate-800 mb-4">
-          {isArabic
-            ? "الإدارة السريعة"
-            : "Quick Management"}
+          {t.admin.quickManagement}
         </h2>
 
         <div className="grid md:grid-cols-3 gap-4">
           {[
             [
-              isArabic
-                ? "إدارة الدورات"
-                : "Manage Courses",
-              isArabic
-                ? "إضافة وتعديل محتوى الدورات"
-                : "Add and edit course content",
+              t.admin.manageCourses,
+              t.admin.manageCoursesDescription,
             ],
             [
-              isArabic
-                ? "الطلاب"
-                : "Students",
-              isArabic
-                ? "متابعة الطلاب والتسجيلات"
-                : "Track students and enrollments",
+              t.admin.students,
+              t.admin.manageStudentsDescription,
             ],
             [
-              isArabic
-                ? "عمليات الدفع"
-                : "Payments",
-              isArabic
-                ? "عرض نتائج الدفع الناجحة والفاشلة"
-                : "View successful and failed payment results",
+              t.admin.payments,
+              t.admin.managePaymentsDescription,
             ],
           ].map(([title, desc]) => (
             <div

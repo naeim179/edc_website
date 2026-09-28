@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function ResetPasswordPage() {
   const supabase = createClient();
   const router = useRouter();
+  const { language, t } = useLanguage();
+  const isArabic = language === "ar";
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
@@ -30,14 +33,14 @@ export default function ResetPasswordPage() {
 
     if (password.length < 6) {
       setError(
-        "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+        t.auth.passwordMin
       );
       return;
     }
 
     if (password !== confirmPassword) {
       setError(
-        "كلمتا المرور غير متطابقتين"
+        t.auth.passwordMismatch
       );
       return;
     }
@@ -56,7 +59,7 @@ export default function ResetPasswordPage() {
       setError(error.message);
     } else {
       setMessage(
-        "تم تحديث كلمة المرور بنجاح"
+        t.auth.passwordUpdated
       );
 
       setTimeout(() => {
@@ -72,7 +75,7 @@ export default function ResetPasswordPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c]"
-      dir="rtl"
+      dir={isArabic ? "rtl" : "ltr"}
     >
 
       <div className="w-full max-w-md">
@@ -130,7 +133,7 @@ export default function ResetPasswordPage() {
             type="password"
             value={password}
             onChange={(e)=>setPassword(e.target.value)}
-            placeholder="كلمة المرور الجديدة"
+            placeholder={t.auth.newPassword}
             className="w-full rounded-xl bg-white px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-[#d6b56c]"
           />
 
@@ -139,7 +142,7 @@ export default function ResetPasswordPage() {
             type="password"
             value={confirmPassword}
             onChange={(e)=>setConfirmPassword(e.target.value)}
-            placeholder="تأكيد كلمة المرور"
+            placeholder={t.auth.confirmNewPassword}
             className="w-full rounded-xl bg-white px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-[#d6b56c]"
           />
 
@@ -150,8 +153,8 @@ export default function ResetPasswordPage() {
             className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white hover:bg-[#0d3b6e]"
           >
             {loading
-              ? "جاري الحفظ..."
-              : "تغيير كلمة المرور"}
+              ? t.auth.saving
+              : t.auth.updatePassword}
           </button>
 
 

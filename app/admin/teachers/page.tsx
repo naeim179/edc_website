@@ -2,9 +2,11 @@ import AppShell from "@/components/AppShell";
 import { createClient } from "@/lib/supabase/server";
 import TeacherCreateForm from "./TeacherCreateForm";
 import Link from "next/link";
+import { translations } from "@/lib/i18n";
 
 export default async function AdminTeachersPage() {
   const supabase = await createClient();
+  const t = translations.ar;
 
   const { data: teachers } = await supabase
     .from("profiles")
@@ -23,7 +25,7 @@ export default async function AdminTeachersPage() {
       <div className="max-w-5xl mx-auto p-6" dir="rtl">
 
         <h1 className="text-2xl font-bold mb-6">
-          إدارة المعلمين
+          {t.admin.manageTeachers}
         </h1>
 
 
@@ -33,7 +35,7 @@ export default async function AdminTeachersPage() {
         <div className="mt-8 bg-white rounded-xl border p-6">
 
           <h2 className="text-lg font-bold mb-4">
-            المعلمين الحاليين
+            {t.admin.currentTeachers}
           </h2>
 
 
@@ -46,7 +48,7 @@ export default async function AdminTeachersPage() {
               >
 
                 <span>
-                  {teacher.full_name ?? "بدون اسم"}
+                  {teacher.full_name ?? t.admin.noName}
                 </span>
 
 
@@ -54,7 +56,7 @@ export default async function AdminTeachersPage() {
                   href={`/admin/teachers/${teacher.id}`}
                   className="bg-[#124b8a] text-white px-5 py-2 rounded-lg font-bold"
                 >
-                  إدارة الحساب
+                  {t.admin.manageAccount}
                 </Link>
 
               </div>
@@ -63,7 +65,7 @@ export default async function AdminTeachersPage() {
 
             {(!teachers || teachers.length === 0) && (
               <p className="text-slate-500">
-                لا يوجد معلمين بعد
+                {t.admin.noTeachers}
               </p>
             )}
 

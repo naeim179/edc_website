@@ -187,7 +187,7 @@ export default function CourseDetailContent({
   completedLessons,
   progressPercent,
 }: Props) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isArabic = language === "ar";
 
   /* ----- price ----- */
@@ -364,7 +364,7 @@ export default function CourseDetailContent({
           <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 border-y border-[#F0EBE1] py-6">
             <div>
               <p className="text-xs text-[#A69C8C]">
-                {isArabic ? "عدد الدروس" : "Lessons"}
+                {t.courses.lessonsCount}
               </p>
 
               <p className="mt-1 text-2xl font-bold text-[#2A2420]">
@@ -378,7 +378,7 @@ export default function CourseDetailContent({
               {enrollmentId ? (
                 <>
                   <p className="text-xs text-[#A69C8C]">
-                    {isArabic ? "الحالة" : "Status"}
+                    {t.courses.status}
                   </p>
 
                   <p className={`mt-1 text-2xl font-bold ${statusColor}`}>
@@ -388,12 +388,12 @@ export default function CourseDetailContent({
               ) : (
                 <>
                   <p className="text-xs text-[#A69C8C]">
-                    {isArabic ? "السعر" : "Price"}
+                    {t.courses.price}
                   </p>
 
                   {course.is_free ? (
                     <p className="mt-1 text-2xl font-bold text-emerald-700">
-                      {isArabic ? "مجانية" : "Free"}
+                      {t.courses.free}
                     </p>
                   ) : hasDiscount ? (
                     <div className="mt-1 flex flex-wrap items-baseline gap-2">
@@ -457,7 +457,7 @@ export default function CourseDetailContent({
                 href={`/checkout/${course.id}`}
                 variant="warning"
               >
-                {isArabic ? "تجديد الاشتراك" : "Renew subscription"}
+                {t.courses.renewSubscription}
               </Button>
             ) : hasCourseAccess ? (
               ctaLesson ? (
@@ -475,7 +475,7 @@ export default function CourseDetailContent({
                 href={`/checkout/${course.id}`}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#C9704A] px-6 py-3 font-bold text-white transition hover:bg-[#B15F3B]"
               >
-                {isArabic ? "اختر الاشتراك واشترِ الآن" : "Choose subscription"}
+                {t.courses.chooseSubscription}
               </Link>
             )}
           </div>
@@ -485,7 +485,7 @@ export default function CourseDetailContent({
           {teacher && (
             <div className="mt-10 border-t border-[#F0EBE1] pt-8">
               <h2 className="mb-5 text-lg font-bold text-[#2A2420]">
-                {isArabic ? "معلم الدورة" : "Course Instructor"}
+                {t.courses.courseInstructor}
               </h2>
 
               <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
@@ -540,7 +540,7 @@ export default function CourseDetailContent({
                     href={`/instructors/${teacher.id}`}
                     className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#1B4B43] px-5 py-2.5 text-sm font-bold text-[#1B4B43] transition hover:bg-[#F7F3EC]"
                   >
-                    {isArabic ? "عرض الملف الشخصي" : "View profile"}
+                    {t.courses.instructorProfile}
                   </Link>
                 </div>
               </div>
@@ -552,7 +552,7 @@ export default function CourseDetailContent({
           <div className="mt-10 border-t border-[#F0EBE1] pt-8">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-[#2A2420] md:text-3xl">
-                {isArabic ? "محتوى الدورة" : "Course Content"}
+                {t.courses.courseContent}
               </h2>
 
               <span className="text-sm text-[#A69C8C]">
@@ -590,15 +590,15 @@ export default function CourseDetailContent({
 
                       const statusText = completed ? (
                         <span className="font-bold text-emerald-700">
-                          {isArabic ? "مكتمل" : "Done"}
+                          {t.courses.completedStatus}
                         </span>
                       ) : canOpen ? (
                         <span className="text-[#1B4B43]">
-                          {isArabic ? "غير مكتمل" : "Not done"}
+                          {t.courses.notCompletedStatus}
                         </span>
                       ) : (
                         <span className="text-[#A69C8C]">
-                          {isArabic ? "مغلق" : "Locked"}
+                          {t.courses.lockedStatus}
                         </span>
                       );
 

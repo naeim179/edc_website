@@ -2,6 +2,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import TeacherProfileForm from "./TeacherProfileForm";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { translations } from "@/lib/i18n";
 import {
   assignCourseToTeacher,
   removeCourseFromTeacher,
@@ -18,6 +19,7 @@ export default async function TeacherManagePage({
   const { id } = await params;
 
   const admin = createAdminClient();
+  const t = translations.ar;
 
 
   const { data: teacher } = await admin
@@ -38,7 +40,7 @@ export default async function TeacherManagePage({
       <AppShell>
         <div className="max-w-5xl mx-auto p-6" dir="rtl">
           <h1 className="text-2xl font-bold">
-            المعلم غير موجود
+            {t.admin.teacherNotFound}
           </h1>
         </div>
       </AppShell>
@@ -148,7 +150,7 @@ export default async function TeacherManagePage({
         <div className="flex justify-between">
 
           <h1 className="text-2xl font-bold">
-            إدارة حساب المعلم
+            {t.admin.manageTeacherAccount}
           </h1>
 
 
@@ -156,7 +158,7 @@ export default async function TeacherManagePage({
             href="/admin/teachers"
             className="text-[#124b8a] font-bold"
           >
-            العودة
+            {t.admin.back}
           </Link>
 
         </div>
@@ -176,7 +178,7 @@ export default async function TeacherManagePage({
         >
 
           <h2 className="font-bold text-lg">
-            معلومات الحساب
+            {t.admin.accountInfo}
           </h2>
 
 
@@ -184,7 +186,7 @@ export default async function TeacherManagePage({
             name="fullName"
             defaultValue={teacher.full_name ?? ""}
             className="w-full border rounded-xl px-4 py-3"
-            placeholder="الاسم"
+            placeholder={t.admin.name}
           />
 
 
@@ -199,7 +201,7 @@ export default async function TeacherManagePage({
           <input
             name="password"
             type="password"
-            placeholder="كلمة مرور جديدة"
+            placeholder={t.admin.newPassword}
             className="w-full border rounded-xl px-4 py-3"
           />
 
@@ -207,7 +209,7 @@ export default async function TeacherManagePage({
           <button
             className="bg-[#124b8a] text-white px-6 py-3 rounded-xl font-bold"
           >
-            حفظ
+            {t.admin.saveChanges}
           </button>
 
 
@@ -220,7 +222,7 @@ export default async function TeacherManagePage({
 
 
           <h2 className="font-bold mb-4">
-            الدورات المعينة للمعلم
+            {t.admin.assignedCourses}
           </h2>
 
 
@@ -269,7 +271,7 @@ export default async function TeacherManagePage({
                 <button
                   className="text-red-600 font-bold"
                 >
-                  إزالة
+                  {t.admin.remove}
                 </button>
 
 
@@ -297,7 +299,7 @@ export default async function TeacherManagePage({
 
 
           <h2 className="font-bold mb-4">
-            إضافة دورة للمعلم
+            {t.admin.addCourseToTeacher}
           </h2>
 
 
@@ -309,7 +311,7 @@ export default async function TeacherManagePage({
           >
 
             <option value="">
-              اختر الدورة
+              {t.admin.chooseCourse}
             </option>
 
 
@@ -343,7 +345,7 @@ export default async function TeacherManagePage({
           <button
             className="bg-[#087a54] text-white px-6 py-3 rounded-xl font-bold"
           >
-            إضافة
+            {t.admin.add}
           </button>
 
 

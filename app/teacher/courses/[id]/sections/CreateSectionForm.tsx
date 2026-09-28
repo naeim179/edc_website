@@ -1,5 +1,7 @@
 "use client";
 
+import { useLanguage } from "@/components/LanguageProvider";
+
 import { createTeacherSection } from "@/app/actions/teacher-content";
 
 
@@ -9,6 +11,7 @@ export default function CreateSectionForm({
   courseId:string;
 }){
 
+  const { t } = useLanguage();
 
   const action =
     createTeacherSection.bind(
@@ -25,13 +28,13 @@ export default function CreateSectionForm({
     >
 
       <h2 className="font-bold">
-        إضافة قسم جديد
+        {t.teacher.addSection}
       </h2>
 
 
       <input
         name="title"
-        placeholder="اسم القسم"
+        placeholder={t.teacher.sectionName}
         required
         className="w-full border rounded-xl px-4 py-3"
       />
@@ -40,7 +43,7 @@ export default function CreateSectionForm({
       <button
         className="bg-[#087a54] text-white px-5 py-3 rounded-xl font-bold"
       >
-        إضافة القسم
+        {t.teacher.addSection}
       </button>
 
 

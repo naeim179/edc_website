@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client";
 import {
   sendMessage,
   markConversationRead,
-  editMessage,
   deleteMessage,
 } from "@/app/actions/chat";
 import type { ChatMessage } from "@/lib/chat";
@@ -131,18 +130,31 @@ export default function MessageThread({
 
 
   useEffect(() => {
-    updatePresence();
-    checkOtherPresence();
+    let mounted = true;
+
+    async function syncPresence() {
+      await updatePresence();
+
+      if (!mounted) return;
+
+      await checkOtherPresence();
+    }
+
+    syncPresence();
 
     const timer = setInterval(() => {
-      updatePresence();
-      checkOtherPresence();
+      syncPresence();
     }, 30000);
 
     return () => {
+      mounted = false;
       clearInterval(timer);
     };
-  }, [currentUserId, conversation]);
+  }, [
+    currentUserId,
+    conversation.student_id,
+    conversation.teacher_id,
+  ]);
 
 
   useEffect(() => {

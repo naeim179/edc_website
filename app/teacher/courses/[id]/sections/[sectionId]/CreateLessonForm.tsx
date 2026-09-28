@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createTeacherLesson } from "@/app/actions/teacher-content";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function CreateLessonForm({
   courseId,
@@ -10,6 +11,8 @@ export default function CreateLessonForm({
   courseId: string;
   sectionId: string;
 }) {
+
+  const { t } = useLanguage();
 
   const [lessonType, setLessonType] = useState("recorded");
 
@@ -28,7 +31,7 @@ export default function CreateLessonForm({
 
       <input
         name="title"
-        placeholder="اسم الدرس"
+        placeholder={t.teacher.lessonTitle}
         required
         className="w-full border rounded-xl px-4 py-2"
       />
@@ -36,7 +39,7 @@ export default function CreateLessonForm({
 
       <input
         name="content_url"
-        placeholder="رابط الفيديو أو المحتوى"
+        placeholder={t.teacher.contentUrl}
         className="w-full border rounded-xl px-4 py-2"
       />
 
@@ -111,7 +114,7 @@ export default function CreateLessonForm({
 
             <input
               name="live_schedule"
-              placeholder="مثال: الأحد 8:00 مساء"
+              placeholder={t.teacher.sessionExample}
               className="w-full border rounded-xl px-4 py-2"
             />
 

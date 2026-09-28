@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function LessonTypeFields() {
+  const { t } = useLanguage();
   const [type, setType] = useState("recorded");
 
   return (
@@ -65,7 +67,7 @@ export default function LessonTypeFields() {
 
             <input
               name="content_url"
-              placeholder="رابط Zoom أو Meet"
+              placeholder={t.lessonType.sessionPlaceholder}
               className="w-full border rounded-xl px-4 py-3"
             />
           </div>
@@ -77,7 +79,7 @@ export default function LessonTypeFields() {
 
             <input
               name="live_schedule"
-              placeholder="مثال: 2026-10-01 8:00 PM"
+              placeholder={t.lessonType.schedulePlaceholder}
               className="w-full border rounded-xl px-4 py-3"
             />
           </div>

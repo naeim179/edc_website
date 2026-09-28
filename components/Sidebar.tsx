@@ -48,7 +48,7 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const pathname = usePathname();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const isAdmin = role === "admin";
   const isTeacher = role === "teacher";
@@ -86,39 +86,7 @@ export default function Sidebar({
     };
   }, [open, onClose]);
 
-  const text = isArabic
-    ? {
-        platform: "Your Way",
-        dashboard: "لوحة الإدارة",
-        manageCourses: "إدارة الدورات",
-        teachers: "المعلمون",
-        orders: "المدفوعات",
-        students: "الطلاب",
-        profile: "الملف الشخصي",
-        teacherDashboard: "لوحة المعلم",
-        teacherProfile: "ملف المدرس",
-        home: "الرئيسية",
-        courses: "جميع الدورات",
-        myCourses: "موادي",
-        menu: "القائمة الرئيسية",
-        close: "إغلاق القائمة",
-      }
-    : {
-        platform: "Your Way",
-        dashboard: "Dashboard",
-        manageCourses: "Manage Courses",
-        teachers: "Teachers",
-        orders: "Payments",
-        students: "Students",
-        profile: "Profile",
-        teacherDashboard: "Teacher Dashboard",
-        teacherProfile: "Teacher Profile",
-        home: "Home",
-        courses: "All Courses",
-        myCourses: "My Courses",
-        menu: "Main navigation",
-        close: "Close menu",
-      };
+  const text = t.sidebar;
 
   const items: NavItem[] = isAdmin
     ? [
@@ -209,7 +177,7 @@ export default function Sidebar({
       <div
         onClick={onClose}
         aria-hidden="true"
-        className={`fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
           open
             ? "opacity-100"
             : "pointer-events-none opacity-0"
@@ -225,10 +193,19 @@ export default function Sidebar({
             : `invisible ${hiddenTransform}`
         }`}
       >
-        <div className="flex h-full flex-col overflow-y-auto border border-slate-200 bg-white p-4 shadow-sm lg:rounded-2xl">
+        <div
+          className="flex h-full flex-col overflow-y-auto border p-4 lg:rounded-2xl"
+          style={{
+            backgroundColor: "var(--brand-surface)",
+            borderColor: "var(--brand-border)",
+          }}
+        >
           <div className="flex items-center justify-between px-1 pb-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: "var(--brand-ink-soft)" }}
+              >
                 <Image
                   src="/logo/logo-transparent.png"
                   alt="Your Way"
@@ -238,7 +215,10 @@ export default function Sidebar({
                 />
               </div>
 
-              <span className="text-base font-bold tracking-tight text-slate-800">
+              <span
+                className="text-base font-bold tracking-tight"
+                style={{ color: "var(--brand-text)" }}
+              >
                 {text.platform}
               </span>
             </div>
@@ -247,13 +227,17 @@ export default function Sidebar({
               type="button"
               onClick={onClose}
               aria-label={text.close}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-600 lg:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors lg:hidden"
+              style={{ color: "var(--brand-text-faint)" }}
             >
               <CloseIcon />
             </button>
           </div>
 
-          <div className="mb-2 h-px bg-slate-100" />
+          <div
+            className="mb-2 h-px"
+            style={{ backgroundColor: "var(--brand-border-soft)" }}
+          />
 
           <nav
             aria-label={text.menu}
@@ -268,16 +252,22 @@ export default function Sidebar({
                   href={item.href}
                   onClick={onClose}
                   aria-current={active ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
+                  style={
                     active
-                      ? "bg-[#124b8a]/8 text-[#124b8a]"
-                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-                  }`}
+                      ? {
+                          backgroundColor: "var(--brand-ink)",
+                          color: "#FFFFFF",
+                        }
+                      : { color: "var(--brand-text-muted)" }
+                  }
                 >
                   <span
-                    className={
-                      active ? "text-[#124b8a]" : "text-slate-400"
-                    }
+                    style={{
+                      color: active
+                        ? "#FFFFFF"
+                        : "var(--brand-text-faint)",
+                    }}
                   >
                     {item.icon}
                   </span>

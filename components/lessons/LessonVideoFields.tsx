@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type VideoProvider =
   | "youtube"
@@ -40,6 +41,9 @@ export default function LessonVideoFields({
   defaultBunnyLibraryId = "",
   defaultBunnyVideoId = "",
 }: Props) {
+
+  const { t } = useLanguage();
+
   const [provider, setProvider] =
     useState<VideoProvider>(
       defaultProvider
@@ -113,7 +117,7 @@ export default function LessonVideoFields({
       if (!response.ok) {
         throw new Error(
           data.error ||
-            "تعذر التحقق من حالة الفيديو"
+            t.lessonVideo.checkStatusFailed
         );
       }
 
@@ -154,7 +158,7 @@ export default function LessonVideoFields({
           "errored"
       ) {
         throw new Error(
-          "فشل Mux في معالجة الفيديو"
+          t.lessonVideo.muxFailed
         );
       }
 
@@ -162,7 +166,7 @@ export default function LessonVideoFields({
     }
 
     throw new Error(
-      "استغرقت معالجة الفيديو وقتًا أطول من المتوقع"
+      t.lessonVideo.processingTimeout
     );
   }
 
@@ -186,7 +190,7 @@ export default function LessonVideoFields({
       );
 
       setErrorMessage(
-        "الملف المختار ليس فيديو"
+        t.lessonVideo.notVideo
       );
 
       return;
@@ -236,7 +240,7 @@ export default function LessonVideoFields({
       ) {
         throw new Error(
           createData.error ||
-            "تعذر تجهيز رفع الفيديو"
+            t.lessonVideo.prepareUploadFailed
         );
       }
 
@@ -299,7 +303,7 @@ export default function LessonVideoFields({
 
             reject(
               new Error(
-                `فشل رفع الفيديو إلى Mux (${xhr.status})`
+                `{t.lessonVideo.uploadFailed} إلى Mux (${xhr.status})`
               )
             );
           };
@@ -307,7 +311,7 @@ export default function LessonVideoFields({
           xhr.onerror = () => {
             reject(
               new Error(
-                "انقطع الاتصال أثناء رفع الفيديو"
+                t.lessonVideo.connectionLost
               )
             );
           };
@@ -315,7 +319,7 @@ export default function LessonVideoFields({
           xhr.onabort = () => {
             reject(
               new Error(
-                "تم إلغاء رفع الفيديو"
+                t.lessonVideo.uploadCancelled
               )
             );
           };
@@ -348,7 +352,7 @@ export default function LessonVideoFields({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "حدث خطأ أثناء رفع الفيديو"
+          : t.lessonVideo.uploadError
       );
     }
   }
@@ -369,7 +373,7 @@ export default function LessonVideoFields({
     ) {
       setUploadState("error");
       setErrorMessage(
-        "الملف المختار ليس فيديو"
+        t.lessonVideo.notVideo
       );
       return;
     }
@@ -404,7 +408,7 @@ export default function LessonVideoFields({
       ) {
         throw new Error(
           createData.error ||
-            "تعذر تجهيز رفع Bunny"
+            t.lessonVideo.prepareBunnyFailed
         );
       }
 
@@ -440,7 +444,7 @@ export default function LessonVideoFields({
 
         throw new Error(
           error.error ||
-            "فشل رفع الفيديو"
+            "{t.lessonVideo.uploadFailed}"
         );
       }
 
@@ -458,7 +462,7 @@ export default function LessonVideoFields({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "حدث خطأ أثناء رفع الفيديو"
+          : t.lessonVideo.uploadError
       );
     }
   }
@@ -505,7 +509,7 @@ export default function LessonVideoFields({
 
       <div>
         <p className="mb-2 text-sm font-bold text-slate-700">
-          مصدر الفيديو
+          {t.lessonVideo.source}
         </p>
 
         <div className="grid grid-cols-2 gap-3">
@@ -529,7 +533,7 @@ export default function LessonVideoFields({
             </span>
 
             <span className="mt-1 block text-xs">
-              رابط فيديو
+              {t.lessonVideo.youtubeDescription}
             </span>
           </button>
 
@@ -550,7 +554,7 @@ export default function LessonVideoFields({
             </span>
 
             <span className="mt-1 block text-xs">
-              فيديو محمي
+              {t.lessonVideo.protectedVideo}
             </span>
           </button>
 
@@ -571,7 +575,7 @@ export default function LessonVideoFields({
             </span>
 
             <span className="mt-1 block text-xs">
-              فيديو محمي
+              {t.lessonVideo.protectedVideo}
             </span>
           </button>
         </div>
@@ -581,7 +585,7 @@ export default function LessonVideoFields({
       "youtube" ? (
         <div>
           <label className="mb-2 block text-sm font-bold text-slate-700">
-            رابط YouTube
+            {t.lessonVideo.youtubeUrl}
           </label>
 
           <input
@@ -606,7 +610,7 @@ export default function LessonVideoFields({
         <div className="space-y-4 rounded-2xl border border-violet-100 bg-violet-50 p-5">
           <div>
             <p className="font-bold text-violet-950">
-              فيديو Mux المحمي
+              {t.lessonVideo.muxVideo}
             </p>
 
             <p className="mt-1 text-xs leading-6 text-violet-700">
@@ -639,10 +643,10 @@ export default function LessonVideoFields({
 
             <span className="mt-2 block font-bold text-slate-800">
               {muxBusy
-                ? "جاري العمل..."
+                ? "{t.lessonVideo.working}"
                 : muxPlaybackId
-                  ? "استبدال الفيديو"
-                  : "اختر فيديو من جهازك"}
+                  ? "{t.lessonVideo.replaceVideo}"
+                  : "{t.lessonVideo.chooseVideo}"}
             </span>
 
             <span className="mt-1 block text-xs text-slate-500">
@@ -670,7 +674,7 @@ export default function LessonVideoFields({
             <div className="space-y-2 rounded-xl bg-white p-4">
               <div className="flex items-center justify-between text-sm font-bold text-slate-700">
                 <span>
-                  جاري رفع الفيديو
+                  {t.lessonVideo.uploading}
                 </span>
 
                 <span dir="ltr">
@@ -693,7 +697,7 @@ export default function LessonVideoFields({
             "processing" && (
             <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
               <p className="font-bold text-blue-800">
-                ✅ تم رفع الملف
+                ✅ {t.lessonVideo.uploaded}
               </p>
 
               <p className="mt-1 text-sm text-blue-700">
@@ -708,7 +712,7 @@ export default function LessonVideoFields({
             muxPlaybackId && (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                 <p className="font-bold text-emerald-800">
-                  ✅ الفيديو جاهز
+                  ✅ {t.lessonVideo.ready}
                 </p>
 
                 <p className="mt-1 text-sm text-emerald-700">
@@ -722,7 +726,7 @@ export default function LessonVideoFields({
             "error" && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4">
               <p className="font-bold text-red-700">
-                ❌ فشل رفع الفيديو
+                ❌ {t.lessonVideo.uploadFailed}
               </p>
 
               <p className="mt-1 text-sm text-red-600">
@@ -747,11 +751,11 @@ export default function LessonVideoFields({
         <div className="space-y-4 rounded-2xl border border-orange-100 bg-orange-50 p-5">
           <div>
             <p className="font-bold text-orange-950">
-              فيديو Bunny Stream
+              {t.lessonVideo.bunnyVideo}
             </p>
 
             <p className="mt-1 text-xs leading-6 text-orange-700">
-              اختر الفيديو وسيتم رفعه مباشرة إلى Bunny.
+              {t.lessonVideo.uploadBunny}
             </p>
           </div>
 
@@ -776,14 +780,14 @@ export default function LessonVideoFields({
 
             <span className="mt-2 block font-bold text-slate-800">
               {muxBusy
-                ? "جاري العمل..."
+                ? "{t.lessonVideo.working}"
                 : bunnyVideoId
-                  ? "استبدال الفيديو"
-                  : "اختر فيديو من جهازك"}
+                  ? "{t.lessonVideo.replaceVideo}"
+                  : "{t.lessonVideo.chooseVideo}"}
             </span>
 
             <span className="mt-1 block text-xs text-slate-500">
-              MP4 أو أي صيغة فيديو مدعومة
+              {t.lessonVideo.videoFormats}
             </span>
           </label>
 
@@ -795,7 +799,7 @@ export default function LessonVideoFields({
 
           {uploadState === "uploading" && (
             <div className="rounded-xl bg-white p-4">
-              جاري رفع الفيديو {progress}%
+              {t.lessonVideo.uploading} {progress}%
             </div>
           )}
 
@@ -803,7 +807,7 @@ export default function LessonVideoFields({
             bunnyVideoId && (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                 <p className="font-bold text-emerald-800">
-                  ✅ الفيديو جاهز
+                  ✅ {t.lessonVideo.ready}
                 </p>
               </div>
             )}
@@ -811,7 +815,7 @@ export default function LessonVideoFields({
           {uploadState === "error" && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4">
               <p className="font-bold text-red-700">
-                ❌ فشل رفع الفيديو
+                ❌ {t.lessonVideo.uploadFailed}
               </p>
 
               <p className="mt-1 text-sm text-red-600">

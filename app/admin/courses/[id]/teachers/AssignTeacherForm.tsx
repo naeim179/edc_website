@@ -5,6 +5,7 @@ import {
 } from "@/app/actions/teachers";
 
 import { useTransition } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 
 type Teacher = {
@@ -24,6 +25,8 @@ export default function AssignTeacherForm({
 
   const [pending, startTransition] =
     useTransition();
+
+  const { t } = useLanguage();
 
 
 
@@ -66,7 +69,7 @@ export default function AssignTeacherForm({
 
 
       <h2 className="font-bold mb-4">
-        تعيين معلم للدورة
+        {t.admin.assignTeacher}
       </h2>
 
 
@@ -78,7 +81,7 @@ export default function AssignTeacherForm({
       >
 
         <option value="">
-          اختر المعلم
+          {t.admin.chooseTeacher}
         </option>
 
 
@@ -88,7 +91,7 @@ export default function AssignTeacherForm({
             key={teacher.id}
             value={teacher.id}
           >
-            {teacher.full_name ?? "بدون اسم"}
+            {teacher.full_name ?? t.admin.noName}
           </option>
 
         ))}
@@ -104,8 +107,8 @@ export default function AssignTeacherForm({
       >
 
         {pending
-          ? "جاري الحفظ..."
-          : "تعيين"}
+          ? t.admin.saving
+          : t.admin.assign}
 
       </button>
 

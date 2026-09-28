@@ -45,3 +45,64 @@ export async function removeStudentEnrollment(
   revalidatePath("/admin/students");
   revalidatePath(`/admin/students/${studentId}`);
 }
+
+export async function extendStudentSubscription(formData: FormData) {
+  await requireAdmin();
+
+  const studentId = String(formData.get("studentId") ?? "");
+  const courseId = String(formData.get("courseId") ?? "");
+  const days = Number(formData.get("days"));
+
+  if (!studentId || !courseId) {
+    throw new Error("بيانات غير صالحة");
+  }
+
+  if (!Number.isFinite(days) || days <= 0) {
+    throw new Error("عدد الأيام غير صالح");
+  }
+
+  const supabase = await createClient();
+
+  const { data: subscription, error: subError } = await supabase
+    .from("subscriptions")
+    .select("id, expires_at")
+    .eq("student_id", studentId)
+    .eq("course_id", courseId)
+    .maybeSingle();
+
+  if (subError) {
+    throw new Error(subError.message);
+  }
+
+  if (!subscription) {
+    throw new Error("لا يوجد اشتراك لهذه الدورة");
+  }
+
+  const now = new Date();
+
+  const currentExpiry = subscription.expires_at
+    ? new Date(subscription.expires_at)
+    : now;
+
+  const base = currentExpiry > now ? currentExpiry : now;
+
+  const newExpiry = new Date(
+    base.getTime() + days * 24 * 60 * 60 * 1000
+  );
+
+  const { error: updateError } = await supabase
+    .from("subscriptions")
+    .update({
+      expires_at: newExpiry.toISOString(),
+      status: "active",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", subscription.id);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
+
+  revalidatePath("/admin/students");
+  revalidatePath(`/admin/students/${studentId}`);
+}

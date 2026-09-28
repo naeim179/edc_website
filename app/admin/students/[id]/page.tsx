@@ -1,10 +1,6 @@
-import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import AdminStudentDetailContent from "@/components/AdminStudentDetailContent";
 import { createClient } from "@/lib/supabase/server";
-import {
-  removeStudentEnrollment,
-  resetStudentProgress,
-} from "@/app/actions/admin-students";
 
 export default async function StudentDetailsPage({
   params,
@@ -59,7 +55,7 @@ export default async function StudentDetailsPage({
     courseIds.length > 0
       ? await supabase
           .from("courses")
-          .select("id, title")
+          .select("id, title, is_free")
           .in("id", courseIds)
       : { data: [], error: null };
 
@@ -67,102 +63,60 @@ export default async function StudentDetailsPage({
     throw new Error(coursesError.message);
   }
 
-  const courseTitles = new Map(
-    (courses ?? []).map((course) => [
-      course.id,
-      course.title,
-    ])
+  const { data: subscriptions, error: subscriptionsError } =
+    courseIds.length > 0
+      ? await supabase
+          .from("subscriptions")
+          .select("course_id, expires_at, status")
+          .eq("student_id", id)
+          .in("course_id", courseIds)
+      : { data: [], error: null };
+
+  if (subscriptionsError) {
+    throw new Error(subscriptionsError.message);
+  }
+
+  const courseById = new Map(
+    (courses ?? []).map((course) => [course.id, course])
   );
+
+  const subscriptionByCourse = new Map(
+    (subscriptions ?? []).map((sub) => [sub.course_id, sub])
+  );
+
+  const enrollmentsData = (enrollments ?? []).map((enrollment) => {
+    const course = courseById.get(enrollment.course_id);
+    const subscription = subscriptionByCourse.get(enrollment.course_id);
+
+    const completedLessons =
+      enrollment.lesson_progress?.filter((item) => item.is_completed)
+        .length ?? 0;
+
+    return {
+      id: enrollment.id,
+      courseId: enrollment.course_id,
+      courseTitle: course?.title ?? null,
+      isFree: Boolean(course?.is_free),
+      completedLessons,
+      subscription: subscription
+        ? {
+            expiresAt: subscription.expires_at,
+            status: subscription.status,
+          }
+        : null,
+    };
+  });
 
   return (
     <AppShell>
-      <div className="max-w-5xl mx-auto w-full space-y-6">
-
-        <div className="bg-white rounded-2xl border p-6 text-right">
-          <Link
-            href="/admin/students"
-            className="text-sm text-emerald-600"
-          >
-            ← العودة للطلاب
-          </Link>
-
-          <h1 className="text-2xl font-bold text-slate-800 mt-4">
-            {student.full_name ?? "بدون اسم"}
-          </h1>
-
-          <p className="text-slate-500 mt-2">
-            تاريخ التسجيل:{" "}
-            {new Date(student.created_at).toLocaleDateString("ar")}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-2xl border p-6">
-          <h2 className="text-xl font-bold text-right mb-5">
-            الدورات المسجل بها
-          </h2>
-
-          {enrollments && enrollments.length > 0 ? (
-            <div className="space-y-4">
-              {enrollments.map((enrollment) => {
-                const completed =
-                  enrollment.lesson_progress?.filter(
-                    (item) => item.is_completed
-                  ).length ?? 0;
-
-                const courseTitle =
-                  courseTitles.get(enrollment.course_id) ??
-                  "دورة غير متاحة";
-
-                return (
-                  <div
-                    key={enrollment.id}
-                    className="border rounded-xl p-5 text-right space-y-3"
-                  >
-                    <h3 className="font-bold text-lg">
-                      {courseTitle}
-                    </h3>
-
-                    <p className="text-sm text-slate-500">
-                      الدروس المكتملة: {completed}
-                    </p>
-
-                    <div className="flex gap-3 justify-end">
-                      <form
-                        action={resetStudentProgress.bind(
-                          null,
-                          id,
-                          enrollment.id
-                        )}
-                      >
-                        <button className="px-4 py-2 rounded-lg bg-amber-500 text-white font-bold">
-                          إعادة التقدم
-                        </button>
-                      </form>
-
-                      <form
-                        action={removeStudentEnrollment.bind(
-                          null,
-                          id,
-                          enrollment.id
-                        )}
-                      >
-                        <button className="px-4 py-2 rounded-lg bg-red-600 text-white font-bold">
-                          إزالة التسجيل
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-center text-slate-500">
-              الطالب غير مسجل بأي دورة
-            </p>
-          )}
-        </div>
-
-      </div>
+      <AdminStudentDetailContent
+        student={{
+          id: student.id,
+          fullName: student.full_name,
+          createdAt: student.created_at,
+        }}
+        enrollments={enrollmentsData}
+      />
     </AppShell>
   );
 }

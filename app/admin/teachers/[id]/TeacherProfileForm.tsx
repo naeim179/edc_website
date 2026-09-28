@@ -1,6 +1,7 @@
 "use client";
 
 import ImageUploader from "@/components/ui/ImageUploader";
+import { useLanguage } from "@/components/LanguageProvider";
 
 import {
   updateTeacherProfile
@@ -22,6 +23,7 @@ export default function TeacherProfileForm({
 
 }) {
 
+  const { t } = useLanguage();
 
   const action =
     updateTeacherProfile.bind(
@@ -39,14 +41,14 @@ export default function TeacherProfileForm({
     >
 
       <h2 className="text-lg font-bold">
-        معلومات ملف المدرس
+        {t.admin.teacherProfile}
       </h2>
 
 
       <div>
 
         <label className="block font-bold mb-2">
-          رابط صورة المدرس
+          {t.admin.teacherImage}
         </label>
 
         <ImageUploader
@@ -76,7 +78,7 @@ export default function TeacherProfileForm({
       <div>
 
         <label className="block font-bold mb-2">
-          التخصص
+          {t.admin.specialization}
         </label>
 
 
@@ -85,7 +87,7 @@ export default function TeacherProfileForm({
           defaultValue={
             profile?.specialization ?? ""
           }
-          placeholder="مثال: Cyber Security"
+          placeholder={t.admin.specializationExample}
           className="w-full border rounded-xl px-4 py-3"
         />
 
@@ -97,7 +99,7 @@ export default function TeacherProfileForm({
       <div>
 
         <label className="block font-bold mb-2">
-          سنوات الخبرة
+          {t.admin.experienceYears}
         </label>
 
 
@@ -120,7 +122,7 @@ export default function TeacherProfileForm({
       <div>
 
         <label className="block font-bold mb-2">
-          نبذة عن المدرس
+          {t.admin.teacherBio}
         </label>
 
 
@@ -130,7 +132,7 @@ export default function TeacherProfileForm({
           defaultValue={
             profile?.bio ?? ""
           }
-          placeholder="اكتب نبذة عن خبرة المدرس..."
+          placeholder={t.admin.bioPlaceholder}
           className="w-full border rounded-xl px-4 py-3"
         />
 
@@ -144,7 +146,7 @@ export default function TeacherProfileForm({
         type="submit"
         className="bg-[#087a54] text-white px-6 py-3 rounded-xl font-bold"
       >
-        حفظ ملف المدرس
+        {t.admin.saveTeacherProfile}
       </button>
 
 

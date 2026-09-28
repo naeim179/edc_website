@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ChangeEmailForm() {
   const supabase = createClient();
+  const { language, t } = useLanguage();
+  const isArabic = language === "ar";
 
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -23,7 +26,7 @@ export default function ChangeEmailForm() {
     setMessage("");
 
     if (!email) {
-      setError("يرجى إدخال البريد الإلكتروني");
+      setError(t.auth.emailRequired);
       return;
     }
 
@@ -34,7 +37,7 @@ export default function ChangeEmailForm() {
     if (error) {
       setError(error.message);
     } else {
-      setMessage("تم إرسال رابط التأكيد إلى البريد الجديد ✅");
+      setMessage(t.auth.emailUpdateSent);
       setSent(true);
     }
 
@@ -51,7 +54,7 @@ export default function ChangeEmailForm() {
     if (error) {
       setError(error.message);
     } else {
-      setMessage("تم إعادة إرسال رابط التأكيد ✅");
+      setMessage(t.auth.emailUpdateSent);
     }
 
     setLoading(false);
@@ -60,7 +63,7 @@ export default function ChangeEmailForm() {
   return (
     <div
       className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
-      dir="rtl"
+      dir={isArabic ? "rtl" : "ltr"}
     >
       <h1 className="mb-3 text-center text-2xl font-bold text-slate-800">
         تغيير البريد الإلكتروني
@@ -97,7 +100,7 @@ export default function ChangeEmailForm() {
             disabled={loading}
             className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition-colors hover:bg-[#0d3b6e] disabled:opacity-60"
           >
-            {loading ? "جاري الإرسال..." : "تحديث البريد"}
+            {loading ? t.auth.sending : t.auth.updateEmail}
           </button>
         </form>
       ) : (
@@ -107,7 +110,7 @@ export default function ChangeEmailForm() {
             disabled={loading}
             className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition-colors hover:bg-[#0d3b6e] disabled:opacity-60"
           >
-            {loading ? "جاري الإرسال..." : "إرسال الرابط مرة أخرى"}
+            {loading ? t.auth.sending : t.auth.resendLink}
           </button>
 
           <Link

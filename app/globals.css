@@ -482,3 +482,58 @@ html[data-theme="eye"] {
   --color-emerald-100: #d8e2c2;
   --color-green-50: #e3ead2;
 }
+
+/* ===== BRAND DESIGN TOKENS (light / dark / eye) ===== */
+
+:root {
+  --brand-bg: #F7F3EC;
+  --brand-surface: #FFFFFF;
+  --brand-border: #E8E1D4;
+  --brand-border-soft: #F0EBE1;
+  --brand-text: #2A2420;
+  --brand-text-muted: #6B6155;
+  --brand-text-faint: #A69C8C;
+  --brand-ink: #1B4B43;
+  --brand-ink-hover: #123A34;
+  --brand-ink-soft: #F7F3EC;
+  --brand-terracotta: #C9704A;
+  --brand-terracotta-hover: #B15F3B;
+  --brand-clay: #8A3F2A;
+}
+
+html[data-theme="dark"] {
+  --brand-bg: #10201B;
+  --brand-surface: #17281F;
+  --brand-border: #2A3B33;
+  --brand-border-soft: #22322B;
+  --brand-text: #ECE7DC;
+  --brand-text-muted: #AEB8AF;
+  --brand-text-faint: #7C8880;
+  --brand-ink: #4FA98C;
+  --brand-ink-hover: #64BFA1;
+  --brand-ink-soft: #1B3A31;
+  --brand-terracotta: #E08659;
+  --brand-terracotta-hover: #EC9A70;
+  --brand-clay: #E0A487;
+}
+
+html[data-theme="eye"] {
+  --brand-bg: #F1E9D6;
+  --brand-surface: #FBF6EA;
+  --brand-border: #E1D3B4;
+  --brand-border-soft: #EAE0C6;
+  --brand-text: #3D3327;
+  --brand-text-muted: #6E5F49;
+  --brand-text-faint: #96876D;
+  --brand-ink: #1B4B43;
+  --brand-ink-hover: #123A34;
+  --brand-ink-soft: #EAE0C6;
+  --brand-terracotta: #B15F3B;
+  --brand-terracotta-hover: #984E2F;
+  --brand-clay: #8A3F2A;
+}
+
+.app-shell {
+  background: var(--brand-bg) !important;
+  color: var(--brand-text) !important;
+}

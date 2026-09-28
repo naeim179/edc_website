@@ -2,10 +2,12 @@
 
 import { createTeacher } from "@/app/actions/teachers";
 import { useTransition } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function TeacherCreateForm() {
 
   const [pending, startTransition] = useTransition();
+  const { t } = useLanguage();
 
 
   function submit(formData: FormData) {
@@ -23,13 +25,13 @@ export default function TeacherCreateForm() {
     >
 
       <h2 className="font-bold">
-        إضافة معلم جديد
+        {t.admin.addTeacher}
       </h2>
 
 
       <input
         name="fullName"
-        placeholder="اسم المعلم"
+        placeholder={t.admin.teacherName}
         required
         className="w-full border rounded-lg p-3"
       />
@@ -38,7 +40,7 @@ export default function TeacherCreateForm() {
       <input
         name="email"
         type="email"
-        placeholder="البريد الإلكتروني"
+        placeholder={t.admin.email}
         required
         className="w-full border rounded-lg p-3"
       />
@@ -47,7 +49,7 @@ export default function TeacherCreateForm() {
       <input
         name="password"
         type="password"
-        placeholder="كلمة المرور"
+        placeholder={t.admin.password}
         required
         className="w-full border rounded-lg p-3"
       />
@@ -57,7 +59,7 @@ export default function TeacherCreateForm() {
         disabled={pending}
         className="bg-[#087a54] text-white px-6 py-3 rounded-lg font-bold"
       >
-        {pending ? "جاري الإنشاء..." : "إنشاء المعلم"}
+        {pending ? t.admin.creatingTeacher : t.admin.createTeacher}
       </button>
 
     </form>

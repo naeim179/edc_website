@@ -2,6 +2,7 @@
 
 import { updateTeacherProfile } from "@/app/actions/teacher-profile";
 import ImageUploader from "@/components/ui/ImageUploader";
+import { useLanguage } from "@/components/LanguageProvider";
 
 
 type Props = {
@@ -21,6 +22,7 @@ export default function TeacherProfileForm({
   profile,
 }: Props) {
 
+  const { t } = useLanguage();
 
   const action =
     updateTeacherProfile.bind(
@@ -74,7 +76,7 @@ export default function TeacherProfileForm({
         <input
           name="specialization"
           defaultValue={profile?.specialization ?? ""}
-          placeholder="مثال: برمجة، أمن سيبراني..."
+          placeholder={t.teacherProfile.specializationPlaceholder}
           className="w-full border rounded-xl px-4 py-3"
         />
 

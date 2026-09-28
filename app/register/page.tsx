@@ -11,9 +11,12 @@ import {
   UserIcon,
 } from "@/components/icons";
 import { PasswordToggle } from "@/components/password-toggle";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { language, t } = useLanguage();
+  const isArabic = language === "ar";
   const supabase = createClient();
 
   const [fullName, setFullName] = useState("");
@@ -46,24 +49,24 @@ export default function RegisterPage() {
     } = {};
 
     if (!fullName.trim()) {
-      newErrors.fullName = "الاسم مطلوب";
+      newErrors.fullName = t.auth.nameRequired;
     }
 
     if (!email) {
-      newErrors.email = "البريد الإلكتروني مطلوب";
+      newErrors.email = t.auth.emailRequired;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "صيغة البريد الإلكتروني غير صحيحة";
+      newErrors.email = t.auth.invalidEmail;
     }
 
     if (!password) {
-      newErrors.password = "كلمة المرور مطلوبة";
+      newErrors.password = t.auth.passwordRequired;
     } else if (password.length < 6) {
       newErrors.password =
-        "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+        t.auth.passwordMin;
     }
 
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = "كلمتا المرور غير متطابقتين";
+      newErrors.confirmPassword = t.auth.passwordMismatch;
     }
 
     setErrors(newErrors);
@@ -101,7 +104,7 @@ export default function RegisterPage() {
       setServerError(
         err instanceof Error
           ? err.message
-          : "فشل إنشاء الحساب"
+          : t.auth.registerFailed
       );
     } finally {
       setIsLoading(false);
@@ -110,8 +113,8 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title="إنشاء حساب جديد"
-      description="أنشئ حسابك وابدأ رحلة التعلم"
+      title={t.auth.createAccount}
+      description={t.auth.registerDescription}
     >
       {serverError && (
         <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
@@ -288,7 +291,7 @@ export default function RegisterPage() {
           disabled={isLoading}
           className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
         >
-          {isLoading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
+          {isLoading ? t.auth.creatingAccount : "إنشاء حساب"}
         </button>
       </form>
 

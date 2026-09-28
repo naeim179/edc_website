@@ -45,11 +45,11 @@ export default function ProgressCard() {
             "
           >
             <div className="text-right">
-              <span className="block text-xs text-slate-500">
+              <span className="block text-xs text-[#6B6258]">
                 {stat.label}
               </span>
 
-              <span className="mt-1 block text-xl font-semibold text-slate-900">
+              <span className="mt-1 block text-xl font-semibold text-[#1F1F1F]">
                 {stat.value}
               </span>
             </div>
@@ -62,10 +62,10 @@ export default function ProgressCard() {
                 items-center
                 justify-center
                 rounded-xl
-                bg-blue-50
+                bg-[#EAF2F0]
                 text-sm
                 font-semibold
-                text-[#124b8a]
+                text-[#1B4B43]
               "
             >
               {stat.icon}

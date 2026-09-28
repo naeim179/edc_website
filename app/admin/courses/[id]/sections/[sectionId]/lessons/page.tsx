@@ -5,6 +5,7 @@ import DeleteLessonButton from "@/components/admin/DeleteLessonButton";
 import { updateLesson } from "@/app/actions/admin-lessons";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
 import { createClient } from "@/lib/supabase/server";
+import { translations } from "@/lib/i18n";
 
 export default async function LessonsPage({
   params,
@@ -15,6 +16,7 @@ export default async function LessonsPage({
   }>;
 }) {
   const { id, sectionId } = await params;
+  const t = translations.ar;
 
   const allowed = await canManageCourse(id);
 
@@ -64,11 +66,11 @@ export default async function LessonsPage({
         <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">
 
           <h1 className="text-3xl font-bold">
-            إدارة الدروس
+            {t.admin.manageLessons}
           </h1>
 
           <p className="mt-2 text-blue-100">
-            القسم: {section?.title}
+            {t.admin.section}: {section?.title}
           </p>
 
         </section>
@@ -116,8 +118,8 @@ export default async function LessonsPage({
                       }`}
                     >
                       {lesson.is_free_preview
-                        ? "معاينة مجانية"
-                        : "مغلق"}
+                        ? t.admin.freePreview
+                        : t.admin.locked}
                     </span>
 
 
@@ -138,7 +140,7 @@ export default async function LessonsPage({
                     <div>
 
                       <label className="block text-sm font-bold mb-2 text-slate-600">
-                        عنوان الدرس
+                        {t.admin.lessonTitle}
                       </label>
 
                       <input
@@ -162,7 +164,7 @@ export default async function LessonsPage({
                       <>
                         <div>
                           <label className="block text-sm font-bold mb-2 text-slate-600">
-                            منصة البث
+                            {t.admin.platform}
                           </label>
 
                           <input
@@ -174,7 +176,7 @@ export default async function LessonsPage({
 
                         <div>
                           <label className="block text-sm font-bold mb-2 text-slate-600">
-                            رابط الجلسة
+                            {t.admin.sessionUrl}
                           </label>
 
                           <input
@@ -186,7 +188,7 @@ export default async function LessonsPage({
 
                         <div>
                           <label className="block text-sm font-bold mb-2 text-slate-600">
-                            موعد الجلسة
+                            {t.admin.sessionDate}
                           </label>
 
                           <input
@@ -221,7 +223,7 @@ export default async function LessonsPage({
                     <div>
 
                       <label className="block text-sm font-bold mb-2 text-slate-600">
-                        ترتيب الدرس
+                        {t.admin.lessonOrder}
                       </label>
 
                       <input
@@ -237,7 +239,7 @@ export default async function LessonsPage({
 
                     <label className="flex justify-end gap-2 items-center text-sm font-bold text-slate-700">
 
-                      معاينة مجانية
+                      {t.admin.freePreview}
 
                       <input
                         type="checkbox"
@@ -255,7 +257,7 @@ export default async function LessonsPage({
                       type="submit"
                       className="w-full bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold"
                     >
-                      حفظ التعديل
+                      {t.admin.saveChanges}
                     </button>
 
 
@@ -282,7 +284,7 @@ export default async function LessonsPage({
         ) : (
 
           <div className="bg-white rounded-2xl border p-10 text-center text-slate-500">
-            لا توجد دروس حالياً.
+            {t.admin.noLessons}
           </div>
 
         )}

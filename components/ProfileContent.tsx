@@ -64,7 +64,7 @@ export default function ProfileContent({
   profile,
   email,
 }: ProfileContentProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isArabic = language === "ar";
 
   const displayName =
@@ -121,7 +121,7 @@ export default function ProfileContent({
               href="/my-courses"
               className="px-7"
             >
-              {isArabic ? "دوراتي التعليمية" : "My Courses"}
+              {t.profile.myCoursesButton}
             </Button>
           )}
         </div>
@@ -131,7 +131,7 @@ export default function ProfileContent({
       <section className="p-8 md:p-10">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-800 md:text-2xl">
-            {isArabic ? "معلومات الحساب" : "Account Information"}
+            {t.profile.accountInfo}
           </h2>
 
           <p className="mt-1.5 text-sm text-slate-500">
@@ -147,7 +147,7 @@ export default function ProfileContent({
       {/* Account Settings */}
       <section className="border-t border-slate-100 px-8 pb-8 pt-8 md:px-10 md:pb-10">
         <h2 className="mb-5 text-xl font-bold text-slate-800 md:text-2xl">
-          {isArabic ? "إعدادات الحساب" : "Account Settings"}
+          {t.profile.accountSettings}
         </h2>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -158,7 +158,7 @@ export default function ProfileContent({
                 <MailIcon />
               </div>
               <h3 className="text-lg font-bold text-slate-800">
-                {isArabic ? "البريد الإلكتروني" : "Email"}
+                {t.auth.email}
               </h3>
             </div>
 
@@ -170,7 +170,7 @@ export default function ProfileContent({
               href="/change-email"
               className="mt-auto inline-flex justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-bold text-[#124b8a] transition-colors hover:bg-[#124b8a] hover:text-white"
             >
-              {isArabic ? "تغيير البريد الإلكتروني" : "Change Email"}
+              {t.profile.changeEmailButton}
             </Link>
           </CardContent>
           </Card>
@@ -182,7 +182,7 @@ export default function ProfileContent({
                 <LockIcon />
               </div>
               <h3 className="text-lg font-bold text-slate-800">
-                {isArabic ? "أمان الحساب" : "Account Security"}
+                {t.profile.accountSecurity}
               </h3>
             </div>
 
@@ -196,7 +196,7 @@ export default function ProfileContent({
               href="/change-password"
               className="mt-auto inline-flex justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-bold text-[#124b8a] transition-colors hover:bg-[#124b8a] hover:text-white"
             >
-              {isArabic ? "تغيير كلمة المرور" : "Change Password"}
+              {t.profile.changePasswordButton}
             </Link>
           </CardContent>
           </Card>

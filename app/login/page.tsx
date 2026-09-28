@@ -10,9 +10,12 @@ import {
   GlobeIcon,
 } from "@/components/icons";
 import { PasswordToggle } from "@/components/password-toggle";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { language, t } = useLanguage();
+  const isArabic = language === "ar";
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
@@ -37,16 +40,16 @@ export default function LoginPage() {
     } = {};
 
     if (!email) {
-      newErrors.email = "البريد الإلكتروني مطلوب";
+      newErrors.email = t.auth.emailRequired;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "صيغة البريد الإلكتروني غير صحيحة";
+      newErrors.email = t.auth.invalidEmail;
     }
 
     if (!password) {
-      newErrors.password = "كلمة المرور مطلوبة";
+      newErrors.password = t.auth.passwordRequired;
     } else if (password.length < 6) {
       newErrors.password =
-        "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+        t.auth.passwordMin;
     }
 
     setErrors(newErrors);
@@ -92,7 +95,7 @@ export default function LoginPage() {
       router.refresh();
     } catch {
       setServerError(
-        "فشل تسجيل الدخول، يرجى التأكد من البيانات"
+        t.auth.loginFailed
       );
     } finally {
       setIsLoading(false);
@@ -102,7 +105,7 @@ export default function LoginPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4"
-      dir="rtl"
+      dir={isArabic ? "rtl" : "ltr"}
     >
       <div className="w-full max-w-md p-8">
         <div className="mb-10 text-center">
@@ -232,8 +235,8 @@ export default function LoginPage() {
             className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
           >
             {isLoading
-              ? "جاري تسجيل الدخول..."
-              : "تسجيل الدخول"}
+              ? t.auth.loggingIn
+              : t.auth.login}
           </button>
         </form>
 

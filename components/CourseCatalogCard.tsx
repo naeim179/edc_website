@@ -52,7 +52,7 @@ export default function CourseCatalogCard({
   discountValue,
   deliveryType,
 }: CourseCatalogCardProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isArabic = language === "ar";
 
   const pricing = computePrice({
@@ -147,19 +147,19 @@ export default function CourseCatalogCard({
           </Badge>
         )}
 
-        <h3 className="line-clamp-2 text-lg font-semibold text-slate-900">
+        <h3 className="line-clamp-2 text-lg font-semibold text-[#1F1F1F]">
           <Link
             href={`/courses/${id}`}
-            className="hover:text-[#124b8a]"
+            className="hover:text-[#1B4B43]"
           >
             {title}
           </Link>
         </h3>
 
-        <div className="flex flex-wrap gap-4 text-sm text-slate-500">
+        <div className="flex flex-wrap gap-4 text-sm text-[#6B6258]">
           {instructor && (
             <span className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-[#124b8a]">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EAF2F0] text-xs font-bold text-[#1B4B43]">
                 {instructor.charAt(0).toUpperCase()}
               </span>
 
@@ -176,11 +176,11 @@ export default function CourseCatalogCard({
         {enrolled && (
           <div>
             <div className="mb-2 flex justify-between text-xs">
-              <span className="text-slate-500">
-                {isArabic ? "التقدم" : "Progress"}
+              <span className="text-[#6B6258]">
+                {t.courses.progress}
               </span>
 
-              <span className="font-semibold text-[#124b8a]">
+              <span className="font-semibold text-[#1B4B43]">
                 {progress}%
               </span>
             </div>
@@ -189,18 +189,18 @@ export default function CourseCatalogCard({
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
+        <div className="mt-auto flex items-center justify-between border-t border-[#E8E1D4] pt-4">
           {enrolled ? (
             <span />
           ) : pricing.isFree ? (
-            <span className="text-lg font-bold text-emerald-600">
-              {isArabic ? "مجانية" : "Free"}
+            <span className="text-lg font-bold text-[#1B4B43]">
+              {t.courses.free}
             </span>
           ) : (
             <div>
               {pricing.hasDiscount && (
                 <div className="flex gap-2 text-xs">
-                  <span className="line-through text-slate-400">
+                  <span className="line-through text-[#A69C8C]">
                     {pricing.original.toFixed(2)}
                   </span>
 
@@ -210,7 +210,7 @@ export default function CourseCatalogCard({
                 </div>
               )}
 
-              <p className="text-lg font-bold text-slate-900">
+              <p className="text-lg font-bold text-[#1F1F1F]">
                 {pricing.final.toFixed(2)} USD
               </p>
             </div>
@@ -224,13 +224,13 @@ export default function CourseCatalogCard({
               justify-center
               gap-2
               rounded-xl
-              bg-[#124b8a]
+              bg-[#1B4B43]
               px-4
               py-2.5
               text-sm
               font-semibold
               text-white
-              hover:bg-[#0d3b6e]
+              hover:bg-[#123A34]
             "
           >
             {label}

@@ -4,10 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function ChangePasswordForm() {
   const supabase = createClient();
   const router = useRouter();
+  const { language, t } = useLanguage();
+  const isArabic = language === "ar";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -44,12 +47,12 @@ export default function ChangePasswordForm() {
     setMessage("");
 
     if (password.length < 6) {
-      setError("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+      setError(t.auth.passwordMin);
       return;
     }
 
     if (password !== confirm) {
-      setError("كلمتا المرور غير متطابقتين");
+      setError(t.auth.passwordMismatch);
       return;
     }
 
@@ -60,7 +63,7 @@ export default function ChangePasswordForm() {
     if (error) {
       setError(error.message);
     } else {
-      setMessage("تم تغيير كلمة المرور بنجاح ✅");
+      setMessage(t.auth.passwordUpdated);
       setSent(true);
     }
 
@@ -84,7 +87,7 @@ export default function ChangePasswordForm() {
   return (
     <div
       className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
-      dir="rtl"
+      dir={isArabic ? "rtl" : "ltr"}
     >
       <h1 className="mb-3 text-center text-2xl font-bold text-slate-800">
         تغيير كلمة المرور
@@ -110,7 +113,7 @@ export default function ChangePasswordForm() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
             type="password"
-            placeholder="كلمة المرور الجديدة"
+            placeholder={t.auth.newPassword}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
@@ -119,7 +122,7 @@ export default function ChangePasswordForm() {
 
           <input
             type="password"
-            placeholder="تأكيد كلمة المرور"
+            placeholder={t.auth.confirmNewPassword}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             disabled={loading}
@@ -130,7 +133,7 @@ export default function ChangePasswordForm() {
             disabled={loading}
             className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition-colors hover:bg-[#0d3b6e] disabled:opacity-60"
           >
-            {loading ? "جاري التحديث..." : "تحديث كلمة المرور"}
+            {loading ? t.auth.saving : t.auth.updatePassword}
           </button>
         </form>
       ) : (
@@ -147,7 +150,7 @@ export default function ChangePasswordForm() {
             disabled={loading}
             className="w-full rounded-xl border border-slate-200 bg-white py-3 font-bold text-[#124b8a] transition-colors hover:bg-slate-50 disabled:opacity-60"
           >
-            {loading ? "جاري تسجيل الخروج..." : "تسجيل الدخول من جديد"}
+            {loading ? t.auth.loggingOut : t.auth.loginAgain}
           </button>
         </div>
       )}

@@ -57,7 +57,7 @@ export default function MyCoursesContent({
   ] = useState<Filter>("all");
 
   const primaryButton =
-    "inline-block rounded-xl bg-[#124b8a] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]";
+    "inline-block rounded-xl bg-[#1B4B43] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#123A34]";
 
   if (!isAuthenticated) {
     return (
@@ -69,7 +69,7 @@ export default function MyCoursesContent({
             : "ltr"
         }
       >
-        <h1 className="text-2xl font-bold text-slate-800">
+        <h1 className="text-2xl font-bold text-[#2A2420]">
           {isArabic
             ? "موادي"
             : "My Courses"}
@@ -77,7 +77,7 @@ export default function MyCoursesContent({
 
         <Card>
           <CardContent className="p-8 text-center">
-            <h2 className="mb-2 text-lg font-semibold text-slate-700">
+            <h2 className="mb-2 text-lg font-semibold text-[#2A2420]">
               {isArabic
                 ? "سجّل دخولك لعرض دوراتك"
                 : "Login to view your courses"}
@@ -205,7 +205,7 @@ export default function MyCoursesContent({
           : "ltr"
       }
     >
-      <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#124b8a] via-[#0f3f75] to-[#0b3260] p-6 text-white shadow-lg sm:p-8">
+      <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-6 text-white shadow-lg sm:p-8">
         <div className="relative">
           <h1 className="text-2xl font-bold sm:text-3xl">
             {isArabic
@@ -213,7 +213,7 @@ export default function MyCoursesContent({
               : "My Courses"}
           </h1>
 
-          <p className="mt-3 max-w-xl leading-7 text-blue-100">
+          <p className="mt-3 max-w-xl leading-7 text-white/75">
             {isArabic
               ? "تابع تقدمك، مدة اشتراكك وتجديد دوراتك من مكان واحد."
               : "Track your progress, subscription period, and renewals in one place."}
@@ -241,8 +241,8 @@ export default function MyCoursesContent({
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
                   filter ===
                   tab.id
-                    ? "border-[#124b8a] bg-[#124b8a] text-white"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    ? "border-[#1B4B43] bg-[#1B4B43] text-white"
+                    : "border-[#E8E1D4] bg-white text-[#6B6258] hover:bg-[#F5F1EA]"
                 }`}
               >
                 {tab.label}{" "}
@@ -310,7 +310,7 @@ export default function MyCoursesContent({
       ) : (
         <Card>
           <CardContent className="p-8 text-center">
-            <h2 className="mb-2 text-lg font-semibold text-slate-700">
+            <h2 className="mb-2 text-lg font-semibold text-[#2A2420]">
               {courses.length ===
               0
                 ? isArabic

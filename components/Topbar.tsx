@@ -17,6 +17,7 @@ type TopbarProps = {
   isAuthenticated: boolean;
   userName: string;
   role: string | null;
+  avatarUrl: string | null;
   /** يفتح القائمة الجانبية على الجوال */
   onMenuClick?: () => void;
 };
@@ -25,6 +26,7 @@ export default function Topbar({
   isAuthenticated,
   userName,
   role,
+  avatarUrl,
   onMenuClick,
 }: TopbarProps) {
   const router = useRouter();
@@ -62,7 +64,11 @@ export default function Topbar({
 
   return (
     <header
-      className="flex w-full flex-wrap items-center gap-3 sm:flex-nowrap"
+      className="flex w-full flex-wrap items-center gap-3 rounded-2xl border p-3 sm:flex-nowrap"
+      style={{
+        backgroundColor: "var(--brand-surface)",
+        borderColor: "var(--brand-border)",
+      }}
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div className="flex shrink-0 items-center gap-3 lg:hidden">
@@ -71,7 +77,11 @@ export default function Topbar({
           onClick={onMenuClick}
           aria-label={isArabic ? "فتح القائمة" : "Open menu"}
           aria-controls="app-sidebar"
-          className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50"
+          className="flex h-11 w-11 items-center justify-center rounded-xl border transition-colors"
+          style={{
+            borderColor: "var(--brand-border)",
+            color: "var(--brand-text-muted)",
+          }}
         >
           <MenuIcon />
         </button>
@@ -79,7 +89,8 @@ export default function Topbar({
         <Link
           href="/"
           aria-label="Your Way"
-          className="rounded-xl border border-slate-200 bg-white p-1.5"
+          className="rounded-xl border p-1.5"
+          style={{ borderColor: "var(--brand-border)" }}
         >
           <Image
             src="/logo/logo-transparent.png"
@@ -103,13 +114,19 @@ export default function Topbar({
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t.topbar.search}
             aria-label={t.topbar.search}
-            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pe-4 ps-11 text-sm text-slate-700 transition placeholder:text-slate-400 focus:border-[#124b8a] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#124b8a]/10"
+            className="h-11 w-full rounded-xl border pe-4 ps-11 text-sm outline-none transition focus:ring-4"
+            style={{
+              borderColor: "var(--brand-border)",
+              backgroundColor: "var(--brand-bg)",
+              color: "var(--brand-text)",
+            }}
           />
 
           <button
             type="submit"
             aria-label={isArabic ? "بحث" : "Search"}
-            className="absolute start-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-[#124b8a]"
+            className="absolute start-3.5 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: "var(--brand-text-faint)" }}
           >
             <SearchIcon width={18} height={18} />
           </button>
@@ -121,18 +138,36 @@ export default function Topbar({
           <>
             <Link
               href="/profile"
-              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white py-1.5 pe-1.5 ps-1.5 transition-colors hover:bg-slate-50 sm:pe-4"
+              className="flex items-center gap-3 rounded-xl border py-1.5 pe-1.5 ps-1.5 transition-colors sm:pe-4"
+              style={{ borderColor: "var(--brand-border)" }}
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#124b8a] text-sm font-bold text-white">
-                {userName.charAt(0).toUpperCase()}
+              <span
+                className="flex h-9 w-9 overflow-hidden items-center justify-center rounded-lg text-sm font-bold text-white"
+                style={{ backgroundColor: "var(--brand-ink)" }}
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  userName.charAt(0).toUpperCase()
+                )}
               </span>
 
               <span className="hidden min-w-0 flex-col text-start leading-tight sm:flex">
-                <span className="max-w-[9rem] truncate text-sm font-bold text-slate-800">
+                <span
+                  className="max-w-[9rem] truncate text-sm font-bold"
+                  style={{ color: "var(--brand-text)" }}
+                >
                   {userName}
                 </span>
 
-                <span className="text-xs text-slate-500">
+                <span
+                  className="text-xs"
+                  style={{ color: "var(--brand-text-faint)" }}
+                >
                   {roleLabel}
                 </span>
               </span>
@@ -142,7 +177,11 @@ export default function Topbar({
               <button
                 type="submit"
                 aria-label={t.topbar.logout}
-                className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 sm:px-4"
+                className="flex h-11 items-center gap-2 rounded-xl border px-3 text-sm font-semibold transition-colors sm:px-4"
+                style={{
+                  borderColor: "var(--brand-border)",
+                  color: "var(--brand-text-muted)",
+                }}
               >
                 <LogoutIcon width={18} height={18} />
 
@@ -155,7 +194,8 @@ export default function Topbar({
         ) : (
           <Link
             href="/login"
-            className="flex h-11 items-center rounded-xl bg-[#124b8a] px-5 text-sm font-bold text-white transition-colors hover:bg-[#0d3b6e]"
+            className="flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white transition-colors"
+            style={{ backgroundColor: "var(--brand-ink)" }}
           >
             {t.topbar.login}
           </Link>

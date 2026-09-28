@@ -19,7 +19,7 @@ export default function CoursesContent({
   searchQuery,
   searchText,
 }: Props) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isArabic = language === "ar";
 
   const [category, setCategory] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export default function CoursesContent({
     `rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
       active
         ? "border-[#1B4B43] bg-[#1B4B43] text-white"
-        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+        : "border-[#E8E1D4] bg-white text-[#6B6258] hover:bg-[#F5F1EA]"
     }`;
 
   return (
@@ -53,11 +53,11 @@ export default function CoursesContent({
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div>
-        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
-          {isArabic ? "جميع الدورات" : "All Courses"}
+        <h1 className="text-2xl font-bold text-[#2A2420] sm:text-3xl">
+          {t.courses.allCourses}
         </h1>
 
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-[#6B6258]">
           {searchQuery
             ? isArabic
               ? `نتائج البحث عن: ${searchText}`
@@ -76,7 +76,7 @@ export default function CoursesContent({
             aria-pressed={category === null}
             className={chip(category === null)}
           >
-            {isArabic ? "الكل" : "All"}
+            {t.courses.all}
           </button>
 
           {categories.map((item) => (
@@ -118,11 +118,11 @@ export default function CoursesContent({
       ) : (
         <Card>
           <CardContent className="p-8 text-center">
-            <h2 className="mb-2 text-lg font-semibold text-slate-700">
-              {isArabic ? "لا توجد دورات" : "No courses"}
+            <h2 className="mb-2 text-lg font-semibold text-[#2A2420]">
+              {t.courses.noCourses}
             </h2>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[#6B6258]">
               {searchQuery
                 ? isArabic
                   ? "لم نجد دورات مطابقة لعملية البحث."

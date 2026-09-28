@@ -19,6 +19,7 @@ export default async function AppShell({
 
   let fullName: string | null = null;
   let role: string | null = null;
+  let avatarUrl: string | null = null;
 
 
   if (user) {
@@ -26,13 +27,14 @@ export default async function AppShell({
     const { data: profile } =
       await supabase
         .from("profiles")
-        .select("full_name, role")
+        .select("full_name, role, avatar_url")
         .eq("id", user.id)
         .maybeSingle();
 
 
     fullName = profile?.full_name ?? null;
     role = profile?.role ?? null;
+    avatarUrl = profile?.avatar_url ?? null;
   }
 
 
@@ -47,6 +49,7 @@ export default async function AppShell({
       role={role}
       isAuthenticated={Boolean(user)}
       userName={displayName}
+      avatarUrl={avatarUrl}
     >
       {children}
     </AppShellClient>

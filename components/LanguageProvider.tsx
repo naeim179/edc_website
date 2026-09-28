@@ -15,7 +15,7 @@ import {
 
 type LanguageContextType = {
   language: Language;
-  t: typeof translations.ar;
+  t: (typeof translations)[Language];
   changeLanguage: (language: Language) => void;
   mounted: boolean;
 };
