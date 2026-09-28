@@ -88,6 +88,7 @@ export default function AppShellClient({
         "
       >
 
+        <div className="relative z-[100]">
         <Topbar
           isAuthenticated={isAuthenticated}
           userName={userName}
@@ -95,6 +96,7 @@ export default function AppShellClient({
           avatarUrl={avatarUrl}
           onMenuClick={openMenu}
         />
+      </div>
 
 
         <section
@@ -107,6 +109,8 @@ export default function AppShellClient({
             p-4
             md:p-6
             shadow-sm
+            relative
+            z-0
           "
         >
           {children}
