@@ -73,11 +73,7 @@ export default function AdminStudentDetailContent({
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div
-        className="rounded-2xl border p-6"
-        style={{
-          borderColor: "var(--brand-border)",
-          backgroundColor: "var(--brand-surface)",
-        }}
+        className="bg-white rounded-2xl border p-6 text-right"
       >
         <Link
           href="/admin/students"
@@ -88,16 +84,14 @@ export default function AdminStudentDetailContent({
         </Link>
 
         <h1
-          className="mt-4 text-2xl font-bold"
-          style={{ color: "var(--brand-text)" }}
+          className="text-2xl font-bold text-slate-800 mt-4"
         >
           {student.fullName ??
             t.admin.noName}
         </h1>
 
         <p
-          className="mt-2 text-sm"
-          style={{ color: "var(--brand-text-muted)" }}
+          className="text-slate-500 mt-2"
         >
           {t.admin.registered}: 
           {new Date(student.createdAt).toLocaleDateString(
@@ -107,15 +101,10 @@ export default function AdminStudentDetailContent({
       </div>
 
       <div
-        className="rounded-2xl border p-6"
-        style={{
-          borderColor: "var(--brand-border)",
-          backgroundColor: "var(--brand-surface)",
-        }}
+        className="bg-white rounded-2xl border p-6 text-right"
       >
         <h2
-          className="mb-5 text-xl font-bold"
-          style={{ color: "var(--brand-text)" }}
+          className="text-xl font-bold text-right mb-5"
         >
           {t.admin.enrolledCourses}
         </h2>
@@ -125,22 +114,19 @@ export default function AdminStudentDetailContent({
             {enrollments.map((enrollment) => (
               <div
                 key={enrollment.id}
-                className="space-y-4 rounded-xl border p-5"
-                style={{ borderColor: "var(--brand-border)" }}
+                className="border rounded-xl p-5 text-right space-y-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h3
-                      className="text-lg font-bold"
-                      style={{ color: "var(--brand-text)" }}
+                      className="font-bold text-lg"
                     >
                       {enrollment.courseTitle ??
-                        t.admin.courseUnavailable}
+                        t.admin.unavailableCourse}
                     </h3>
 
                     <p
-                      className="mt-1 text-sm"
-                      style={{ color: "var(--brand-text-muted)" }}
+                      className="text-sm text-slate-500"
                     >
                       {t.admin.completedLessons}: {enrollment.completedLessons}
                     </p>
@@ -195,7 +181,7 @@ export default function AdminStudentDetailContent({
                       className="text-sm font-semibold"
                       style={{ color: "var(--brand-text)" }}
                     >
-                      t.admin.extendSubscription
+                      {t.admin.extendSubscription}
                     </span>
 
                     {QUICK_DAYS.map((days) => (
@@ -222,10 +208,7 @@ export default function AdminStudentDetailContent({
                         <button
                           type="submit"
                           className="rounded-lg border px-3 py-1.5 text-sm font-bold transition-colors"
-                          style={{
-                            borderColor: "var(--brand-ink)",
-                            color: "var(--brand-ink)",
-                          }}
+                          
                         >
                           {`+${days} ${t.admin.days}`}
                         </button>
@@ -256,19 +239,14 @@ export default function AdminStudentDetailContent({
                         }
                         required
                         className="w-24 rounded-lg border px-2 py-1.5 text-sm"
-                        style={{
-                          borderColor: "var(--brand-border)",
-                          backgroundColor: "var(--brand-bg)",
-                          color: "var(--brand-text)",
-                        }}
+                        style={{}}
+
                       />
 
                       <button
                         type="submit"
-                        className="rounded-lg px-3 py-1.5 text-sm font-bold text-white"
-                        style={{
-                          backgroundColor: "var(--brand-ink)",
-                        }}
+                        className="rounded-lg bg-emerald-600 px-4 py-2 text-white font-bold"
+
                       >
                         {t.admin.extend}
                       </button>
@@ -279,11 +257,8 @@ export default function AdminStudentDetailContent({
             ))}
           </div>
         ) : (
-          <p
-            className="text-center"
-            style={{ color: "var(--brand-text-muted)" }}
-          >
-            t.admin.notEnrolled
+          <p className="text-center text-slate-500">
+            {t.admin.noCoursesStudent}
           </p>
         )}
       </div>
