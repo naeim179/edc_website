@@ -493,7 +493,7 @@ export default function CourseDetailContent({
               </h2>
 
               <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-                <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F7F3EC] text-2xl font-bold text-[#1B4B43]">
+                <span className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F7F3EC] text-2xl font-bold text-[#1B4B43]">
                   {teacherProfile?.image_url ? (
                     <Image
                       src={teacherProfile.image_url}
