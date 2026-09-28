@@ -122,7 +122,7 @@ export default function DisplaySettings() {
     }`;
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative z-[100]" ref={containerRef}>
       <button
         type="button"
         onClick={togglePanel}
@@ -148,7 +148,7 @@ export default function DisplaySettings() {
             isArabic ? "إعدادات العرض" : "Display settings"
           }
           dir={isArabic ? "rtl" : "ltr"}
-          className="absolute end-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border p-4"
+          className="absolute end-0 top-full z-[200] mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border p-4 shadow-xl"
           style={{
             borderColor: "var(--brand-border)",
             backgroundColor: "var(--brand-surface)",
