@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const keyId = process.env.MUX_SIGNING_KEY_ID;
     const privateKey =
-      process.env.MUX_SIGNING_PRIVATE_KEY;
+      process.env.MUX_SIGNING_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
     if (!keyId || !privateKey) {
       return NextResponse.json(
