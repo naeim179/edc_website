@@ -325,13 +325,11 @@ export async function fulfillPaymentByTranRef(
 
   if (instructor?.teacher_id) {
     const { error: conversationError } =
-      await supabase.rpc(
-        "start_conversation",
-        {
+      await supabase.rpc("start_conversation_for_student", {
+          p_student_id: order.user_id,
           p_course_id: order.course_id,
           p_teacher_id: instructor.teacher_id,
-        }
-      );
+        });
 
     if (conversationError) {
       console.error(
