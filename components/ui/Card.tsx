@@ -12,14 +12,14 @@ export default function Card({
       className={`
         rounded-3xl
         border
-        border-slate-200
-        bg-white
+        border-[var(--brand-border)]
+        bg-[var(--brand-surface)]
         shadow-sm
         transition-all
         duration-300
         hover:-translate-y-1
         hover:shadow-lg
-        hover:border-emerald-200
+        hover:border-[var(--brand-ink)]/30
         ${className}
       `}
       {...props}

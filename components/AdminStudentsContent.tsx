@@ -31,24 +31,24 @@ export default function AdminStudentsContent({
       dir={isArabic ? "rtl" : "ltr"}
     >
 
-      <div className="bg-white rounded-2xl border p-6 text-right">
+      <div className="bg-[var(--brand-surface)] rounded-2xl border p-6 text-right">
 
-        <h1 className="text-2xl font-bold text-slate-800">
+        <h1 className="text-2xl font-bold text-[var(--brand-text)]">
           {t.admin.studentsManagement}
         </h1>
 
-        <p className="text-slate-500 mt-2">
+        <p className="text-[var(--brand-text-muted)] mt-2">
           {t.admin.studentsDescription}
         </p>
 
       </div>
 
 
-      <div className="bg-white rounded-2xl border overflow-hidden">
+      <div className="bg-[var(--brand-surface)] rounded-2xl border overflow-hidden">
 
         <table className="w-full text-right">
 
-          <thead className="bg-slate-50">
+          <thead className="bg-[var(--brand-bg)]">
 
             <tr>
 
@@ -97,7 +97,7 @@ export default function AdminStudentsContent({
                 </td>
 
 
-                <td className="p-4 text-slate-500">
+                <td className="p-4 text-[var(--brand-text-muted)]">
 
                   {new Date(
                     student.created_at

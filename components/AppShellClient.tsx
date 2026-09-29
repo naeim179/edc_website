@@ -57,15 +57,7 @@ export default function AppShellClient({
   return (
     <div
       dir={isArabic ? "rtl":"ltr"}
-      className="
-        min-h-screen
-        bg-[#f4f8f6]
-        text-slate-900
-        flex
-        gap-5
-        p-3
-        md:p-5
-      "
+      className="yw-shell"
     >
 
       <Sidebar
@@ -79,16 +71,10 @@ export default function AppShellClient({
 
 
       <main
-        className="
-          flex-1
-          min-w-0
-          flex
-          flex-col
-          gap-5
-        "
+        className="yw-main"
       >
 
-        <div className="relative z-[100]">
+        <div className="yw-topbar-wrap">
         <Topbar
           isAuthenticated={isAuthenticated}
           userName={userName}
@@ -100,18 +86,7 @@ export default function AppShellClient({
 
 
         <section
-          className="
-            min-h-[calc(100vh-120px)]
-            rounded-3xl
-            bg-white/70
-            border
-            border-slate-200
-            p-4
-            md:p-6
-            shadow-sm
-            relative
-            z-0
-          "
+          className="yw-content"
         >
           {children}
         </section>

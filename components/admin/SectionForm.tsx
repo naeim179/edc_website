@@ -69,12 +69,12 @@ export default function SectionForm({
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="bg-white rounded-xl border p-5 space-y-4 text-right"
+      className="bg-[var(--brand-surface)] rounded-xl border p-5 space-y-4 text-right"
     >
       <div>
         <label
           htmlFor="section-title"
-          className="block mb-2 font-bold text-slate-700"
+          className="block mb-2 font-bold text-[var(--brand-text)]"
         >
           اسم القسم
         </label>
@@ -89,7 +89,7 @@ export default function SectionForm({
         />
       </div>
 
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-[var(--brand-text-muted)]">
         سيتم تحديد ترتيب القسم تلقائيًا.
       </p>
 

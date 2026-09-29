@@ -89,6 +89,16 @@ export function ReceiptIcon(props: IconProps) {
   );
 }
 
+
+export function MessageIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H5l-2 2v-4.5A8.5 8.5 0 1 1 21 11.5Z" />
+      <path d="M8 11h8M8 15h5" />
+    </Icon>
+  );
+}
+
 export function SearchIcon(props: IconProps) {
   return (
     <Icon {...props}>

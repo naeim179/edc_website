@@ -12,7 +12,9 @@ export default function ProgressBar({
   const progress = Math.min(Math.max(value, 0), 100);
 
   const fillColor =
-    variant === "success" ? "bg-emerald-500" : "bg-[#1B4B43]";
+    variant === "success"
+      ? "bg-[var(--brand-success)]"
+      : "bg-[var(--brand-ink)]";
 
   return (
     <div
@@ -21,7 +23,7 @@ export default function ProgressBar({
         w-full
         overflow-hidden
         rounded-full
-        bg-[#F0EBE1]
+        bg-[var(--brand-bg)]
         ${className}
       `}
     >

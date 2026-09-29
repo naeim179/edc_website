@@ -64,19 +64,7 @@ export default function Topbar({
 
   return (
     <header
-      className="
-        flex
-        w-full
-        flex-wrap
-        items-center
-        gap-3
-        rounded-3xl
-        border
-        p-3
-        sm:flex-nowrap
-        shadow-sm
-        backdrop-blur-xl
-      "
+      className="yw-topbar flex w-full flex-wrap items-center gap-3 sm:flex-nowrap"
       style={{
         backgroundColor: "var(--brand-surface)",
         borderColor: "var(--brand-border)",
@@ -220,7 +208,20 @@ export default function Topbar({
               </span>
             </Link>
 
-            <form action={signOut}>
+            <form
+              action={signOut}
+              onSubmit={(event) => {
+                const confirmed = window.confirm(
+                  isArabic
+                    ? "هل أنت متأكد أنك تريد تسجيل الخروج؟"
+                    : "Are you sure you want to sign out?"
+                );
+
+                if (!confirmed) {
+                  event.preventDefault();
+                }
+              }}
+            >
               <button
                 type="submit"
                 aria-label={t.topbar.logout}

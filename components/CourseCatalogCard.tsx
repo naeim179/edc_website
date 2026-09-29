@@ -147,19 +147,19 @@ export default function CourseCatalogCard({
           </Badge>
         )}
 
-        <h3 className="line-clamp-2 text-lg font-semibold text-[#1F1F1F]">
+        <h3 className="line-clamp-2 text-lg font-semibold text-[var(--brand-text)]">
           <Link
             href={`/courses/${id}`}
-            className="hover:text-[#1B4B43]"
+            className="hover:text-[var(--brand-ink)]"
           >
             {title}
           </Link>
         </h3>
 
-        <div className="flex flex-wrap gap-4 text-sm text-[#6B6258]">
+        <div className="flex flex-wrap gap-4 text-sm text-[var(--brand-text-muted)]">
           {instructor && (
             <span className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EAF2F0] text-xs font-bold text-[#1B4B43]">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--brand-bg)] text-xs font-bold text-[var(--brand-ink)]">
                 {instructor.charAt(0).toUpperCase()}
               </span>
 
@@ -176,11 +176,11 @@ export default function CourseCatalogCard({
         {enrolled && (
           <div>
             <div className="mb-2 flex justify-between text-xs">
-              <span className="text-[#6B6258]">
+              <span className="text-[var(--brand-text-muted)]">
                 {t.courses.progress}
               </span>
 
-              <span className="font-semibold text-[#1B4B43]">
+              <span className="font-semibold text-[var(--brand-ink)]">
                 {progress}%
               </span>
             </div>
@@ -189,18 +189,18 @@ export default function CourseCatalogCard({
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between border-t border-[#E8E1D4] pt-4">
+        <div className="mt-auto flex items-center justify-between border-t border-[var(--brand-border)] pt-4">
           {enrolled ? (
             <span />
           ) : pricing.isFree ? (
-            <span className="text-lg font-bold text-[#1B4B43]">
+            <span className="text-lg font-bold text-[var(--brand-ink)]">
               {t.courses.free}
             </span>
           ) : (
             <div>
               {pricing.hasDiscount && (
                 <div className="flex gap-2 text-xs">
-                  <span className="line-through text-[#A69C8C]">
+                  <span className="line-through text-[var(--brand-text-faint)]">
                     {pricing.original.toFixed(2)}
                   </span>
 
@@ -210,7 +210,7 @@ export default function CourseCatalogCard({
                 </div>
               )}
 
-              <p className="text-lg font-bold text-[#1F1F1F]">
+              <p className="text-lg font-bold text-[var(--brand-text)]">
                 {pricing.final.toFixed(2)} USD
               </p>
             </div>
@@ -224,13 +224,13 @@ export default function CourseCatalogCard({
               justify-center
               gap-2
               rounded-xl
-              bg-[#1B4B43]
+              bg-[var(--brand-ink)]
               px-4
               py-2.5
               text-sm
               font-semibold
               text-white
-              hover:bg-[#123A34]
+              hover:opacity-90
             "
           >
             {label}

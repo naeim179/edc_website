@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import {
+usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
@@ -14,6 +15,7 @@ import {
   ReceiptIcon,
   UserIcon,
   UsersIcon,
+  MessageIcon,
 } from "@/components/icons";
 
 type SidebarProps = {
@@ -166,6 +168,11 @@ export default function Sidebar({
                 icon: <CapIcon />,
               },
               {
+                href: "/messages",
+                label: text.messages,
+                icon: <MessageIcon />,
+              },
+              {
                 href: "/profile",
                 label: text.profile,
                 icon: <UserIcon />,
@@ -217,33 +224,23 @@ export default function Sidebar({
       <aside
         id="app-sidebar"
         dir={isArabic ? "rtl" : "ltr"}
-        className={`fixed inset-y-0 start-0 z-50 w-72 max-w-[85vw] transition-[transform,visibility] duration-300 motion-reduce:transition-none lg:sticky lg:inset-auto lg:top-4 lg:z-auto lg:h-[calc(100vh-2rem)] lg:w-64 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:self-start lg:visible ${
+        className={`yw-sidebar fixed inset-y-0 start-0 z-50 w-72 max-w-[85vw] transition-[transform,visibility] duration-300 motion-reduce:transition-none lg:sticky lg:inset-auto lg:top-5 lg:z-auto lg:h-[calc(100vh-2rem)] lg:w-72 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:self-start lg:visible ${
           open
             ? "visible translate-x-0"
             : `invisible ${hiddenTransform}`
         }`}
       >
         <div
-          className="
-  flex
-  h-full
-  flex-col
-  overflow-y-auto
-  border
-  p-4
-  rounded-3xl
-  backdrop-blur-xl
-  shadow-sm
-"
+          className="yw-sidebar-panel"
           style={{
             backgroundColor: "var(--brand-surface)",
             borderColor: "var(--brand-border)",
           }}
         >
-          <div className="flex items-center justify-between px-1 pb-5">
-            <div className="flex items-center gap-2.5">
+          <div className="flex flex-col items-center justify-center gap-3 px-1 pb-6">
+            <div className="flex flex-col items-center gap-3">
               <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
                 style={{ backgroundColor: "var(--brand-ink-soft)" }}
               >
                 <Image
@@ -251,12 +248,12 @@ export default function Sidebar({
                   alt="Your Way"
                   width={80}
                   height={80}
-                  className="h-7 w-7 object-contain"
+                  className="h-10 w-10 object-contain"
                 />
               </div>
 
               <span
-                className="text-base font-bold tracking-tight"
+                className="text-lg font-bold tracking-tight"
                 style={{ color: "var(--brand-text)" }}
               >
                 {text.platform}
@@ -281,7 +278,7 @@ export default function Sidebar({
 
           <nav
             aria-label={text.menu}
-            className="mt-4 flex flex-col gap-1"
+            className="yw-sidebar-nav"
           >
             {visibleItems.map((item) => {
               const active = isActive(pathname, item);
@@ -292,35 +289,20 @@ export default function Sidebar({
                   href={item.href}
                   onClick={onClose}
                   aria-current={active ? "page" : undefined}
-                  className="
-  group
-  flex
-  items-center
-  gap-3
-  rounded-2xl
-  px-3.5
-  py-3
-  text-sm
-  font-semibold
-  transition-all
-  duration-200
-  hover:translate-x-1
-"
-                  style={
-                    active
-                      ? {
-                          backgroundColor: "var(--brand-ink)",
-                          color: "#FFFFFF",
-                        }
-                      : {
-                          color: "var(--brand-text-muted)",
-                        }
-                  }
+                  className="yw-sidebar-link"
+                  style={{
+                    backgroundColor: active
+                      ? "var(--brand-ink-soft)"
+                      : "transparent",
+                    color: active
+                      ? "var(--brand-ink)"
+                      : "var(--brand-text-muted)",
+                  }}
                 >
                   <span
                     style={{
                       color: active
-                        ? "#FFFFFF"
+                        ? "var(--brand-ink)"
                         : "var(--brand-text-faint)",
                     }}
                   >

@@ -15,19 +15,19 @@ type BadgeProps = {
 
 const variants = {
   default:
-    "bg-[#F0EBE1] text-[#6B6155]",
+    "bg-[var(--brand-bg)] text-[var(--brand-text-muted)]",
 
   success:
-    "bg-emerald-50 text-emerald-700",
+    "bg-[var(--brand-success-bg)] text-[var(--brand-success)]",
 
   danger:
-    "bg-red-50 text-red-700",
+    "bg-[var(--brand-danger-bg)] text-[var(--brand-danger)]",
 
   warning:
-    "bg-amber-50 text-amber-700",
+    "bg-[var(--brand-warning-bg)] text-[var(--brand-warning)]",
 
   info:
-    "bg-[#F7F3EC] text-[#1B4B43]",
+    "bg-[var(--brand-surface)] text-[var(--brand-ink)]",
 };
 
 export default function Badge({

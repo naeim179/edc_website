@@ -75,7 +75,7 @@ export default function CourseForm({
       dir="rtl"
     >
       <div>
-        <label className="block mb-2 font-bold text-slate-700">
+        <label className="block mb-2 font-bold text-[var(--brand-text)]">
           اسم الدورة
         </label>
 
@@ -89,7 +89,7 @@ export default function CourseForm({
       </div>
 
       <div>
-        <label className="block mb-2 font-bold text-slate-700">
+        <label className="block mb-2 font-bold text-[var(--brand-text)]">
           وصف الدورة
         </label>
 
@@ -102,7 +102,7 @@ export default function CourseForm({
       </div>
 
       <div>
-        <label className="block mb-2 font-bold text-slate-700">
+        <label className="block mb-2 font-bold text-[var(--brand-text)]">
           التصنيف
         </label>
 
@@ -115,7 +115,7 @@ export default function CourseForm({
       </div>
 
       <div>
-        <label className="block mb-2 font-bold text-slate-700">
+        <label className="block mb-2 font-bold text-[var(--brand-text)]">
           صورة الدورة
         </label>
 
@@ -141,7 +141,7 @@ export default function CourseForm({
       </div>
 
       {!isEditing && (
-        <div className="bg-white border rounded-xl p-5 space-y-5">
+        <div className="bg-[var(--brand-surface)] border rounded-xl p-5 space-y-5">
           <h2 className="font-bold text-lg">
             نوع الدورة
           </h2>
@@ -174,7 +174,7 @@ export default function CourseForm({
         </div>
       )}
 
-      <div className="bg-white border rounded-xl p-5 space-y-5">
+      <div className="bg-[var(--brand-surface)] border rounded-xl p-5 space-y-5">
         <h2 className="font-bold text-lg">
           نوع المحتوى
         </h2>
@@ -204,13 +204,13 @@ export default function CourseForm({
         </label>
       </div>
 
-      <div className="bg-white border rounded-xl p-5 space-y-5">
+      <div className="bg-[var(--brand-surface)] border rounded-xl p-5 space-y-5">
         <h2 className="font-bold text-lg">
           السعر
         </h2>
 
         <div>
-          <label className="block mb-2 font-bold text-slate-700">
+          <label className="block mb-2 font-bold text-[var(--brand-text)]">
             السعر الأساسي بالدولار (USD)
           </label>
 
@@ -232,7 +232,7 @@ export default function CourseForm({
           </h3>
 
           <div>
-            <label className="block mb-2 font-bold text-slate-700">
+            <label className="block mb-2 font-bold text-[var(--brand-text)]">
               نوع الخصم
             </label>
 
@@ -257,7 +257,7 @@ export default function CourseForm({
           </div>
 
           <div>
-            <label className="block mb-2 font-bold text-slate-700">
+            <label className="block mb-2 font-bold text-[var(--brand-text)]">
               قيمة الخصم
             </label>
 
@@ -282,7 +282,7 @@ export default function CourseForm({
           </div>
 
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[var(--brand-text-muted)]">
               السعر النهائي
             </p>
 

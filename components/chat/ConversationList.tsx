@@ -79,7 +79,7 @@ export default function ConversationList({
   }, [userId, role]);
 
   if (conversations.length === 0) {
-    return <p className="text-slate-500 text-center py-8">لا يوجد محادثات حاليًا</p>;
+    return <p className="text-[var(--brand-text-muted)] text-center py-8">لا يوجد محادثات حاليًا</p>;
   }
 
   return (
@@ -88,9 +88,9 @@ export default function ConversationList({
         <Link
           key={conv.id}
           href={`/messages/${conv.id}`}
-          className="flex items-center justify-between py-4 px-2 hover:bg-slate-50"
+          className="flex items-center justify-between py-4 px-2 hover:bg-[var(--brand-bg)]"
         >
-          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-100 flex items-center justify-center">
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[var(--brand-bg)] flex items-center justify-center">
             {conv.other_party_avatar ? (
               <img
                 src={conv.other_party_avatar}
@@ -118,7 +118,7 @@ export default function ConversationList({
               )}
             </div>
 
-            <p className="text-sm text-slate-500 truncate">
+            <p className="text-sm text-[var(--brand-text-muted)] truncate">
               {conv.course_title}
             </p>
 

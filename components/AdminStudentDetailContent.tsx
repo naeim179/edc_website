@@ -73,7 +73,7 @@ export default function AdminStudentDetailContent({
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div
-        className="bg-white rounded-2xl border p-6 text-right"
+        className="bg-[var(--brand-surface)] rounded-2xl border p-6 text-right"
       >
         <Link
           href="/admin/students"
@@ -84,14 +84,14 @@ export default function AdminStudentDetailContent({
         </Link>
 
         <h1
-          className="text-2xl font-bold text-slate-800 mt-4"
+          className="text-2xl font-bold text-[var(--brand-text)] mt-4"
         >
           {student.fullName ??
             t.admin.noName}
         </h1>
 
         <p
-          className="text-slate-500 mt-2"
+          className="text-[var(--brand-text-muted)] mt-2"
         >
           {t.admin.registered}: 
           {new Date(student.createdAt).toLocaleDateString(
@@ -101,7 +101,7 @@ export default function AdminStudentDetailContent({
       </div>
 
       <div
-        className="bg-white rounded-2xl border p-6 text-right"
+        className="bg-[var(--brand-surface)] rounded-2xl border p-6 text-right"
       >
         <h2
           className="text-xl font-bold text-right mb-5"
@@ -126,7 +126,7 @@ export default function AdminStudentDetailContent({
                     </h3>
 
                     <p
-                      className="text-sm text-slate-500"
+                      className="text-sm text-[var(--brand-text-muted)]"
                     >
                       {t.admin.completedLessons}: {enrollment.completedLessons}
                     </p>
@@ -257,7 +257,7 @@ export default function AdminStudentDetailContent({
             ))}
           </div>
         ) : (
-          <p className="text-center text-slate-500">
+          <p className="text-center text-[var(--brand-text-muted)]">
             {t.admin.noCoursesStudent}
           </p>
         )}

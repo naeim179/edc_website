@@ -83,7 +83,7 @@ export default function HomeContent({
             className="relative overflow-hidden px-6 py-8 text-white sm:px-10 sm:py-10"
             style={{
               backgroundImage:
-                "linear-gradient(135deg, var(--brand-ink), var(--brand-ink-hover))",
+                "linear-gradient(135deg, var(--hero-start), var(--hero-end))",
             }}
           >
             {heroShapes}

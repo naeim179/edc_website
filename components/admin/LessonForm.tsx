@@ -22,11 +22,11 @@ export default function LessonForm({
   return (
     <form
       action={action}
-      className="space-y-5 rounded-2xl border bg-white p-6 text-right"
+      className="space-y-5 rounded-2xl border bg-[var(--brand-surface)] p-6 text-right"
       dir="rtl"
     >
       <div>
-        <label className="mb-2 block text-sm font-bold text-slate-700">
+        <label className="mb-2 block text-sm font-bold text-[var(--brand-text)]">
           عنوان الدرس
         </label>
 
@@ -40,7 +40,7 @@ export default function LessonForm({
 
 
       <div>
-        <label className="mb-2 block text-sm font-bold text-slate-700">
+        <label className="mb-2 block text-sm font-bold text-[var(--brand-text)]">
           نوع الدرس
         </label>
 
@@ -69,7 +69,7 @@ export default function LessonForm({
       {lessonType === "live" && (
         <>
           <div>
-            <label className="mb-2 block text-sm font-bold text-slate-700">
+            <label className="mb-2 block text-sm font-bold text-[var(--brand-text)]">
               منصة البث
             </label>
 
@@ -98,7 +98,7 @@ export default function LessonForm({
 
 
           <div>
-            <label className="mb-2 block text-sm font-bold text-slate-700">
+            <label className="mb-2 block text-sm font-bold text-[var(--brand-text)]">
               رابط الجلسة
             </label>
 
@@ -111,7 +111,7 @@ export default function LessonForm({
 
 
           <div>
-            <label className="mb-2 block text-sm font-bold text-slate-700">
+            <label className="mb-2 block text-sm font-bold text-[var(--brand-text)]">
               موعد الجلسة
             </label>
 
@@ -126,7 +126,7 @@ export default function LessonForm({
 
 
       <div>
-        <label className="mb-2 block text-sm font-bold text-slate-700">
+        <label className="mb-2 block text-sm font-bold text-[var(--brand-text)]">
           ترتيب الدرس
         </label>
 
@@ -146,7 +146,7 @@ export default function LessonForm({
           name="is_free_preview"
         />
 
-        <span className="font-bold text-slate-700">
+        <span className="font-bold text-[var(--brand-text)]">
           معاينة مجانية
         </span>
       </label>

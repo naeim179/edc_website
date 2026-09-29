@@ -6,6 +6,7 @@ import {
   sendMessage,
   markConversationRead,
   deleteMessage,
+  editMessage,
 } from "@/app/actions/chat";
 import type { ChatMessage } from "@/lib/chat";
 
@@ -98,6 +99,18 @@ export default function MessageThread({
 
       setOtherOnline(diff < 120000);
     }
+  }
+
+
+  async function saveEdit(messageId: string) {
+    if (!editingText.trim()) return;
+
+    await editMessage(messageId, editingText);
+
+    setEditingId(null);
+    setEditingText("");
+
+    await refreshMessages();
   }
 
 
@@ -319,10 +332,10 @@ export default function MessageThread({
   const courseTitle = conversation.course?.[0]?.title ?? "";
 
   return (
-    <div className="flex flex-col h-full rounded-2xl border bg-white overflow-hidden" dir="rtl">
+    <div className="flex flex-col h-full rounded-2xl border bg-[var(--brand-surface)] overflow-hidden" dir="rtl">
 
-      <div className="flex items-center gap-3 border-b bg-white p-4">
-        <div className="h-12 w-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
+      <div className="flex items-center gap-3 border-b bg-[var(--brand-surface)] p-4">
+        <div className="h-12 w-12 rounded-full bg-[var(--brand-bg)] overflow-hidden flex items-center justify-center">
           {otherUser?.avatar_url ? (
             <img
               src={otherUser.avatar_url}
@@ -335,7 +348,7 @@ export default function MessageThread({
         </div>
 
         <div>
-          <h2 className="font-bold text-slate-800">
+          <h2 className="font-bold text-[var(--brand-text)]">
             {otherUser?.full_name ?? "مستخدم"}
           </h2>
 
@@ -375,14 +388,14 @@ export default function MessageThread({
                 className={`max-w-[70%] rounded-2xl px-4 py-2 ${
                   isOwn
                     ? "bg-[#087a54] text-white"
-                    : "bg-slate-100 text-slate-800"
+                    : "bg-[var(--brand-bg)] text-[var(--brand-text)]"
                 }`}
               >
                 <p
                   className={`mb-1 text-[11px] font-bold ${
                     isOwn
                       ? "text-white/80"
-                      : "text-slate-500"
+                      : "text-[var(--brand-text-muted)]"
                   }`}
                 >
                   {isOwn
@@ -395,10 +408,41 @@ export default function MessageThread({
                   </p>
                 ) : (
                   <>
-                    {msg.content && msg.content.trim() && (
-                      <p className="whitespace-pre-wrap break-words">
-                        {msg.content}
-                      </p>
+                    {editingId === msg.id ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className="w-full rounded-xl p-2 text-black border"
+                          rows={3}
+                        />
+
+                        <div className="flex gap-2 text-xs">
+                          <button
+                            onClick={() => saveEdit(msg.id)}
+                            className="underline"
+                          >
+                            💾 حفظ
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditingText("");
+                            }}
+                            className="underline"
+                          >
+                            إلغاء
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      msg.content &&
+                      msg.content.trim() && (
+                        <p className="whitespace-pre-wrap break-words">
+                          {msg.content}
+                        </p>
+                      )
                     )}
 
                     {msg.attachment_url && msg.message_type === "image" && (
@@ -413,7 +457,7 @@ export default function MessageThread({
                       <a
                         href={msg.attachment_url}
                         target="_blank"
-                        className="mt-2 block rounded-xl bg-white/20 px-3 py-2 underline"
+                        className="mt-2 block rounded-xl bg-[var(--brand-surface)]/20 px-3 py-2 underline"
                       >
                         📄 {msg.attachment_name ?? "تحميل الملف"}
                       </a>
@@ -474,7 +518,7 @@ export default function MessageThread({
       ) : (
         <form
           onSubmit={handleSend}
-          className="sticky bottom-0 bg-white p-4 border-t flex gap-2 items-center"
+          className="sticky bottom-0 bg-[var(--brand-surface)] p-4 border-t flex gap-2 items-center"
         >
 
           <label className="cursor-pointer text-xl">
@@ -491,7 +535,7 @@ export default function MessageThread({
 
           <div className="flex-1">
             {selectedFile && (
-              <div className="mb-2 flex items-center gap-3 rounded-xl bg-slate-100 p-2">
+              <div className="mb-2 flex items-center gap-3 rounded-xl bg-[var(--brand-bg)] p-2">
 
                 {selectedFile.type.startsWith("image/") && (
                   <img
@@ -502,7 +546,7 @@ export default function MessageThread({
                 )}
 
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-xs text-slate-600">
+                  <p className="truncate text-xs text-[var(--brand-text-muted)]">
                     📄 {selectedFile.name}
                   </p>
                   <p className="text-[10px] text-slate-400">

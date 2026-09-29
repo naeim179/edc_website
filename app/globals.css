@@ -496,6 +496,16 @@ html[data-theme="eye"] {
   --brand-ink: #1B4B43;
   --brand-ink-hover: #123A34;
   --brand-ink-soft: #F7F3EC;
+
+  --hero-start: #1B4B43;
+  --hero-end: #0F332D;
+
+  --brand-success: #15803D;
+  --brand-success-bg: #DCFCE7;
+  --brand-danger: #B91C1C;
+  --brand-danger-bg: #FEE2E2;
+  --brand-warning: #A16207;
+  --brand-warning-bg: #FEF3C7;
   --brand-terracotta: #C9704A;
   --brand-terracotta-hover: #B15F3B;
   --brand-clay: #8A3F2A;
@@ -512,6 +522,16 @@ html[data-theme="dark"] {
   --brand-ink: #4FA98C;
   --brand-ink-hover: #64BFA1;
   --brand-ink-soft: #1B3A31;
+
+  --hero-start: #1B4B43;
+  --hero-end: #10201B;
+
+  --brand-success: #4FA98C;
+  --brand-success-bg: #16362D;
+  --brand-danger: #F87171;
+  --brand-danger-bg: #3A1717;
+  --brand-warning: #FACC15;
+  --brand-warning-bg: #3A3010;
   --brand-terracotta: #E08659;
   --brand-terracotta-hover: #EC9A70;
   --brand-clay: #E0A487;
@@ -528,6 +548,13 @@ html[data-theme="eye"] {
   --brand-ink: #1B4B43;
   --brand-ink-hover: #123A34;
   --brand-ink-soft: #EAE0C6;
+
+  --brand-success: #15803D;
+  --brand-success-bg: #DCFCE7;
+  --brand-danger: #B91C1C;
+  --brand-danger-bg: #FEE2E2;
+  --brand-warning: #A16207;
+  --brand-warning-bg: #FEF3C7;
   --brand-terracotta: #B15F3B;
   --brand-terracotta-hover: #984E2F;
   --brand-clay: #8A3F2A;
@@ -668,3 +695,146 @@ select:focus {
 
 }
 
+/* YOUR WAY CONNECTED SHELL START */
+
+body:has(.yw-shell) {
+  padding: 0;
+}
+
+.yw-shell {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  --brand-primary: var(--brand-ink);
+  --brand-secondary: var(--brand-ink-hover);
+}
+
+.yw-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0;
+}
+
+.yw-topbar-wrap {
+  position: relative;
+  z-index: 20;
+}
+
+.yw-topbar {
+  min-height: 80px;
+  padding: 14px clamp(16px, 2vw, 28px);
+  border: 0;
+  border-bottom: 1px solid var(--brand-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.yw-content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px clamp(16px, 2vw, 28px);
+  background: var(--brand-bg);
+  color: var(--brand-text);
+}
+
+.yw-shell .yw-sidebar {
+  width: 256px;
+  height: 100vh;
+  height: 100dvh;
+  top: 0;
+  --brand-surface: #163f37;
+  --brand-border: rgba(255, 255, 255, .14);
+  --brand-border-soft: rgba(255, 255, 255, .14);
+  --brand-text: #ffffff;
+  --brand-text-muted: #d5e5df;
+  --brand-text-faint: #b3cec2;
+  --brand-ink: #ffffff;
+  --brand-ink-soft: rgba(255, 255, 255, .12);
+}
+
+html[data-theme="dark"] .yw-shell .yw-sidebar {
+  --brand-surface: #102d26;
+}
+
+.yw-sidebar-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px 16px;
+  border: 0;
+  border-inline-end: 1px solid var(--brand-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.yw-sidebar-panel > div:first-child {
+  position: relative;
+  padding-bottom: 22px;
+}
+
+.yw-sidebar-panel > div:first-child > button {
+  position: absolute;
+  inset-inline-end: 0;
+  top: 0;
+}
+
+.yw-sidebar-panel > div:first-child > div > div {
+  background-color: #fff !important;
+  border-radius: 14px;
+}
+
+.yw-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.yw-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color .18s ease, color .18s ease;
+}
+
+.yw-sidebar-link > span:first-child {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.yw-sidebar-link[aria-current="page"] {
+  font-weight: 700;
+}
+
+.yw-sidebar-link:not([aria-current="page"]):hover {
+  background-color: rgba(255, 255, 255, .07) !important;
+}
+
+.yw-shell :focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 3px;
+}
+
+@media (max-width: 639px) {
+  .yw-topbar {
+    padding: 12px;
+  }
+
+  .yw-content {
+    padding: 16px;
+  }
+}
+
+/* YOUR WAY CONNECTED SHELL END */
