@@ -26,7 +26,7 @@ type PaymentMethod =
 export async function createOrder(
   courseId: string,
   subscriptionMonths: SubscriptionMonths = 1,
-  autoRenew = false,
+  autoRenew = false,
   paymentMethod: PaymentMethod = "paytabs"
 ) {
   if (
