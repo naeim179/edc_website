@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect, useId, useRef } from "react";
+import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/app/actions/auth";
 import DisplaySettings from "@/components/DisplaySettings";
@@ -208,48 +209,11 @@ export default function Topbar({
               </span>
             </Link>
 
-            <form
-              action={signOut}
-              onSubmit={(event) => {
-                const confirmed = window.confirm(
-                  isArabic
-                    ? "هل أنت متأكد أنك تريد تسجيل الخروج؟"
-                    : "Are you sure you want to sign out?"
-                );
-
-                if (!confirmed) {
-                  event.preventDefault();
-                }
-              }}
-            >
-              <button
-                type="submit"
-                aria-label={t.topbar.logout}
-                className="
-                  flex
-                  h-11
-                  items-center
-                  gap-2
-                  rounded-2xl
-                  border
-                  px-3
-                  text-sm
-                  font-semibold
-                  transition-all
-                  hover:shadow-md
-                  sm:px-4
-                "
-                style={{
-                  borderColor: "var(--brand-border)",
-                  color: "var(--brand-text-muted)",
-                }}
-              >
-                <LogoutIcon width={18} height={18} />
-
-                <span className="hidden sm:inline">
-                  {t.topbar.logout}
-                </span>
-              </button>
+            <form action={signOut}>
+              <LogoutConfirmation
+                isArabic={isArabic}
+                label={t.topbar.logout}
+              />
             </form>
           </>
         ) : (
@@ -265,5 +229,146 @@ export default function Topbar({
         <DisplaySettings />
       </div>
     </header>
+  );
+}
+
+function LogoutConfirmation({
+  isArabic,
+  label,
+}: {
+  isArabic: boolean;
+  label: string;
+}) {
+  const { pending } = useFormStatus();
+  const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const previousOverflow = document.body.style.overflow;
+
+    if (!dialog.open) dialog.showModal();
+    document.body.style.overflow = "hidden";
+    cancelRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (dialog.open) dialog.close();
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        disabled={pending}
+        aria-label={label}
+        aria-haspopup="dialog"
+        className="flex h-11 items-center gap-2 rounded-2xl border px-3 text-sm font-semibold transition-all hover:shadow-md disabled:cursor-wait disabled:opacity-60 sm:px-4"
+        style={{
+          borderColor: "var(--brand-border)",
+          color: "var(--brand-text-muted)",
+        }}
+      >
+        <LogoutIcon width={18} height={18} />
+        <span className="hidden sm:inline">{label}</span>
+      </button>
+
+      <dialog
+        ref={dialogRef}
+        dir={isArabic ? "rtl" : "ltr"}
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        aria-busy={pending}
+        onClose={(event) => {
+          if (!event.currentTarget.open) setOpen(false);
+        }}
+        onCancel={(event) => {
+          if (pending) event.preventDefault();
+        }}
+        onClick={(event) => {
+          if (pending || event.target !== event.currentTarget) return;
+
+          const rect = event.currentTarget.getBoundingClientRect();
+          const outside =
+            event.clientX < rect.left ||
+            event.clientX > rect.right ||
+            event.clientY < rect.top ||
+            event.clientY > rect.bottom;
+
+          if (outside) setOpen(false);
+        }}
+        className="m-auto w-[calc(100%_-_2rem)] max-w-sm rounded-3xl border p-6 text-start shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+        style={{
+          backgroundColor: "var(--brand-surface)",
+          borderColor: "var(--brand-border)",
+          color: "var(--brand-text)",
+        }}
+      >
+        <div
+          className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
+          style={{
+            backgroundColor: "var(--brand-ink-soft)",
+            color: "var(--brand-ink)",
+          }}
+        >
+          <LogoutIcon width={26} height={26} />
+        </div>
+
+        <h2 id={titleId} className="text-xl font-bold">
+          {isArabic ? "تسجيل الخروج؟" : "Sign out?"}
+        </h2>
+
+        <p
+          id={descriptionId}
+          className="mt-3 text-sm leading-7"
+          style={{ color: "var(--brand-text-muted)" }}
+        >
+          {isArabic
+            ? "هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟"
+            : "Are you sure you want to sign out of your account?"}
+        </p>
+
+        <div className="mt-7 flex gap-3">
+          <button
+            ref={cancelRef}
+            type="button"
+            disabled={pending}
+            onClick={() => setOpen(false)}
+            className="flex min-h-11 flex-1 items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-50"
+            style={{
+              backgroundColor: "var(--brand-bg)",
+              borderColor: "var(--brand-border)",
+              color: "var(--brand-text)",
+            }}
+          >
+            {isArabic ? "إلغاء" : "Cancel"}
+          </button>
+
+          <button
+            type="submit"
+            disabled={pending}
+            className="flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+            style={{ backgroundColor: "var(--hero-start)" }}
+          >
+            <span aria-live="polite">
+              {pending
+                ? isArabic
+                  ? "جارٍ تسجيل الخروج..."
+                  : "Signing out..."
+                : label}
+            </span>
+          </button>
+        </div>
+      </dialog>
+    </>
   );
 }
