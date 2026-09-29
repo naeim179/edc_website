@@ -26,7 +26,8 @@ export default function BuyCourseButton({
       await createOrder(
         courseId,
         subscriptionMonths,
-        autoRenew
+        autoRenew,
+        paymentMethod
       );
     });
   }

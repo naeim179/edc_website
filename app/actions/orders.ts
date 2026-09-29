@@ -38,6 +38,15 @@ export async function createOrder(
     );
   }
 
+  if (
+    paymentMethod !== "paytabs" &&
+    paymentMethod !== "cliq"
+  ) {
+    throw new Error(
+      "طريقة الدفع غير متاحة حالياً"
+    );
+  }
+
   const supabase =
     await createClient();
 
@@ -74,7 +83,7 @@ export async function createOrder(
     );
   }
 
-  // سعر الدورة الأساسي أصبح بالدولار.
+  // سعر الدورة الأساسي بالدولار.
   const monthlyPriceUsd =
     calculateFinalPrice(
       Number(course.price ?? 0),
@@ -118,56 +127,41 @@ export async function createOrder(
   const admin =
     createAdminClient();
 
+  const orderFields = {
+    amount: chargedAmount,
+    currency: "USD",
+    subscription_months:
+      subscriptionMonths,
+    auto_renew_requested:
+      autoRenew,
+    payment_method:
+      paymentMethod,
+    source: "manual",
+  };
+
   const {
     data: existingPendingOrder,
   } = await admin
     .from("orders")
     .select("id,status")
-    .eq(
-      "user_id",
-      user.id
-    )
-    .eq(
-      "course_id",
-      courseId
-    )
-    .eq(
-      "status",
-      "pending"
-    )
+    .eq("user_id", user.id)
+    .eq("course_id", courseId)
+    .eq("status", "pending")
     .maybeSingle();
 
-  if (
-    existingPendingOrder
-  ) {
+  let orderId: string;
+
+  if (existingPendingOrder) {
     const {
       error: updateError,
     } = await admin
       .from("orders")
-      .update({
-        amount:
-          chargedAmount,
-
-        currency:
-          "USD",
-
-        subscription_months:
-          subscriptionMonths,
-
-        auto_renew_requested:
-          autoRenew,
-
-        source:
-          "manual",
-      })
+      .update(orderFields)
       .eq(
         "id",
         existingPendingOrder.id
       )
-      .eq(
-        "status",
-        "pending"
-      );
+      .eq("status", "pending");
 
     if (updateError) {
       throw new Error(
@@ -175,107 +169,59 @@ export async function createOrder(
       );
     }
 
-    const paymentUrl =
-      await createPaymentPage({
-        orderId:
-          existingPendingOrder.id,
+    orderId =
+      existingPendingOrder.id;
+  } else {
+    const {
+      data: newOrder,
+      error,
+    } = await admin
+      .from("orders")
+      .insert({
+        user_id: user.id,
+        course_id: courseId,
+        status: "pending",
+        ...orderFields,
+      })
+      .select("id")
+      .single();
 
-        amount:
-          chargedAmount,
-
-        currency:
-          "USD",
-
-        description,
-
-        customerEmail:
-          user.email ?? "",
-
-        customerName:
-          user.email
-            ?.split("@")[0] ??
-          "Student",
-
-        siteUrl:
-          SITE_URL,
-
-        tokenize:
-          autoRenew,
-      });
-
-    redirect(
-      paymentUrl
-    );
-  }
-
-  const {
-    data: newOrder,
-    error,
-  } = await admin
-    .from("orders")
-    .insert({
-      user_id:
-        user.id,
-
-      course_id:
-        courseId,
-
-      amount:
-        chargedAmount,
-
-      currency:
-        "USD",
-
-      status:
-        "pending",
-
-      subscription_months:
-        subscriptionMonths,
-
-      auto_renew_requested:
-        autoRenew,
-
-      source:
-        "manual",
-    })
-    .select("id")
-    .single();
-
-  if (
-    error ||
-    !newOrder
-  ) {
     if (
-      error?.message.includes(
-        "unique_pending_order_per_user_course"
-      ) ||
-      error?.message
-        .toLowerCase()
-        .includes(
-          "duplicate"
-        )
+      error ||
+      !newOrder
     ) {
-      redirect(
-        `/checkout/${courseId}`
+      if (
+        error?.message.includes(
+          "unique_pending_order_per_user_course"
+        ) ||
+        error?.message
+          .toLowerCase()
+          .includes("duplicate")
+      ) {
+        redirect(
+          `/checkout/${courseId}`
+        );
+      }
+
+      throw new Error(
+        error?.message ??
+          "تعذر إنشاء الطلب"
       );
     }
 
-    throw new Error(
-      error?.message ??
-        "تعذر إنشاء الطلب"
-    );
+    orderId = newOrder.id;
   }
 
+  // CliQ: لا نستدعي PayTabs أبداً
   if (paymentMethod === "cliq") {
     redirect(
-      `/checkout/success?order=${newOrder.id}&method=cliq`
+      `/checkout/success?order=${orderId}&method=cliq`
     );
   }
 
   const paymentUrl =
     await createPaymentPage({
-      orderId:
-        newOrder.id,
+      orderId,
 
       amount:
         chargedAmount,
