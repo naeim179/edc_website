@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
-import { updateProfile, removeAvatar } from "@/app/actions/profile";
+import { updateProfile } from "@/app/actions/profile";
 import ImageUploader from "@/components/ui/ImageUploader";
 
 export default function ProfileForm({
@@ -21,7 +21,6 @@ export default function ProfileForm({
 
 
   const [isSaving, setIsSaving] = useState(false);
-  const [isRemoving, setIsRemoving] = useState(false);
   const [message, setMessage] =
     useState<string | null>(null);
   const [error, setError] =
@@ -99,7 +98,6 @@ export default function ProfileForm({
             value={avatarUrl}
             onChange={setAvatarUrl}
             folder="profiles"
-            deleteOldImage
             hidePreview
             label={isArabic ? "رفع صورة" : "Upload image"}
             uploadingLabel={isArabic ? "جاري الرفع..." : "Uploading..."}
@@ -107,27 +105,11 @@ export default function ProfileForm({
           {avatarUrl && (
             <button
               type="button"
-              onClick={async () => {
-                if (!confirm(isArabic ? "هل تريد حذف الصورة؟" : "Delete image?")) {
-                  return;
-                }
-
-                try {
-                  setIsRemoving(true);
-                  await removeAvatar();
-                  setAvatarUrl(null);
-                } catch {
-                  setError(t.profile.profileError);
-                } finally {
-                  setIsRemoving(false);
-                }
-              }}
-              disabled={isSaving || isRemoving}
+              onClick={() => setAvatarUrl(null)}
+              disabled={isSaving}
               className="text-sm font-bold text-red-600 hover:underline disabled:opacity-50"
             >
-              {isRemoving
-                ? (isArabic ? "جاري الحذف..." : "Deleting...")
-                : (isArabic ? "حذف الصورة" : "Remove image")}
+              {isArabic ? "حذف الصورة" : "Remove image"}
             </button>
           )}
           </div>

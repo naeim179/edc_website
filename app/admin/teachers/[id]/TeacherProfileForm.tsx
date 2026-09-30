@@ -63,6 +63,7 @@ export default function TeacherProfileForm({
             }
           }}
           folder="teachers"
+          deleteOldImage
         />
 
         <input

@@ -94,26 +94,9 @@ export async function updateTeacherProfile(
   }
 
 
-  const { error: avatarError } =
-    await admin
-      .from("profiles")
-      .update({
-        avatar_url: imageUrl || null,
-      })
-      .eq("id", teacherId);
-
-
-  if (avatarError) {
-    throw new Error(avatarError.message);
-  }
-
-
 
   revalidatePath(
     `/admin/teachers/${teacherId}`
   );
-
-  revalidatePath("/profile");
-  revalidatePath("/", "layout");
 
 }

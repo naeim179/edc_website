@@ -10,7 +10,6 @@ interface Props {
   hidePreview?: boolean;
   label?: string;
   uploadingLabel?: string;
-  deleteOldImage?: boolean;
 }
 
 export default function ImageUploader({
@@ -20,7 +19,6 @@ export default function ImageUploader({
   hidePreview = false,
   label = "Upload Image",
   uploadingLabel = "Uploading...",
-  deleteOldImage = false,
 }: Props) {
   const [uploading, setUploading] = useState(false);
 
@@ -58,19 +56,6 @@ export default function ImageUploader({
       } = supabase.storage
         .from("images")
         .getPublicUrl(path);
-
-
-      if (deleteOldImage && value) {
-        const oldPath =
-          value.split("/images/")[1];
-
-        if (oldPath) {
-          await supabase.storage
-            .from("images")
-            .remove([oldPath]);
-        }
-      }
-
 
       onChange(publicUrl);
 
