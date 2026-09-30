@@ -95,8 +95,7 @@ export default function CourseCatalogCard({
         overflow-hidden
         transition
         hover:-translate-y-1
-        hover:shadow-2xl
-        hover:border-[var(--brand-ink)]
+        hover:shadow-xl
       "
       dir={isArabic ? "rtl" : "ltr"}
     >
@@ -152,17 +151,6 @@ export default function CourseCatalogCard({
 
             </Badge>
           )}
-
-
-          <Badge variant={pricing.isFree ? "success" : "info"}>
-            {pricing.isFree
-              ? isArabic
-                ? "مجاني"
-                : "Free"
-              : isArabic
-                ? "مدفوع"
-                : "Paid"}
-          </Badge>
 
         </div>
 
@@ -317,8 +305,8 @@ export default function CourseCatalogCard({
             className="
               rounded-xl
               bg-[var(--brand-ink)]
-              px-5
-              py-2.5
+              px-4
+              py-2
               text-sm
               font-bold
               text-white

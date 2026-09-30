@@ -27,7 +27,8 @@ export async function createOrder(
   courseId: string,
   subscriptionMonths: SubscriptionMonths = 1,
   autoRenew = false,
-  paymentMethod: PaymentMethod = "paytabs"
+  paymentMethod: PaymentMethod = "paytabs",
+  couponCode?: string
 ) {
   if (
     subscriptionMonths !== 1 &&
@@ -92,6 +93,75 @@ export async function createOrder(
         course.discount_value ?? 0
       )
     );
+
+  if (couponCode) {
+
+    const code =
+      couponCode
+        .trim()
+        .toUpperCase();
+
+
+    const {
+      data: coupon,
+      error: couponError,
+    } = await supabase
+      .from("course_coupons")
+      .select("id")
+      .eq("code", code)
+      .eq("course_id", courseId)
+      .eq("is_active", true)
+      .eq("is_used", false)
+      .maybeSingle();
+
+
+    if (couponError) {
+      throw new Error(
+        couponError.message
+      );
+    }
+
+
+    if (!coupon) {
+      throw new Error(
+        "Invalid coupon"
+      );
+    }
+
+
+    await enrollInFreeCourse(
+      user.id,
+      courseId
+    );
+
+
+    const admin =
+      createAdminClient();
+
+
+    await admin
+      .from("course_coupons")
+      .update({
+        is_used: true,
+        used_by: user.id,
+        used_at: new Date().toISOString(),
+      })
+      .eq(
+        "id",
+        coupon.id
+      );
+
+
+    revalidatePath(
+      "/my-courses"
+    );
+
+
+    redirect(
+      `/courses/${courseId}`
+    );
+  }
+
 
   if (
     course.is_free ||

@@ -17,6 +17,10 @@ export const ar = {
   sidebar: {
     platform: "Your Way",
     dashboard: "لوحة الإدارة",
+
+    noImage: "لا توجد صورة",
+    sections: "الأقسام",
+    lessons: "الدروس",    teacher: "المدرب",
     manageCourses: "إدارة الدورات",
     orders: "الطلبات",
     payments: "عمليات الدفع",
@@ -269,6 +273,10 @@ export const ar = {
     successful: "ناجحة",
     failed: "فاشلة",
     quickManagement: "الإدارة السريعة",
+
+    noImage: "لا توجد صورة",
+    sections: "الأقسام",
+    lessons: "الدروس",    teacher: "المدرب",
     manageCourses: "إدارة الدورات",
     manageCoursesDescription: "إضافة وتعديل محتوى الدورات",
     manageStudents: "الطلاب",
@@ -503,6 +511,7 @@ export const ar = {
       manage_courses: { label: "إدارة الدورات", hint: "إنشاء وتعديل وحذف الدورات والدروس" },
       manage_students: { label: "إدارة الطلاب", hint: "عرض الطلاب وتمديد الاشتراكات وإدارة التسجيل" },
       manage_teachers: { label: "إدارة المدربين", hint: "عرض المدربين وتعديل بياناتهم" },
+      manage_coupons: { label: "إدارة الكوبونات", hint: "إنشاء وإدارة أكواد الكوبونات المجانية للدورات" },
       view_orders: { label: "الطلبات", hint: "عرض الطلبات وعمليات الدفع" },
       moderate_messages: { label: "مراقبة الرسائل", hint: "الاطلاع على المحادثات وإدارتها" },
     },

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import DeleteCourseButton from "@/components/admin/DeleteCourseButton";
+import AdminCourseCard from "@/components/admin/AdminCourseCard";
 import { useLanguage } from "@/components/LanguageProvider";
+import { useMemo, useState } from "react";
 
 type Course = {
   id: string;
@@ -22,6 +22,17 @@ type Course = {
       id: string;
     }[];
   }[] | null;
+
+  enrollments: {
+    id: string;
+  }[] | null;
+
+  course_instructors: {
+    teacher_id: string;
+    teacher: {
+      full_name: string | null;
+    }[] | null;
+  }[] | null;
 };
 
 type Props = {
@@ -34,6 +45,68 @@ export default function AdminCoursesContent({
 
   const { language, t } = useLanguage();
   const isArabic = language === "ar";
+
+
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<
+    "all" | "published" | "draft"
+  >("all");
+
+
+  const filteredCourses = useMemo(() => {
+
+    return courses.filter((course) => {
+
+      const matchesSearch =
+        course.title
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        (course.category ?? "")
+          .toLowerCase()
+          .includes(search.toLowerCase());
+
+
+      const matchesFilter =
+        filter === "all"
+          ? true
+          : filter === "published"
+            ? course.is_published
+            : !course.is_published;
+
+
+      return matchesSearch && matchesFilter;
+
+    });
+
+  }, [courses, search, filter]);
+
+
+  const totalCourses = courses.length;
+
+  const publishedCourses =
+    courses.filter((course) => course.is_published).length;
+
+  const draftCourses =
+    courses.filter((course) => !course.is_published).length;
+
+  const totalStudents =
+    courses.reduce(
+      (sum, course) =>
+        sum + (course.enrollments?.length ?? 0),
+      0
+    );
+
+  const totalLessons =
+    courses.reduce(
+      (sum, course) =>
+        sum +
+        (course.sections?.reduce(
+          (s, section) =>
+            s + section.lessons.length,
+          0
+        ) ?? 0),
+      0
+    );
 
 
   return (
@@ -69,148 +142,83 @@ export default function AdminCoursesContent({
       </section>
 
 
-      {courses.length ? (
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+
+        <div className="bg-white rounded-2xl border p-5">
+          <p className="text-sm text-slate-500">Courses</p>
+          <p className="text-2xl font-bold">
+            {totalCourses}
+          </p>
+        </div>
+
+
+        <div className="bg-white rounded-2xl border p-5">
+          <p className="text-sm text-slate-500">Published</p>
+          <p className="text-2xl font-bold text-emerald-600">
+            {publishedCourses}
+          </p>
+        </div>
+
+
+        <div className="bg-white rounded-2xl border p-5">
+          <p className="text-sm text-slate-500">Draft</p>
+          <p className="text-2xl font-bold text-slate-600">
+            {draftCourses}
+          </p>
+        </div>
+
+
+        <div className="bg-white rounded-2xl border p-5">
+          <p className="text-sm text-slate-500">Students</p>
+          <p className="text-2xl font-bold text-blue-600">
+            {totalStudents}
+          </p>
+        </div>
+
+
+        <div className="bg-white rounded-2xl border p-5">
+          <p className="text-sm text-slate-500">Lessons</p>
+          <p className="text-2xl font-bold text-purple-600">
+            {totalLessons}
+          </p>
+        </div>
+
+      </div>
+
+
+      <div className="bg-white rounded-2xl border p-5 flex flex-col md:flex-row gap-4">
+
+        <input
+          value={search}
+          onChange={(e)=>setSearch(e.target.value)}
+          placeholder="Search courses..."
+          className="flex-1 border rounded-xl px-4 py-3"
+        />
+
+
+        <select
+          value={filter}
+          onChange={(e)=>setFilter(e.target.value as any)}
+          className="border rounded-xl px-4 py-3"
+        >
+          <option value="all">All</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+
+      </div>
+
+
+      {filteredCourses.length ? (
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-          {courses.map((course)=>{
-
-            const sectionsCount =
-              course.sections?.length ?? 0;
-
-            const lessonsCount =
-              course.sections?.reduce(
-                (sum, section)=>
-                  sum + section.lessons.length,
-                0
-              ) ?? 0;
-
-
-            return (
-
-              <div
-                key={course.id}
-                className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
-              >
-
-                <div className="h-44 bg-slate-100 relative">
-
-                  {course.image_url ? (
-
-                    <Image
-                      src={course.image_url}
-                      alt=""
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-
-                  ) : (
-
-                    <div className="h-full flex items-center justify-center text-slate-400 font-bold">
-                      No Image
-                    </div>
-
-                  )}
-
-                </div>
-
-
-
-                <div className="p-5 space-y-4">
-
-
-                  <div>
-
-                    <h2 className="text-lg font-bold text-slate-800">
-                      {course.title}
-                    </h2>
-
-                    <p className="text-sm text-slate-500 mt-1">
-                      {course.category ?? t.admin.noCategory}
-                    </p>
-
-                  </div>
-
-
-
-                  <div className="flex flex-wrap gap-2">
-
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
-                      {course.course_type === "group"
-                        ? "Group"
-                        : "Private"}
-                    </span>
-
-
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      course.is_published
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-slate-100 text-slate-600"
-                    }`}>
-                      {course.is_published
-                        ? t.admin.published
-                        : t.admin.draft}
-                    </span>
-
-                  </div>
-
-
-
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-
-                    <div className="bg-slate-50 rounded-xl p-3">
-                      📚 {sectionsCount} Sections
-                    </div>
-
-                    <div className="bg-slate-50 rounded-xl p-3">
-                      🎬 {lessonsCount} Lessons
-                    </div>
-
-                  </div>
-
-
-
-                  <div className="font-bold text-[#087a54]">
-
-                    {course.is_free
-                      ? "Free"
-                      : `${course.price ?? 0} ${course.currency ?? "USD"}`}
-
-                  </div>
-
-
-
-                  <div className="grid grid-cols-2 gap-2">
-
-                    <Link
-                      href={`/admin/courses/${course.id}/edit`}
-                      className="text-center bg-slate-100 hover:bg-slate-200 rounded-xl py-2 font-bold text-sm"
-                    >
-                      {t.admin.edit}
-                    </Link>
-
-
-                    <Link
-                      href={`/admin/courses/${course.id}/sections`}
-                      className="text-center bg-emerald-50 hover:bg-emerald-100 text-[#087a54] rounded-xl py-2 font-bold text-sm"
-                    >
-                      {t.admin.content}
-                    </Link>
-
-                  </div>
-
-
-                  <DeleteCourseButton id={course.id} />
-
-
-                </div>
-
-              </div>
-
-            );
-
-          })}
+          {filteredCourses.map((course) => (
+            <AdminCourseCard
+              key={course.id}
+              course={course}
+            />
+          ))}
 
         </div>
 

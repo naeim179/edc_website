@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import DeleteCourseButton from "@/components/admin/DeleteCourseButton";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type Course = {
   id: string;
@@ -14,6 +15,7 @@ type Course = {
   is_free: boolean | null;
   course_type: "group" | "private" | null;
   is_published: boolean | null;
+  created_at: string;
 
   sections: {
     id: string;
@@ -34,15 +36,15 @@ type Course = {
   }[] | null;
 };
 
-
 export default function AdminCourseCard({
   course,
 }: {
   course: Course;
 }) {
 
-  const sections =
-    course.sections?.length ?? 0;
+  const { t } = useLanguage();
+
+  const sections = course.sections?.length ?? 0;
 
   const lessons =
     course.sections?.reduce(
@@ -55,11 +57,24 @@ export default function AdminCourseCard({
     course.enrollments?.length ?? 0;
 
   const teacher =
-    course.course_instructors?.[0]?.teacher?.[0]?.full_name ?? "No Teacher";
+    course.course_instructors?.[0]?.teacher?.[0]?.full_name ??
+    "No Teacher";
+
+
+  const date =
+    new Date(course.created_at).toLocaleDateString();
 
 
   return (
-    <div className="bg-white rounded-3xl border shadow-sm overflow-hidden hover:shadow-lg transition">
+    <div className="
+      bg-white
+      rounded-3xl
+      border
+      shadow-sm
+      overflow-hidden
+      hover:shadow-xl
+      transition
+    ">
 
       <div className="relative h-44 bg-slate-100">
 
@@ -73,116 +88,179 @@ export default function AdminCourseCard({
           />
         ) : (
           <div className="h-full flex items-center justify-center text-slate-400 font-bold">
-            No Image
+            {t.admin.noImage ?? "No Image"}
           </div>
         )}
+
+
+        <div className="absolute top-3 left-3 flex gap-2">
+
+          <span className="
+            bg-white/90
+            px-3
+            py-1
+            rounded-full
+            text-xs
+            font-bold
+          ">
+            {course.is_published
+              ? t.admin.published
+              : t.admin.draft}
+          </span>
+
+        </div>
 
       </div>
 
 
+
       <div className="p-5 space-y-4">
 
+
         <div>
-          <h2 className="font-bold text-lg">
+          <h2 className="text-lg font-bold text-slate-800">
             {course.title}
           </h2>
 
           <p className="text-sm text-slate-500">
-            {course.category ?? "No Category"}
+            {course.category ?? t.admin.noCategory}
           </p>
         </div>
 
 
-        <div className="text-sm space-y-1">
 
-          <p>
-            👨‍🏫 <b>Teacher:</b> {teacher}
-          </p>
+        <div className="grid grid-cols-2 gap-2 text-sm">
 
-          <p>
-            👥 <b>Students:</b> {students}
-          </p>
+          <div className="bg-slate-50 rounded-xl p-3">
+            👨‍🏫
+            <br />
+            {teacher}
+          </div>
+
+
+          <div className="bg-slate-50 rounded-xl p-3">
+            👥
+            <br />
+            {students} {t.admin.students}
+          </div>
 
         </div>
+
 
 
         <div className="flex flex-wrap gap-2">
 
-          <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">
+          <span className="
+            bg-blue-50
+            text-blue-700
+            px-3
+            py-1
+            rounded-full
+            text-xs
+            font-bold
+          ">
             {course.course_type === "private"
-              ? "Private"
-              : "Group"}
+              ? t.admin.private
+              : t.admin.group}
           </span>
 
 
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-bold ${
-              course.is_published
-              ? "bg-green-50 text-green-700"
-              : "bg-slate-100 text-slate-600"
-            }`}
-          >
-            {course.is_published
-              ? "Published"
-              : "Draft"}
+          <span className="
+            bg-emerald-50
+            text-emerald-700
+            px-3
+            py-1
+            rounded-full
+            text-xs
+            font-bold
+          ">
+            {course.is_free
+              ? "Free"
+              : `${course.price ?? 0} ${course.currency ?? "USD"}`}
           </span>
 
         </div>
 
 
-        <div className="grid grid-cols-3 gap-2 text-xs">
 
-          <div className="bg-slate-50 rounded-xl p-3 text-center">
+        <div className="grid grid-cols-3 gap-2">
+
+          <div className="bg-slate-50 rounded-xl p-3 text-center text-xs">
             📚
             <br />
             {sections}
             <br />
-            Sections
+            {t.admin.section}
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-3 text-center">
+
+          <div className="bg-slate-50 rounded-xl p-3 text-center text-xs">
             🎬
             <br />
             {lessons}
             <br />
-            Lessons
+            {t.admin.lessons}
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-3 text-center">
-            👥
+
+          <div className="bg-slate-50 rounded-xl p-3 text-center text-xs">
+            📅
             <br />
-            {students}
-            <br />
-            Students
+            {date}
           </div>
 
         </div>
 
-
-        <div className="font-bold text-[#087a54]">
-
-          {course.is_free
-            ? "Free"
-            : `${course.price ?? 0} ${course.currency ?? "USD"}`}
-
-        </div>
 
 
         <div className="grid grid-cols-2 gap-2">
 
           <Link
             href={`/admin/courses/${course.id}/edit`}
-            className="rounded-xl bg-slate-100 py-2 text-center font-bold text-sm"
+            className="
+              rounded-xl
+              bg-slate-100
+              py-2
+              text-center
+              font-bold
+              text-sm
+            "
           >
-            Edit
+            {t.admin.edit}
           </Link>
 
 
           <Link
             href={`/admin/courses/${course.id}/sections`}
-            className="rounded-xl bg-emerald-50 text-emerald-700 py-2 text-center font-bold text-sm"
+            className="
+              rounded-xl
+              bg-emerald-50
+              text-emerald-700
+              py-2
+              text-center
+              font-bold
+              text-sm
+            "
           >
-            Content
+            {t.admin.content}
+          </Link>
+
+
+          <Link
+            href={`/courses/${course.id}`}
+            target="_blank"
+            className="
+              col-span-2
+              rounded-xl
+              bg-blue-50
+              text-blue-700
+              py-2
+              text-center
+              font-bold
+              text-sm
+            "
+          >
+            View as Student
           </Link>
 
         </div>

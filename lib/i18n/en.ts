@@ -17,6 +17,12 @@ export const en = {
   sidebar: {
     platform: "Your Way",
     dashboard: "Dashboard",
+
+    noImage: "No Image",
+    sections: "Sections",
+    lessons: "Lessons",    teacher: "Teacher",
+    group: "Group",
+    private: "Private",
     manageCourses: "Manage Courses",
     orders: "Orders",
     payments: "Payments",
@@ -218,6 +224,8 @@ export const en = {
 
 
   teacher: {
+    group: "Group",
+    private: "Private",
     myCourses: "My Courses",
     myTeacherCourses: "My Teacher Courses",
     noDescription: "No description available",
@@ -230,10 +238,7 @@ export const en = {
     platform: "Streaming Platform",
     sessionExample: "Example: Sunday 8:00 PM",
     manageLessons: "Manage Lessons",
-    noCourses: "No courses assigned",
-    group: "Group",
-    private: "Private",
-    price: "Price",
+    noCourses: "No courses assigned",    price: "Price",
     sections: "Sections",
     lessons: "Lessons",
     manageContent: "Manage Content",
@@ -281,6 +286,12 @@ export const en = {
     successful: "successful",
     failed: "failed",
     quickManagement: "Quick Management",
+
+    noImage: "No Image",
+    sections: "Sections",
+    lessons: "Lessons",    teacher: "Teacher",
+    group: "Group",
+    private: "Private",
     manageCourses: "Manage Courses",
     manageCoursesDescription: "Add and edit course content",
     manageStudents: "Students",
@@ -366,9 +377,6 @@ export const en = {
     addCourseToTeacher: "Add Course to Teacher",
     chooseCourse: "Choose Course",
     add: "Add",
-    group: "Group",
-    private: "Private",
-
     assignTeacher: "Assign Teacher to Course",
     chooseTeacher: "Choose Teacher",
     saving: "Saving...",
@@ -515,6 +523,7 @@ export const en = {
       manage_courses: { label: "Manage courses", hint: "Create, edit and delete courses and lessons" },
       manage_students: { label: "Manage students", hint: "View students, extend subscriptions and manage enrollments" },
       manage_teachers: { label: "Manage teachers", hint: "View teachers and edit their details" },
+      manage_coupons: { label: "Manage coupons", hint: "Create and manage free course coupon codes" },
       view_orders: { label: "Orders", hint: "View orders and payments" },
       moderate_messages: { label: "Moderate messages", hint: "View and manage conversations" },
     },

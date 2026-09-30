@@ -23,6 +23,8 @@ export default function CoursesContent({
   const isArabic = language === "ar";
 
   const [category, setCategory] = useState<string | null>(null);
+  const [priceFilter, setPriceFilter] = useState<"all" | "free" | "paid">("all");
+  const [sort, setSort] = useState<"default" | "lessons">("default");
 
   const categories = useMemo(
     () =>
@@ -36,9 +38,37 @@ export default function CoursesContent({
     [courses]
   );
 
-  const visibleCourses = category
-    ? courses.filter((course) => course.category === category)
-    : courses;
+  const visibleCourses = useMemo(() => {
+
+    let result = [...courses];
+
+    if (category) {
+      result = result.filter(
+        (course) => course.category === category
+      );
+    }
+
+    if (priceFilter === "free") {
+      result = result.filter(
+        (course) => course.isFree
+      );
+    }
+
+    if (priceFilter === "paid") {
+      result = result.filter(
+        (course) => !course.isFree
+      );
+    }
+
+    if (sort === "lessons") {
+      result.sort(
+        (a,b) => b.lessons - a.lessons
+      );
+    }
+
+    return result;
+
+  }, [courses, category, priceFilter, sort]);
 
   const chip = (active: boolean) =>
     `rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
@@ -52,46 +82,134 @@ export default function CoursesContent({
       className="mx-auto w-full max-w-6xl space-y-6"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      <div>
-        <h1 className="text-2xl font-bold text-[#2A2420] sm:text-3xl">
+      <section className="
+        rounded-3xl
+        bg-gradient-to-l
+        from-[#124b8a]
+        to-[#1f5aa6]
+        p-8
+        text-white
+        shadow-sm
+      ">
+
+        <h1 className="text-3xl font-bold">
           {t.courses.allCourses}
         </h1>
 
-        <p className="mt-2 text-sm text-[#6B6258]">
+        <p className="mt-2 text-blue-100">
           {searchQuery
             ? isArabic
               ? `نتائج البحث عن: ${searchText}`
               : `Search results for: ${searchText}`
             : isArabic
-            ? `${visibleCourses.length} دورة متاحة`
-            : `${visibleCourses.length} courses available`}
+              ? "اكتشف الدورات التعليمية وابدأ التعلم"
+              : "Discover courses and start learning"}
         </p>
-      </div>
 
-      {categories.length > 1 && (
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setCategory(null)}
-            aria-pressed={category === null}
-            className={chip(category === null)}
-          >
-            {t.courses.all}
-          </button>
 
-          {categories.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setCategory(item)}
-              aria-pressed={category === item}
-              className={chip(category === item)}
-            >
-              {item}
-            </button>
-          ))}
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+
+          <div className="rounded-2xl bg-white/10 p-4">
+            <div className="text-2xl font-bold">
+              {visibleCourses.length}
+            </div>
+            <div className="text-sm text-blue-100">
+              {isArabic ? "دورة" : "Courses"}
+            </div>
+          </div>
+
+
+          <div className="rounded-2xl bg-white/10 p-4">
+            <div className="text-2xl font-bold">
+              {categories.length}
+            </div>
+            <div className="text-sm text-blue-100">
+              {isArabic ? "تصنيفات" : "Categories"}
+            </div>
+          </div>
+
+
+          <div className="hidden rounded-2xl bg-white/10 p-4 sm:block">
+            <div className="text-2xl font-bold">
+              ✓
+            </div>
+            <div className="text-sm text-blue-100">
+              {isArabic ? "تعلم معنا" : "Learn with us"}
+            </div>
+          </div>
+
         </div>
-      )}
+
+      </section>
+
+      <div className="flex flex-wrap gap-3">
+
+        <button
+          type="button"
+          onClick={() => setCategory(null)}
+          className={chip(category === null)}
+        >
+          {t.courses.all}
+        </button>
+
+
+        {categories.map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => setCategory(item)}
+            className={chip(category === item)}
+          >
+            {item}
+          </button>
+        ))}
+
+
+        <button
+          type="button"
+          onClick={() => setPriceFilter("free")}
+          className={chip(priceFilter === "free")}
+        >
+          {isArabic ? "مجاني" : "Free"}
+        </button>
+
+
+        <button
+          type="button"
+          onClick={() => setPriceFilter("paid")}
+          className={chip(priceFilter === "paid")}
+        >
+          {isArabic ? "مدفوع" : "Paid"}
+        </button>
+
+
+        <button
+          type="button"
+          onClick={() => setPriceFilter("all")}
+          className={chip(priceFilter === "all")}
+        >
+          {isArabic ? "كل الأسعار" : "All Prices"}
+        </button>
+
+
+        <select
+          value={sort}
+          onChange={(e) =>
+            setSort(e.target.value as "default" | "lessons")
+          }
+          className="rounded-full border px-4 py-2 text-sm"
+        >
+          <option value="default">
+            {isArabic ? "الافتراضي" : "Default"}
+          </option>
+
+          <option value="lessons">
+            {isArabic ? "الأكثر دروساً" : "Most Lessons"}
+          </option>
+
+        </select>
+
+      </div>
 
       {visibleCourses.length > 0 ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

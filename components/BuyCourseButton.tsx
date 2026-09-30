@@ -9,12 +9,14 @@ export default function BuyCourseButton({
   autoRenew = false,
   paymentMethod = "paytabs",
   label = "متابعة إلى الدفع",
+  couponCode = "",
 }: {
   courseId: string;
   subscriptionMonths?: 1 | 3;
   autoRenew?: boolean;
   paymentMethod?: "paytabs" | "paypal" | "cliq";
   label?: string;
+  couponCode?: string;
 }) {
   const [pending, startTransition] =
     useTransition();
@@ -27,7 +29,8 @@ export default function BuyCourseButton({
         courseId,
         subscriptionMonths,
         autoRenew,
-        paymentMethod
+        paymentMethod,
+        couponCode
       );
     });
   }

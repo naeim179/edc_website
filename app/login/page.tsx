@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/client";
+import { loginWithIdentifier } from "@/app/actions/login";
 import {
   LockIcon,
   GlobeIcon,
@@ -16,7 +16,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { language, t } = useLanguage();
   const isArabic = language === "ar";
-  const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,8 +40,6 @@ export default function LoginPage() {
 
     if (!email) {
       newErrors.email = t.auth.emailRequired;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = t.auth.invalidEmail;
     }
 
     if (!password) {
@@ -69,24 +66,11 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const { data, error } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const result = await loginWithIdentifier(email, password);
 
-      if (error) throw error;
+      if (result.error) throw new Error(result.error);
 
-      const { data: profile, error: profileError } =
-        await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", data.user.id)
-          .maybeSingle();
-
-      if (profileError) throw profileError;
-
-      if (profile?.role === "admin") {
+      if (result.role === "admin") {
         router.replace("/admin");
       } else {
         router.replace("/");
@@ -142,7 +126,7 @@ export default function LoginPage() {
         >
           <div>
             <label className="mb-2 block text-sm font-medium text-white/90">
-              البريد الإلكتروني
+              اسم المستخدم أو البريد الإلكتروني
             </label>
 
             <div className="relative">
@@ -153,12 +137,14 @@ export default function LoginPage() {
               />
 
               <input
-                type="email"
+                type="text"
+                autoComplete="username"
+                autoCapitalize="none"
                 value={email}
                 onChange={(event) =>
                   setEmail(event.target.value)
                 }
-                placeholder="name@example.com"
+                placeholder="اسم المستخدم أو البريد الإلكتروني"
                 disabled={isLoading}
                 className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                   errors.email

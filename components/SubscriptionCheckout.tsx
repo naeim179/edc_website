@@ -52,6 +52,9 @@ export default function SubscriptionCheckout({
   const [months, setMonths] = useState<1 | 3>(1);
   const [autoRenew, setAutoRenew] = useState(false);
 
+  const [couponCode, setCouponCode] =
+    useState("");
+
   const [paymentMethod, setPaymentMethod] =
     useState<"paytabs" | "paypal" | "cliq">("paytabs");
 
@@ -139,6 +142,24 @@ export default function SubscriptionCheckout({
                 );
               })}
             </div>
+          </div>
+
+
+          <div className="mt-6 rounded-2xl border border-[#E8E1D4] bg-white p-4">
+
+            <label className="block mb-2 font-bold text-[#2A2420]">
+              كوبون مجاني
+            </label>
+
+            <input
+              value={couponCode}
+              onChange={(e) =>
+                setCouponCode(e.target.value)
+              }
+              placeholder="YW-FREE-XXXXXX"
+              className="w-full rounded-xl border px-4 py-3"
+            />
+
           </div>
 
           <div className="mt-6 flex items-center justify-between rounded-2xl border border-[#E8E1D4] bg-[#F7F3EC] p-5">
@@ -277,7 +298,12 @@ export default function SubscriptionCheckout({
               subscriptionMonths={months}
               autoRenew={autoRenew}
               paymentMethod={paymentMethod}
-              label={`دفع ${totalUsd.toFixed(2)} USD`}
+              label={
+                couponCode
+                  ? "تفعيل الكوبون"
+                  : `دفع ${totalUsd.toFixed(2)} USD`
+              }
+              couponCode={couponCode}
             />
           </div>
 
