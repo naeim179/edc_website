@@ -7,12 +7,18 @@ interface Props {
   value?: string | null;
   onChange: (url: string) => void;
   folder: string;
+  hidePreview?: boolean;
+  label?: string;
+  uploadingLabel?: string;
 }
 
 export default function ImageUploader({
   value,
   onChange,
   folder,
+  hidePreview = false,
+  label = "Upload Image",
+  uploadingLabel = "Uploading...",
 }: Props) {
   const [uploading, setUploading] = useState(false);
 
@@ -63,7 +69,7 @@ export default function ImageUploader({
 
   return (
     <div className="space-y-3">
-      {value && (
+      {value && !hidePreview && (
         <img
           src={value}
           alt=""
@@ -72,7 +78,7 @@ export default function ImageUploader({
       )}
 
       <label className="inline-flex cursor-pointer items-center rounded-xl bg-[#087a54] px-4 py-2 text-white font-bold">
-        {uploading ? "Uploading..." : "Upload Image"}
+        {uploading ? uploadingLabel : label}
 
         <input
           type="file"

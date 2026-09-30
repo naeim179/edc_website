@@ -85,11 +85,22 @@ export default function ProfileForm({
 
 
       {role === "teacher" && (
-        <div className="space-y-3">
+        <div className="flex items-center gap-4">
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#124b8a]/10 text-4xl font-bold text-[#124b8a]">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              (profile.full_name?.trim().charAt(0) || "?").toUpperCase()
+            )}
+          </div>
+          <div className="flex flex-col items-start gap-2">
           <ImageUploader
             value={avatarUrl}
             onChange={setAvatarUrl}
             folder="profiles"
+            hidePreview
+            label={isArabic ? "رفع صورة" : "Upload image"}
+            uploadingLabel={isArabic ? "جاري الرفع..." : "Uploading..."}
           />
           {avatarUrl && (
             <button
@@ -101,6 +112,7 @@ export default function ProfileForm({
               {isArabic ? "حذف الصورة" : "Remove image"}
             </button>
           )}
+          </div>
         </div>
       )}
 
