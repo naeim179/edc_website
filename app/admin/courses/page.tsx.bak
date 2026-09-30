@@ -26,15 +26,6 @@ export default async function AdminCoursesPage() {
         lessons(
           id
         )
-      ),
-      enrollments(
-        id
-      ),
-      course_instructors(
-        teacher_id,
-        teacher:profiles(
-          full_name
-        )
       )
     `)
     .order("created_at", {

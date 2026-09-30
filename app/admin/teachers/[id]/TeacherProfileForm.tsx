@@ -4,7 +4,8 @@ import ImageUploader from "@/components/ui/ImageUploader";
 import { useLanguage } from "@/components/LanguageProvider";
 
 import {
-  updateTeacherProfile
+  updateTeacherProfile,
+  deleteTeacherAvatar
 } from "@/app/actions/teacher-profile";
 
 
@@ -65,6 +66,23 @@ export default function TeacherProfileForm({
           folder="teachers"
           deleteOldImage
         />
+
+        {profile?.image_url && (
+          <button
+            type="button"
+            onClick={async () => {
+              if (!confirm("هل تريد حذف الصورة؟")) {
+                return;
+              }
+
+              await deleteTeacherAvatar(teacherId);
+              window.location.reload();
+            }}
+            className="mt-3 text-sm font-bold text-red-600 hover:underline"
+          >
+            حذف الصورة
+          </button>
+        )}
 
         <input
           type="hidden"

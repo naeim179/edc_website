@@ -30,7 +30,10 @@ export default async function AppShell({
 
     fullName = profile?.full_name ?? null;
     role = profile?.role ?? null;
-    avatarUrl = profile?.avatar_url ?? null;
+    avatarUrl =
+      profile?.role === "teacher"
+        ? profile?.avatar_url ?? null
+        : null;
 
     if (profile?.role === "admin") {
       isSuperAdmin = !!profile.is_super_admin;
