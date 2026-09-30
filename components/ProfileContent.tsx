@@ -7,6 +7,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import Card from "@/components/ui/Card";
 import CardContent from "@/components/ui/CardContent";
 import Button from "@/components/ui/Button";
+import UsernameCard from "@/components/UsernameCard";
 
 type ProfileContentProps = {
   profile: {
@@ -14,6 +15,7 @@ type ProfileContentProps = {
     phone: string | null;
     avatar_url: string | null;
     role: string | null;
+    username?: string | null;
   };
   email: string;
 };
@@ -118,6 +120,15 @@ export default function ProfileContent({
                 {email}
               </p>
 
+              {profile.username && (
+                <p
+                  className="mt-1 text-sm font-semibold text-[#124b8a]"
+                  dir="ltr"
+                >
+                  @{profile.username}
+                </p>
+              )}
+
               <span className="mt-3 inline-flex items-center rounded-full bg-[#124b8a]/10 px-4 py-1.5 text-sm font-bold text-[#124b8a]">
                 {roleLabel}
               </span>
@@ -208,6 +219,10 @@ export default function ProfileContent({
             </Link>
           </CardContent>
           </Card>
+
+          <div className="md:col-span-2">
+            <UsernameCard initialUsername={profile.username ?? null} />
+          </div>
         </div>
       </section>
     </div>

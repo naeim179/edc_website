@@ -21,7 +21,8 @@ export default async function ProfilePage() {
       full_name,
       phone,
       avatar_url,
-      role
+      role,
+      username
     `)
     .eq("id", user.id)
     .maybeSingle();
