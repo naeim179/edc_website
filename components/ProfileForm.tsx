@@ -7,7 +7,9 @@ import ImageUploader from "@/components/ui/ImageUploader";
 
 export default function ProfileForm({
   profile,
+  role,
 }: {
+  role?: string | null;
   profile: {
     full_name: string | null;
     phone: string | null;
@@ -82,11 +84,25 @@ export default function ProfileForm({
     >
 
 
-      <ImageUploader
-        value={avatarUrl}
-        onChange={setAvatarUrl}
-        folder="profiles"
-      />
+      {role === "teacher" && (
+        <div className="space-y-3">
+          <ImageUploader
+            value={avatarUrl}
+            onChange={setAvatarUrl}
+            folder="profiles"
+          />
+          {avatarUrl && (
+            <button
+              type="button"
+              onClick={() => setAvatarUrl(null)}
+              disabled={isSaving}
+              className="text-sm font-bold text-red-600 hover:underline disabled:opacity-50"
+            >
+              {isArabic ? "حذف الصورة" : "Remove image"}
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-5">
 
