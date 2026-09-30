@@ -182,6 +182,7 @@ export default function Topbar({
                 {avatarUrl ? (
                   <Image
                     src={avatarUrl}
+                    unoptimized
                     alt=""
                     width={36}
                     height={36}
