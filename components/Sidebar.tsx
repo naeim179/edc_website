@@ -120,6 +120,11 @@ export default function Sidebar({
           icon: <ReceiptIcon />,
         },
         {
+          href: "/admin/coupons",
+          label: "الكوبونات",
+          icon: <ReceiptIcon />,
+        },
+        {
           href: "/admin/students",
           label: text.students,
           icon: <UsersIcon />,
@@ -185,6 +190,7 @@ export default function Sidebar({
     "/admin/courses": "manage_courses",
     "/admin/teachers": "manage_teachers",
     "/admin/orders": "view_orders",
+    "/admin/coupons": "manage_coupons",
     "/admin/students": "manage_students",
   };
 

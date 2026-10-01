@@ -20,6 +20,7 @@ export default function RegisterPage() {
   const supabase = createClient();
 
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,6 +31,7 @@ export default function RegisterPage() {
 
   const [errors, setErrors] = useState<{
     fullName?: string;
+    username?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
@@ -43,6 +45,7 @@ export default function RegisterPage() {
   const validateForm = () => {
     const newErrors: {
       fullName?: string;
+    username?: string;
       email?: string;
       password?: string;
       confirmPassword?: string;
@@ -50,6 +53,13 @@ export default function RegisterPage() {
 
     if (!fullName.trim()) {
       newErrors.fullName = t.auth.nameRequired;
+    }
+
+    if (!username.trim()) {
+      newErrors.username = "اسم المستخدم مطلوب";
+    } else if (!/^[A-Za-z0-9_.]{3,30}$/.test(username.trim())) {
+      newErrors.username =
+        "من 3 إلى 30 حرف: إنجليزي، أرقام، _ أو . فقط";
     }
 
     if (!email) {
@@ -86,6 +96,21 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      const { data: available, error: availError } =
+        await supabase.rpc("is_username_available", {
+          p_username: username.trim(),
+        });
+
+      if (availError) throw availError;
+
+      if (!available) {
+        setErrors((prev) => ({
+          ...prev,
+          username: "اسم المستخدم مأخوذ، جرّب اسماً آخر",
+        }));
+        return;
+      }
+
       const { error: signUpError } =
         await supabase.auth.signUp({
           email,
@@ -93,6 +118,7 @@ export default function RegisterPage() {
           options: {
             data: {
               full_name: fullName,
+              username: username.trim(),
             },
           },
         });
@@ -103,7 +129,9 @@ export default function RegisterPage() {
     } catch (err) {
       setServerError(
         err instanceof Error
-          ? err.message
+          ? /database error/i.test(err.message)
+            ? "اسم المستخدم أو البريد الإلكتروني مستخدم مسبقاً"
+            : err.message
           : t.auth.registerFailed
       );
     } finally {
@@ -146,7 +174,7 @@ export default function RegisterPage() {
               }
               placeholder="الاسم الكامل"
               disabled={isLoading}
-              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-white outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                 errors.fullName
                   ? "border-red-400"
                   : "border-slate-200"
@@ -157,6 +185,45 @@ export default function RegisterPage() {
           {errors.fullName && (
             <p className="mt-1 text-xs text-red-500">
               {errors.fullName}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium text-white/90">
+            اسم المستخدم
+          </label>
+
+          <div className="relative">
+            <UserIcon
+              width={19}
+              height={19}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              type="text"
+              dir="ltr"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              value={username}
+              onChange={(event) =>
+                setUsername(event.target.value.replace(/\s/g, ""))
+              }
+              placeholder="username"
+              disabled={isLoading}
+              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                errors.username
+                  ? "border-red-400"
+                  : "border-slate-200"
+              }`}
+            />
+          </div>
+
+          {errors.username && (
+            <p className="mt-1 text-xs text-red-500">
+              {errors.username}
             </p>
           )}
         </div>

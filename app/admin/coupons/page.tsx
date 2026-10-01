@@ -23,21 +23,35 @@ export default async function AdminCouponsPage() {
 
   const supabase = await createClient();
 
-  const { data: coupons } = await supabase
+  const {
+    data: coupons,
+    error: couponsError,
+  } = await supabase
     .from("course_coupons")
     .select(`
       id,
       code,
       is_active,
       is_used,
+      used_by,
+      used_at,
       created_at,
+
       course:courses(
         title
+      ),
+
+      user:profiles(
+        full_name,
+        username
       )
     `)
     .order("created_at", {
       ascending: false,
     });
+
+  console.log("COUPONS RESULT:", coupons);
+  console.log("COUPONS ERROR:", couponsError);
 
   const { data: courses } = await supabase
     .from("courses")

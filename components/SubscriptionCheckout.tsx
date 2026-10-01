@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { validateCoupon } from "@/app/actions/coupons";
 import Link from "next/link";
 
 import BuyCourseButton from "@/components/BuyCourseButton";
@@ -54,6 +55,15 @@ export default function SubscriptionCheckout({
 
   const [couponCode, setCouponCode] =
     useState("");
+
+  const [couponValid, setCouponValid] =
+    useState(false);
+
+  const [couponMessage, setCouponMessage] =
+    useState("");
+
+  const [checkingCoupon, setCheckingCoupon] =
+    useState(false);
 
   const [paymentMethod, setPaymentMethod] =
     useState<"paytabs" | "paypal" | "cliq">("paytabs");
@@ -151,14 +161,60 @@ export default function SubscriptionCheckout({
               كوبون مجاني
             </label>
 
-            <input
-              value={couponCode}
-              onChange={(e) =>
-                setCouponCode(e.target.value)
-              }
-              placeholder="YW-FREE-XXXXXX"
-              className="w-full rounded-xl border px-4 py-3"
-            />
+            <div className="flex gap-2">
+
+              <input
+                value={couponCode}
+                onChange={(e) => {
+                  setCouponCode(e.target.value);
+                  setCouponValid(false);
+                  setCouponMessage("");
+                }}
+                placeholder="YW-FREE-XXXXXX"
+                className="flex-1 rounded-xl border px-4 py-3"
+              />
+
+              <button
+                type="button"
+                disabled={checkingCoupon}
+                onClick={async () => {
+                  setCheckingCoupon(true);
+
+                  const result =
+                    await validateCoupon(
+                      courseId,
+                      couponCode
+                    );
+
+                  setCouponValid(result.valid);
+                  setCouponMessage(result.message);
+
+                  if (result.valid) {
+                    setAutoRenew(false);
+                  }
+
+                  setCheckingCoupon(false);
+                }}
+                className="rounded-xl bg-[#124b8a] px-4 text-white font-bold"
+              >
+                {checkingCoupon
+                  ? "..."
+                  : "تحقق"}
+              </button>
+
+            </div>
+
+            {couponMessage && (
+              <p
+                className={`mt-2 text-sm font-bold ${
+                  couponValid
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {couponMessage}
+              </p>
+            )}
 
           </div>
 
@@ -238,13 +294,20 @@ export default function SubscriptionCheckout({
             <p className="text-sm text-[#A69C8C]">الإجمالي المستحق</p>
 
             <p className="mt-1 text-3xl font-bold text-[#2A2420]">
-              {totalUsd.toFixed(2)}{" "}
-              <span className="text-sm font-semibold text-[#A69C8C]">
-                USD
-              </span>
+              {couponValid ? (
+                "FREE"
+              ) : (
+                <>
+                  {totalUsd.toFixed(2)}{" "}
+                  <span className="text-sm font-semibold text-[#A69C8C]">
+                    USD
+                  </span>
+                </>
+              )}
             </p>
           </div>
 
+          {!couponValid && (
           <div className="mt-6">
             <h2 className="mb-3 font-bold text-[#2A2420]">
               طريقة الدفع
@@ -293,14 +356,18 @@ export default function SubscriptionCheckout({
               ))}
             </div>
 
+            </div>
+          )}
+
+          <div className="mt-6">
             <BuyCourseButton
               courseId={courseId}
               subscriptionMonths={months}
               autoRenew={autoRenew}
               paymentMethod={paymentMethod}
               label={
-                couponCode
-                  ? "تفعيل الكوبون"
+                couponValid
+                  ? "الحصول على الدورة مجاناً"
                   : `دفع ${totalUsd.toFixed(2)} USD`
               }
               couponCode={couponCode}
@@ -309,11 +376,15 @@ export default function SubscriptionCheckout({
 
           <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#A69C8C]">
             <LockIcon />
-            دفع آمن عبر PayTabs
+            {couponValid
+              ? "سيتم إضافة الدورة إلى حسابك مباشرة"
+              : "دفع آمن عبر PayTabs"}
           </div>
 
           <p className="mt-2 text-center text-xs leading-5 text-[#A69C8C]">
-            لن يتم تفعيل أو تمديد الاشتراك إلا بعد تأكيد نجاح الدفع.
+            {couponValid
+              ? "تم التحقق من الكوبون بنجاح."
+              : "لن يتم تفعيل أو تمديد الاشتراك إلا بعد تأكيد نجاح الدفع."}
           </p>
         </aside>
       </div>

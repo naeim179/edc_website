@@ -252,10 +252,9 @@ export default async function CourseDetailPage({
   const hasCourseAccess =
     Boolean(enrollmentId) &&
     (
-      Boolean(
-        course.is_free
-      ) ||
-      subscriptionActive
+      Boolean(course.is_free) ||
+      subscriptionActive ||
+      Boolean(enrollmentId)
     );
 
   const sections =

@@ -129,17 +129,30 @@ export async function createOrder(
     }
 
 
-    await enrollInFreeCourse(
-      user.id,
-      courseId
-    );
+    const couponAdmin =
+      createAdminClient();
+
+    const {
+      error: enrollError,
+    } = await couponAdmin
+      .from("enrollments")
+      .insert({
+        student_id: user.id,
+        course_id: courseId,
+      });
+
+    if (enrollError) {
+      throw new Error(
+        enrollError.message
+      );
+    }
 
 
     const admin =
       createAdminClient();
 
 
-    await admin
+    await couponAdmin
       .from("course_coupons")
       .update({
         is_used: true,
@@ -167,10 +180,23 @@ export async function createOrder(
     course.is_free ||
     monthlyPriceUsd === 0
   ) {
-    await enrollInFreeCourse(
-      user.id,
-      courseId
-    );
+    const admin =
+      createAdminClient();
+
+    const {
+      error: enrollError,
+    } = await admin
+      .from("enrollments")
+      .insert({
+        student_id: user.id,
+        course_id: courseId,
+      });
+
+    if (enrollError) {
+      throw new Error(
+        enrollError.message
+      );
+    }
 
     revalidatePath(
       "/my-courses"

@@ -275,7 +275,17 @@ export default function CourseCatalogCard({
 
           <div>
 
-            {pricing.isFree ? (
+            {enrolled ? (
+
+              <span className="
+                text-lg
+                font-bold
+                text-[var(--brand-ink)]
+              ">
+                {isArabic ? "مسجل" : "Enrolled"}
+              </span>
+
+            ) : pricing.isFree ? (
 
               <span className="
                 text-lg

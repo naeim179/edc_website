@@ -10,9 +10,17 @@ type Coupon = {
   code: string;
   is_active: boolean;
   is_used: boolean;
+  used_by: string | null;
+  used_at: string | null;
   created_at: string;
+
   course: {
     title: string;
+  }[] | null;
+
+  user: {
+    full_name: string | null;
+    username: string | null;
   }[] | null;
 };
 
@@ -179,6 +187,18 @@ export default function AdminCouponsContent({
               <th className="p-4 text-start">
                 Used
               </th>
+
+              <th className="p-4 text-start">
+                Used By
+              </th>
+
+              <th className="p-4 text-start">
+                Used At
+              </th>
+
+              <th className="p-4 text-start">
+                Used By
+              </th>
             </tr>
 
           </thead>
@@ -234,6 +254,25 @@ export default function AdminCouponsContent({
                   {coupon.is_used
                     ? "Yes"
                     : "No"}
+                </td>
+
+                <td className="p-4">
+                  {coupon.user?.[0]?.username ??
+                   coupon.user?.[0]?.full_name ??
+                   "-"}
+                </td>
+
+                <td className="p-4">
+                  {coupon.used_at
+                    ? new Date(coupon.used_at).toLocaleDateString()
+                    : "-"}
+                </td>
+
+
+                <td className="p-4">
+                  {coupon.user?.[0]?.username ??
+                   coupon.user?.[0]?.full_name ??
+                   "-"}
                 </td>
 
 
