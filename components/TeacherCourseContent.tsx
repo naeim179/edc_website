@@ -42,7 +42,7 @@ export default function TeacherCourseContent({
 
   return (
     <div
-      className="max-w-5xl mx-auto p-6 space-y-6"
+      className="mx-auto max-w-5xl space-y-6 p-0 sm:p-6"
       dir="auto"
     >
       <div>

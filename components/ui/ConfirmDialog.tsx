@@ -55,7 +55,7 @@ export default function ConfirmDialog({
         className="absolute inset-0 cursor-default bg-black/60 backdrop-blur-sm"
       />
 
-      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border bg-[var(--brand-surface)] shadow-2xl">
+      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border bg-[var(--brand-surface)] shadow-2xl">
         <div className="p-6">
           <div
             className={
@@ -82,12 +82,12 @@ export default function ConfirmDialog({
           )}
         </div>
 
-        <div className="flex justify-end gap-3 border-t p-4">
+        <div className="flex flex-col-reverse gap-3 border-t p-4 sm:flex-row sm:justify-end">
           <button
             type="button"
             disabled={busy}
             onClick={onCancel}
-            className="rounded-xl border px-5 py-2.5 text-sm font-bold transition hover:bg-black/5 disabled:opacity-50"
+            className="w-full rounded-xl border px-5 py-2.5 text-sm font-bold transition hover:bg-black/5 disabled:opacity-50 sm:w-auto"
           >
             {cancelText}
           </button>
@@ -96,7 +96,7 @@ export default function ConfirmDialog({
             type="button"
             disabled={busy}
             onClick={onConfirm}
-            className={`rounded-xl px-5 py-2.5 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${confirmClass}`}
+            className={`w-full rounded-xl px-5 py-2.5 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto ${confirmClass}`}
           >
             {busy
               ? "..."

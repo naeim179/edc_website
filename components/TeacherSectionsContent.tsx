@@ -24,7 +24,7 @@ export default function TeacherSectionsContent({
 
   return (
     <div
-      className="max-w-5xl mx-auto p-6"
+      className="mx-auto max-w-5xl p-0 sm:p-6"
       dir="auto"
     >
 

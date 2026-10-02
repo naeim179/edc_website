@@ -58,7 +58,7 @@ export default function CliqPaymentUpload({
       </h3>
 
       <input
-        className="mt-4"
+        className="mt-4 block w-full min-w-0 text-sm"
         type="file"
         accept="image/*"
         onChange={(e) =>
@@ -72,7 +72,7 @@ export default function CliqPaymentUpload({
         type="button"
         onClick={upload}
         disabled={!file || loading}
-        className="mt-4 rounded-xl bg-[var(--brand-ink)] px-5 py-3 text-white font-bold disabled:opacity-50"
+        className="mt-4 w-full rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-white disabled:opacity-50 sm:w-auto"
       >
         {loading
           ? "جاري الرفع..."

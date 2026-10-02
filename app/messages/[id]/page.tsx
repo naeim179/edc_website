@@ -73,7 +73,7 @@ export default async function ConversationPage({
 
   return (
     <AppShell>
-      <div className="mx-auto flex h-[calc(100dvh-135px)] min-h-[560px] w-full max-w-5xl px-3 py-4 sm:px-5">
+      <div className="mx-auto flex h-[calc(100dvh-176px)] min-h-[360px] w-full max-w-5xl px-0 py-2 sm:h-[calc(100dvh-135px)] sm:min-h-[560px] sm:px-5 sm:py-4">
         <MessageThread
           conversationId={
             id

@@ -93,7 +93,7 @@ export default function ProfileContent({
       dir={isArabic ? "rtl" : "ltr"}
     >
       {/* User Header */}
-      <section className="border-b border-slate-100 p-8 md:p-10">
+      <section className="border-b border-slate-100 p-5 sm:p-8 md:p-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-5">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#124b8a]/10 text-3xl font-bold text-[#124b8a] md:h-24 md:w-24 md:text-4xl">
@@ -108,13 +108,13 @@ export default function ProfileContent({
               )}
             </div>
 
-            <div>
-              <h1 className="text-2xl font-bold text-slate-800 md:text-3xl">
+            <div className="min-w-0">
+              <h1 className="break-words text-2xl font-bold text-slate-800 md:text-3xl">
                 {displayName}
               </h1>
 
               <p
-                className="mt-1.5 text-sm text-slate-500 md:text-base"
+                className="mt-1.5 break-all text-sm text-slate-500 md:text-base"
                 dir="ltr"
               >
                 {email}
@@ -147,7 +147,7 @@ export default function ProfileContent({
       </section>
 
       {/* Personal Info Form */}
-      <section className="p-8 md:p-10">
+      <section className="p-5 sm:p-8 md:p-10">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-800 md:text-2xl">
             {t.profile.accountInfo}
@@ -164,7 +164,7 @@ export default function ProfileContent({
       </section>
 
       {/* Account Settings */}
-      <section className="border-t border-slate-100 px-8 pb-8 pt-8 md:px-10 md:pb-10">
+      <section className="border-t border-slate-100 px-5 pb-5 pt-5 sm:px-8 sm:pb-8 sm:pt-8 md:px-10 md:pb-10">
         <h2 className="mb-5 text-xl font-bold text-slate-800 md:text-2xl">
           {t.profile.accountSettings}
         </h2>

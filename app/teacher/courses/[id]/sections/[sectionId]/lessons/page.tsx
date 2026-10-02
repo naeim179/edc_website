@@ -70,7 +70,7 @@ export default async function TeacherLessonsPage({
   return (
     <AppShell>
       <div
-        className="max-w-6xl mx-auto w-full space-y-6 p-6"
+        className="mx-auto w-full max-w-6xl space-y-6 p-0 sm:p-6"
         dir="rtl"
       >
         <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">

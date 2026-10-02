@@ -17,7 +17,7 @@ export default function TeacherDashboardContent({
   const { t } = useLanguage();
 
   return (
-    <div className="max-w-5xl mx-auto p-6" dir="auto">
+    <div className="mx-auto max-w-5xl p-0 sm:p-6" dir="auto">
       <h1 className="text-2xl font-bold mb-6">
         {t.teacher.myCourses}
       </h1>

@@ -64,11 +64,11 @@ function AdminRow({ admin }: { admin: Admin }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-4 text-start"
+        className="flex w-full flex-col items-start justify-between gap-2 text-start sm:flex-row sm:items-center sm:gap-4"
       >
         <span>
           <span className="block font-medium">{admin.fullName || s.noName}</span>
-          <span className="block text-xs text-[#1B4B43]/60" dir="ltr">{admin.email}</span>
+          <span className="block break-all text-xs text-[#1B4B43]/60" dir="ltr">{admin.email}</span>
         </span>
         <span className="text-xs text-[#C9704A]">
           {perms.length ? `${perms.length} ${s.sectionsOpen}` : s.noSections}

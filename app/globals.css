@@ -838,3 +838,47 @@ html[data-theme="dark"] .yw-shell .yw-sidebar {
 }
 
 /* YOUR WAY CONNECTED SHELL END */
+
+
+/* ===== MOBILE RESPONSIVE AUDIT ===== */
+
+@media (max-width: 639px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .yw-content {
+    padding: 12px;
+  }
+
+  .yw-content > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+  }
+
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    touch-action: manipulation;
+  }
+}

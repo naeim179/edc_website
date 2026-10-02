@@ -22,7 +22,7 @@ export default async function AdminTeachersPage() {
 
   return (
     <AppShell>
-      <div className="max-w-5xl mx-auto p-6" dir="rtl">
+      <div className="mx-auto max-w-5xl p-0 sm:p-6" dir="rtl">
 
         <h1 className="text-2xl font-bold mb-6">
           {t.admin.manageTeachers}
@@ -44,7 +44,7 @@ export default async function AdminTeachersPage() {
             {teachers?.map((teacher) => (
               <div
                 key={teacher.id}
-                className="border rounded-lg p-4 flex items-center justify-between"
+                className="flex flex-col items-stretch justify-between gap-3 rounded-lg border p-4 sm:flex-row sm:items-center"
               >
 
                 <span>
@@ -54,7 +54,7 @@ export default async function AdminTeachersPage() {
 
                 <Link
                   href={`/admin/teachers/${teacher.id}`}
-                  className="bg-[#124b8a] text-white px-5 py-2 rounded-lg font-bold"
+                  className="rounded-lg bg-[#124b8a] px-5 py-2 text-center font-bold text-white"
                 >
                   {t.admin.manageAccount}
                 </Link>

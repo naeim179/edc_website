@@ -65,12 +65,12 @@ export default function ContactTeacherButton({
 
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2 sm:w-auto">
       <button
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#087a54] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#066b49] disabled:cursor-wait disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#087a54] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#066b49] disabled:cursor-wait disabled:opacity-60 sm:w-auto"
       >
         <span aria-hidden="true">
           💬

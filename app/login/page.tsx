@@ -91,9 +91,9 @@ export default function LoginPage() {
       className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      <div className="w-full max-w-md p-8">
+      <div className="w-full max-w-md p-4 sm:p-8">
         <div className="mb-10 text-center">
-          <div className="relative mx-auto mb-8 flex h-44 w-44 items-center justify-center rounded-full bg-white/90 shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
+          <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-white/90 shadow-[0_15px_40px_rgba(0,0,0,0.18)] sm:mb-8 sm:h-44 sm:w-44">
             <Image
               src="/logo/logo.png"
               alt="Your Way"

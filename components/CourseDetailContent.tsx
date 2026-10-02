@@ -555,7 +555,7 @@ export default function CourseDetailContent({
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
                   {enrollmentId && (
                     <ContactTeacherButton
                       courseId={course.id}
@@ -564,7 +564,7 @@ export default function CourseDetailContent({
 
                   <Link
                     href={`/instructors/${teacher.id}`}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-[#1B4B43] px-5 py-2.5 text-sm font-bold text-[#1B4B43] transition hover:bg-[#F7F3EC]"
+                    className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-[#1B4B43] px-5 py-2.5 text-sm font-bold text-[#1B4B43] transition hover:bg-[#F7F3EC] sm:w-auto"
                   >
                     {t.courses.instructorProfile}
                   </Link>

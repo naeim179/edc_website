@@ -546,7 +546,7 @@ export default function ConversationList({
       }
     >
       <section className="overflow-hidden rounded-3xl border bg-[var(--brand-surface)] shadow-sm">
-        <div className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 p-4 sm:gap-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#0b7a58]/10 text-[#087a54]">
               <MessageIcon />
@@ -563,7 +563,7 @@ export default function ConversationList({
             </div>
           </div>
 
-          <div className="grid min-w-[280px] grid-cols-2 gap-3">
+          <div className="grid w-full grid-cols-2 gap-2 sm:min-w-[280px] sm:w-auto sm:gap-3">
             <div className="rounded-2xl border bg-[var(--brand-bg)] p-4">
               <p className="text-xs font-semibold text-[var(--brand-text-muted)]">
                 {

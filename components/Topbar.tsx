@@ -65,7 +65,7 @@ export default function Topbar({
 
   return (
     <header
-      className="yw-topbar flex w-full flex-wrap items-center gap-3 sm:flex-nowrap"
+      className="yw-topbar flex w-full flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3"
       style={{
         backgroundColor: "var(--brand-surface)",
         borderColor: "var(--brand-border)",

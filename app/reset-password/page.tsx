@@ -82,7 +82,7 @@ export default function ResetPasswordPage() {
 
         <div className="text-center mb-8">
 
-          <div className="relative mx-auto mb-8 flex h-44 w-44 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm shadow-[0_15px_40px_rgba(0,0,0,0.18)]">
+          <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm shadow-[0_15px_40px_rgba(0,0,0,0.18)] sm:mb-8 sm:h-44 sm:w-44">
 
             <Image
               src="/logo/logo.png"

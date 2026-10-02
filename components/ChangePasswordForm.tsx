@@ -86,7 +86,7 @@ export default function ChangePasswordForm() {
 
   return (
     <div
-      className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
+      className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8"
       dir={isArabic ? "rtl" : "ltr"}
     >
       <h1 className="mb-3 text-center text-2xl font-bold text-slate-800">

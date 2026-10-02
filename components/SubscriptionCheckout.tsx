@@ -94,7 +94,7 @@ export default function SubscriptionCheckout({
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
-        <section className="rounded-2xl border border-[#E8E1D4] bg-white p-6 md:p-8">
+        <section className="rounded-2xl border border-[#E8E1D4] bg-white p-4 sm:p-6 md:p-8">
           <div className="mb-8 border-b border-[#F0EBE1] pb-6">
             <p className="text-xs font-bold text-[#C9704A]">
               {title}
@@ -161,7 +161,7 @@ export default function SubscriptionCheckout({
               كوبون مجاني
             </label>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
 
               <input
                 value={couponCode}
@@ -171,7 +171,7 @@ export default function SubscriptionCheckout({
                   setCouponMessage("");
                 }}
                 placeholder="YW-FREE-XXXXXX"
-                className="flex-1 rounded-xl border px-4 py-3"
+                className="min-w-0 flex-1 rounded-xl border px-4 py-3"
               />
 
               <button
@@ -195,7 +195,7 @@ export default function SubscriptionCheckout({
 
                   setCheckingCoupon(false);
                 }}
-                className="rounded-xl bg-[#124b8a] px-4 text-white font-bold"
+                className="rounded-xl bg-[#124b8a] px-4 py-3 text-white font-bold sm:py-0"
               >
                 {checkingCoupon
                   ? "..."
@@ -264,7 +264,7 @@ export default function SubscriptionCheckout({
           )}
         </section>
 
-        <aside className="rounded-2xl border border-[#E8E1D4] bg-white p-6 lg:sticky lg:top-4">
+        <aside className="rounded-2xl border border-[#E8E1D4] bg-white p-4 sm:p-6 lg:sticky lg:top-4">
           <h2 className="text-lg font-bold text-[#2A2420]">ملخص الطلب</h2>
 
           <div className="mt-5 space-y-3 text-sm">

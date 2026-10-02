@@ -76,7 +76,7 @@ export default function AdminCouponsContent({
       className="mx-auto w-full max-w-7xl space-y-6"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      <div className="flex items-center justify-between gap-4 rounded-[28px] bg-gradient-to-l from-[var(--hero-start)] to-[var(--hero-end)] p-8 text-white">
+      <div className="flex flex-col items-stretch justify-between gap-4 rounded-[28px] bg-gradient-to-l from-[var(--hero-start)] to-[var(--hero-end)] p-5 text-white sm:flex-row sm:items-center sm:p-8">
         <div>
           <h1 className="text-3xl font-bold">
             {isArabic ? "إدارة الكوبونات" : "Manage Coupons"}
@@ -92,7 +92,7 @@ export default function AdminCouponsContent({
         <button
           type="button"
           onClick={() => setShowForm((value) => !value)}
-          className="shrink-0 rounded-xl bg-[var(--brand-bg)] px-5 py-3 font-bold text-[var(--brand-ink)] transition hover:opacity-90"
+          className="w-full shrink-0 rounded-xl bg-[var(--brand-bg)] px-5 py-3 text-center font-bold text-[var(--brand-ink)] transition hover:opacity-90 sm:w-auto"
         >
           + {isArabic ? "كوبون جديد" : "New Coupon"}
         </button>
@@ -108,14 +108,14 @@ export default function AdminCouponsContent({
           </h2>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 id="coupon-code"
                 name="code"
                 placeholder={
                   isArabic ? "كود الكوبون" : "Coupon Code"
                 }
-                className="flex-1 rounded-xl border border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 py-3 text-[var(--brand-text)] outline-none focus:border-[var(--brand-ink)]"
+                className="min-w-0 flex-1 rounded-xl border border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 py-3 text-[var(--brand-text)] outline-none focus:border-[var(--brand-ink)]"
               />
 
               <button
@@ -164,9 +164,9 @@ export default function AdminCouponsContent({
         </form>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-text)]">
+      <div className="overflow-x-auto rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-text)]">
         {coupons.length > 0 ? (
-          <table className="w-full">
+          <table className="w-full min-w-[760px]">
             <thead className="bg-[var(--brand-bg)] text-sm text-[var(--brand-text-muted)]">
               <tr>
                 <th className="p-4 text-start font-semibold">

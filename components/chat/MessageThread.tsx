@@ -1249,7 +1249,7 @@ export default function MessageThread({
                             <>
                               {editingId ===
                               message.id ? (
-                                <div className="min-w-[260px] space-y-3">
+                                <div className="w-[min(260px,75vw)] min-w-0 space-y-3">
                                   <textarea
                                     value={
                                       editingText

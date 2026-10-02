@@ -78,7 +78,7 @@ export default async function CheckoutSuccessPage({
 
   return (
     <div
-      className="max-w-lg mx-auto mt-20 text-center bg-white border rounded-[26px] p-8 shadow-sm"
+      className="mx-4 mt-6 max-w-lg rounded-[26px] border bg-white p-5 text-center shadow-sm sm:mx-auto sm:mt-20 sm:p-8"
       dir="rtl"
     >
       {isCliq ? (

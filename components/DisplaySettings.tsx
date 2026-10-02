@@ -148,7 +148,7 @@ export default function DisplaySettings() {
             isArabic ? "إعدادات العرض" : "Display settings"
           }
           dir={isArabic ? "rtl" : "ltr"}
-          className="absolute end-0 top-full z-[200] mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border p-4 shadow-xl"
+          className="absolute end-0 top-full z-[200] mt-2 max-h-[calc(100dvh-5rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border p-4 shadow-xl"
           style={{
             borderColor: "var(--brand-border)",
             backgroundColor: "var(--brand-surface)",
