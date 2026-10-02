@@ -23,35 +23,32 @@ export default async function AdminCouponsPage() {
 
   const supabase = await createClient();
 
-  const {
-    data: coupons,
-    error: couponsError,
-  } = await supabase
-    .from("course_coupons")
-    .select(`
-      id,
-      code,
-      is_active,
-      is_used,
-      used_by,
-      used_at,
-      created_at,
+  const { data: coupons, error: couponsError } =
+    await supabase
+      .from("course_coupons")
+      .select(`
+        id,
+        code,
+        is_active,
+        is_used,
+        used_by,
+        used_at,
+        created_at,
+        course:courses(
+          title
+        ),
+        user:profiles(
+          full_name,
+          username
+        )
+      `)
+      .order("created_at", {
+        ascending: false,
+      });
 
-      course:courses(
-        title
-      ),
-
-      user:profiles(
-        full_name,
-        username
-      )
-    `)
-    .order("created_at", {
-      ascending: false,
-    });
-
-  console.log("COUPONS RESULT:", coupons);
-  console.log("COUPONS ERROR:", couponsError);
+  if (couponsError) {
+    throw new Error(couponsError.message);
+  }
 
   const { data: courses } = await supabase
     .from("courses")
@@ -62,7 +59,6 @@ export default async function AdminCouponsPage() {
     .order("created_at", {
       ascending: false,
     });
-
 
   return (
     <AppShell>

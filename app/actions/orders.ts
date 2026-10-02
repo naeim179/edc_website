@@ -148,27 +148,40 @@ export async function createOrder(
     }
 
 
-    const admin =
-      createAdminClient();
+    const usedAt =
+      new Date().toISOString();
 
-
-    await couponAdmin
+    const {
+      data: updatedCoupon,
+      error: couponUpdateError,
+    } = await couponAdmin
       .from("course_coupons")
       .update({
         is_used: true,
+        is_active: false,
         used_by: user.id,
-        used_at: new Date().toISOString(),
+        used_at: usedAt,
       })
-      .eq(
-        "id",
-        coupon.id
+      .eq("id", coupon.id)
+      .eq("is_used", false)
+      .select("id, is_used, is_active, used_by, used_at")
+      .maybeSingle();
+
+    if (couponUpdateError) {
+      throw new Error(
+        `Failed to mark coupon as used: ${couponUpdateError.message}`
       );
+    }
 
+    if (!updatedCoupon) {
+      throw new Error(
+        "Coupon could not be marked as used."
+      );
+    }
 
-    revalidatePath(
-      "/my-courses"
-    );
-
+    revalidatePath("/my-courses");
+    revalidatePath("/courses");
+    revalidatePath("/admin/coupons");
 
     redirect(
       `/courses/${courseId}`

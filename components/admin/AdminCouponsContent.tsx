@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { useLanguage } from "@/components/LanguageProvider";
-import { createCoupon, toggleCoupon } from "@/app/actions/admin-coupons";
+import {
+  createCoupon,
+  toggleCoupon,
+} from "@/app/actions/admin-coupons";
 import CopyCouponButton from "@/components/admin/CopyCouponButton";
 
 type Coupon = {
@@ -34,15 +39,24 @@ type Props = {
   courses: Course[];
 };
 
-
 export default function AdminCouponsContent({
   coupons,
   courses,
 }: Props) {
-
+  const router = useRouter();
   const { language } = useLanguage();
 
   const isArabic = language === "ar";
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        router.refresh();
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [router]);
 
   const [showForm, setShowForm] = useState(false);
 
@@ -56,15 +70,12 @@ export default function AdminCouponsContent({
     );
   };
 
-
   return (
     <div
-      className="max-w-7xl mx-auto space-y-6"
+      className="mx-auto w-full max-w-7xl space-y-6"
       dir={isArabic ? "rtl" : "ltr"}
     >
-
-      <div className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] p-8 text-white flex items-center justify-between">
-
+      <div className="flex items-center justify-between rounded-[28px] bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] p-8 text-white">
         <div>
           <h1 className="text-3xl font-bold">
             {isArabic ? "إدارة الكوبونات" : "Manage Coupons"}
@@ -72,44 +83,38 @@ export default function AdminCouponsContent({
 
           <p className="mt-2 text-blue-100">
             {isArabic
-              ? "إنشاء كوبونات مجانية للدورات"
-              : "Create free course coupons"}
+              ? "إنشاء وإدارة الكوبونات المجانية للدورات"
+              : "Create and manage free course coupons"}
           </p>
         </div>
 
-
         <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-white text-[#124b8a] px-5 py-3 rounded-xl font-bold"
+          type="button"
+          onClick={() => setShowForm((value) => !value)}
+          className="rounded-xl bg-white px-5 py-3 font-bold text-[#124b8a]"
         >
           + {isArabic ? "كوبون جديد" : "New Coupon"}
         </button>
-
       </div>
 
-
-
       {showForm && (
-
         <form
           action={createCoupon}
-          className="bg-white rounded-2xl border p-6"
+          className="rounded-2xl border bg-white p-6"
         >
-
-          <h2 className="font-bold text-lg mb-4">
+          <h2 className="mb-4 text-lg font-bold">
             {isArabic ? "إنشاء كوبون" : "Create Coupon"}
           </h2>
 
-
-          <div className="grid md:grid-cols-2 gap-4">
-
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="flex gap-2">
-
               <input
                 id="coupon-code"
                 name="code"
-                placeholder={isArabic ? "كود الكوبون" : "Coupon Code"}
-                className="border rounded-xl px-4 py-3 flex-1"
+                placeholder={
+                  isArabic ? "كود الكوبون" : "Coupon Code"
+                }
+                className="flex-1 rounded-xl border px-4 py-3"
               />
 
               <button
@@ -122,19 +127,19 @@ export default function AdminCouponsContent({
                     input.value = generateCode();
                   }
                 }}
-                className="bg-slate-100 px-4 rounded-xl font-bold"
+                className="rounded-xl bg-slate-100 px-4 font-bold"
               >
                 {isArabic ? "توليد" : "Generate"}
               </button>
-
             </div>
-
 
             <select
               name="course_id"
-              className="border rounded-xl px-4 py-3"
+              defaultValue=""
+              className="rounded-xl border px-4 py-3"
+              required
             >
-              <option>
+              <option value="">
                 {isArabic ? "اختر الدورة" : "Select Course"}
               </option>
 
@@ -146,147 +151,150 @@ export default function AdminCouponsContent({
                   {course.title}
                 </option>
               ))}
-
             </select>
-
           </div>
 
-
           <button
-            className="mt-4 bg-[#124b8a] text-white px-6 py-3 rounded-xl font-bold"
+            type="submit"
+            className="mt-4 rounded-xl bg-[#124b8a] px-6 py-3 font-bold text-white"
           >
             {isArabic ? "حفظ" : "Create"}
           </button>
-
         </form>
-
       )}
 
+      <div className="overflow-hidden rounded-2xl border bg-white">
+        {coupons.length > 0 ? (
+          <table className="w-full">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="p-4 text-start">
+                  {isArabic ? "الكود" : "Code"}
+                </th>
 
+                <th className="p-4 text-start">
+                  {isArabic ? "الدورة" : "Course"}
+                </th>
 
+                <th className="p-4 text-start">
+                  {isArabic ? "الحالة" : "Status"}
+                </th>
 
-      <div className="bg-white rounded-2xl border overflow-hidden">
+                <th className="p-4 text-start">
+                  {isArabic ? "مستخدم" : "Used"}
+                </th>
 
-        <table className="w-full">
-
-          <thead className="bg-slate-50">
-
-            <tr>
-              <th className="p-4 text-start">
-                Code
-              </th>
-
-              <th className="p-4 text-start">
-                Course
-              </th>
-
-              <th className="p-4 text-start">
-                Status
-              </th>
-
-              <th className="p-4 text-start">
-                Used
-              </th>
-
-              <th className="p-4 text-start">
-                Used By
-              </th>
-
-              <th className="p-4 text-start">
-                Used At
-              </th>
-
-              <th className="p-4 text-start">
-                Used By
-              </th>
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            {coupons.map((coupon) => (
-
-              <tr
-                key={coupon.id}
-                className="border-t"
-              >
-
-                <td className="p-4 font-bold flex items-center gap-2">
-                  {coupon.code}
-                  <CopyCouponButton code={coupon.code} />
-                </td>
-
-
-                <td className="p-4">
-                  {coupon.course?.[0]?.title ?? "-"}
-                </td>
-
-
-                <td className="p-4">
-
-                  <form
-                    action={async () => {
-                      await toggleCoupon(
-                        coupon.id,
-                        coupon.is_active
-                      );
-                    }}
-                  >
-                    <button
-                      className={
-                        coupon.is_active
-                          ? "bg-red-50 text-red-700 px-3 py-1 rounded-lg text-sm font-bold"
-                          : "bg-green-50 text-green-700 px-3 py-1 rounded-lg text-sm font-bold"
-                      }
-                    >
-                      {coupon.is_active
-                        ? (isArabic ? "تعطيل" : "Disable")
-                        : (isArabic ? "تفعيل" : "Enable")}
-                    </button>
-                  </form>
-
-                </td>
-
-
-                <td className="p-4">
-                  {coupon.is_used
-                    ? "Yes"
-                    : "No"}
-                </td>
-
-                <td className="p-4">
-                  {coupon.user?.[0]?.username ??
-                   coupon.user?.[0]?.full_name ??
-                   "-"}
-                </td>
-
-                <td className="p-4">
-                  {coupon.used_at
-                    ? new Date(coupon.used_at).toLocaleDateString()
-                    : "-"}
-                </td>
-
-
-                <td className="p-4">
-                  {coupon.user?.[0]?.username ??
-                   coupon.user?.[0]?.full_name ??
-                   "-"}
-                </td>
-
-
+                <th className="p-4 text-start">
+                  {isArabic ? "تاريخ الإنشاء" : "Created"}
+                </th>
               </tr>
+            </thead>
 
-            ))}
+            <tbody>
+              {coupons.map((coupon) => {
+                const courseTitle =
+                  coupon.course?.[0]?.title ?? "-";
 
-          </tbody>
+                return (
+                  <tr
+                    key={coupon.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                      router.push(
+                        `/admin/coupons/${coupon.id}`
+                      )
+                    }
+                    onKeyDown={(event) => {
+                      if (
+                        event.key === "Enter" ||
+                        event.key === " "
+                      ) {
+                        event.preventDefault();
+                        router.push(
+                          `/admin/coupons/${coupon.id}`
+                        );
+                      }
+                    }}
+                    className="cursor-pointer border-t transition-colors hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
+                  >
+                    <td className="p-4 font-bold">
+                      <div
+                        className="flex items-center gap-2"
+                        onClick={(event) =>
+                          event.stopPropagation()
+                        }
+                      >
+                        <span>{coupon.code}</span>
+                        <CopyCouponButton
+                          code={coupon.code}
+                        />
+                      </div>
+                    </td>
 
-        </table>
+                    <td className="p-4">
+                      {courseTitle}
+                    </td>
 
+                    <td className="p-4">
+                      <form
+                        action={async () => {
+                          await toggleCoupon(
+                            coupon.id,
+                            coupon.is_active
+                          );
+                        }}
+                        onClick={(event) =>
+                          event.stopPropagation()
+                        }
+                      >
+                        <button
+                          type="submit"
+                          className={
+                            coupon.is_active
+                              ? "rounded-lg bg-red-50 px-3 py-1 text-sm font-bold text-red-700"
+                              : "rounded-lg bg-green-50 px-3 py-1 text-sm font-bold text-green-700"
+                          }
+                        >
+                          {coupon.is_active
+                            ? isArabic
+                              ? "تعطيل"
+                              : "Disable"
+                            : isArabic
+                              ? "تفعيل"
+                              : "Enable"}
+                        </button>
+                      </form>
+                    </td>
+
+                    <td className="p-4">
+                      {coupon.is_used
+                        ? isArabic
+                          ? "نعم"
+                          : "Yes"
+                        : isArabic
+                          ? "لا"
+                          : "No"}
+                    </td>
+
+                    <td className="p-4 text-sm text-slate-500">
+                      {new Date(
+                        coupon.created_at
+                      ).toLocaleDateString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <div className="p-10 text-center text-slate-500">
+            {isArabic
+              ? "لا توجد كوبونات حالياً."
+              : "No coupons yet."}
+          </div>
+        )}
       </div>
-
-
     </div>
   );
 }
