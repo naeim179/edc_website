@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requirePermission } from "@/lib/auth/admin-access";
 
 export async function resetStudentProgress(
@@ -9,6 +11,10 @@ export async function resetStudentProgress(
   enrollmentId: string
 ) {
   await requirePermission("manage_students");
+
+  if (!studentId || !enrollmentId) {
+    throw new Error("بيانات غير صالحة");
+  }
 
   const supabase = await createClient();
 
@@ -23,6 +29,7 @@ export async function resetStudentProgress(
 
   revalidatePath("/admin/students");
   revalidatePath(`/admin/students/${studentId}`);
+  revalidatePath("/my-courses");
 }
 
 export async function removeStudentEnrollment(
@@ -31,12 +38,19 @@ export async function removeStudentEnrollment(
 ) {
   await requirePermission("manage_students");
 
-  const supabase = await createClient();
+  if (!studentId || !enrollmentId) {
+    throw new Error("بيانات غير صالحة");
+  }
 
-  const { error } = await supabase
-    .from("enrollments")
-    .delete()
-    .eq("id", enrollmentId);
+  const admin = createAdminClient();
+
+  const { error } = await admin.rpc(
+    "admin_remove_student_enrollment",
+    {
+      p_student_id: studentId,
+      p_enrollment_id: enrollmentId,
+    }
+  );
 
   if (error) {
     throw new Error(error.message);
@@ -44,26 +58,43 @@ export async function removeStudentEnrollment(
 
   revalidatePath("/admin/students");
   revalidatePath(`/admin/students/${studentId}`);
+  revalidatePath("/my-courses");
 }
 
-export async function extendStudentSubscription(formData: FormData) {
+export async function extendStudentSubscription(
+  formData: FormData
+) {
   await requirePermission("manage_students");
 
-  const studentId = String(formData.get("studentId") ?? "");
-  const courseId = String(formData.get("courseId") ?? "");
-  const days = Number(formData.get("days"));
+  const studentId = String(
+    formData.get("studentId") ?? ""
+  );
+
+  const courseId = String(
+    formData.get("courseId") ?? ""
+  );
+
+  const days = Number(
+    formData.get("days")
+  );
 
   if (!studentId || !courseId) {
     throw new Error("بيانات غير صالحة");
   }
 
-  if (!Number.isFinite(days) || days <= 0) {
+  if (
+    !Number.isFinite(days) ||
+    days <= 0
+  ) {
     throw new Error("عدد الأيام غير صالح");
   }
 
   const supabase = await createClient();
 
-  const { data: subscription, error: subError } = await supabase
+  const {
+    data: subscription,
+    error: subError,
+  } = await supabase
     .from("subscriptions")
     .select("id, expires_at")
     .eq("student_id", studentId)
@@ -75,34 +106,49 @@ export async function extendStudentSubscription(formData: FormData) {
   }
 
   if (!subscription) {
-    throw new Error("لا يوجد اشتراك لهذه الدورة");
+    throw new Error(
+      "لا يوجد اشتراك لهذه الدورة"
+    );
   }
 
   const now = new Date();
 
-  const currentExpiry = subscription.expires_at
-    ? new Date(subscription.expires_at)
-    : now;
+  const currentExpiry =
+    subscription.expires_at
+      ? new Date(subscription.expires_at)
+      : now;
 
-  const base = currentExpiry > now ? currentExpiry : now;
+  const base =
+    currentExpiry > now
+      ? currentExpiry
+      : now;
 
   const newExpiry = new Date(
-    base.getTime() + days * 24 * 60 * 60 * 1000
+    base.getTime() +
+      days * 24 * 60 * 60 * 1000
   );
 
-  const { error: updateError } = await supabase
-    .from("subscriptions")
-    .update({
-      expires_at: newExpiry.toISOString(),
-      status: "active",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", subscription.id);
+  const { error: updateError } =
+    await supabase
+      .from("subscriptions")
+      .update({
+        expires_at:
+          newExpiry.toISOString(),
+        status: "active",
+        updated_at:
+          new Date().toISOString(),
+      })
+      .eq("id", subscription.id);
 
   if (updateError) {
-    throw new Error(updateError.message);
+    throw new Error(
+      updateError.message
+    );
   }
 
   revalidatePath("/admin/students");
-  revalidatePath(`/admin/students/${studentId}`);
+  revalidatePath(
+    `/admin/students/${studentId}`
+  );
+  revalidatePath("/my-courses");
 }
