@@ -1,6 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import ActionToast from "@/components/ui/ActionToast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 import {
   extendStudentSubscription,
@@ -65,8 +70,122 @@ export default function AdminStudentDetailContent({
   const { language } =
     useLanguage();
 
+  const router =
+    useRouter();
+
   const isArabic =
     language === "ar";
+
+  const [
+    busy,
+    setBusy,
+  ] = useState(false);
+
+  const [
+    toast,
+    setToast,
+  ] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  const [
+    confirmAction,
+    setConfirmAction,
+  ] = useState<{
+    type: "reset" | "remove";
+    enrollment: Enrollment;
+  } | null>(null);
+
+  async function runConfirmedAction() {
+    if (!confirmAction) {
+      return;
+    }
+
+    try {
+      setBusy(true);
+
+      if (
+        confirmAction.type ===
+        "reset"
+      ) {
+        await resetStudentProgress(
+          student.id,
+          confirmAction.enrollment.id
+        );
+
+        setToast({
+          type: "success",
+          message:
+            isArabic
+              ? "تم إعادة ضبط تقدم الطالب بنجاح."
+              : "Student progress reset successfully.",
+        });
+      } else {
+        await removeStudentEnrollment(
+          student.id,
+          confirmAction.enrollment.id
+        );
+
+        setToast({
+          type: "success",
+          message:
+            isArabic
+              ? "تمت إزالة الطالب من الدورة بنجاح."
+              : "Student removed from the course successfully.",
+        });
+      }
+
+      setConfirmAction(null);
+      router.refresh();
+    } catch (error) {
+      setToast({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : isArabic
+              ? "حدث خطأ أثناء تنفيذ العملية."
+              : "Something went wrong.",
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runExtend(
+    formData: FormData
+  ) {
+    try {
+      setBusy(true);
+
+      await extendStudentSubscription(
+        formData
+      );
+
+      setToast({
+        type: "success",
+        message:
+          isArabic
+            ? "تم تمديد الاشتراك بنجاح."
+            : "Subscription extended successfully.",
+      });
+
+      router.refresh();
+    } catch (error) {
+      setToast({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : isArabic
+              ? "تعذر تمديد الاشتراك."
+              : "Unable to extend subscription.",
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const text = {
     back: isArabic
@@ -743,73 +862,41 @@ export default function AdminStudentDetailContent({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 border-t p-4">
-                      <form
-                        action={resetStudentProgress.bind(
-                          null,
-                          student.id,
-                          enrollment.id
-                        )}
-                        onSubmit={(
-                          event
-                        ) => {
-                          if (
-                            !window.confirm(
-                              isArabic
-                                ? "هل أنت متأكد من إعادة ضبط تقدم الطالب في هذه الدورة؟"
-                                : "Reset this student's progress in this course?"
-                            )
-                          ) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
-                        <button
-                          type="submit"
-                          disabled={
-                            enrollment.completedLessons ===
+                      <button
+                        type="button"
+                        disabled={
+                          busy ||
+                          enrollment.completedLessons ===
                             0
-                          }
-                          className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          {
-                            text.resetProgress
-                          }
-                        </button>
-                      </form>
-
-                      <form
-                        action={removeStudentEnrollment.bind(
-                          null,
-                          student.id,
-                          enrollment.id
-                        )}
-                        onSubmit={(
-                          event
-                        ) => {
-                          if (
-                            !window.confirm(
-                              enrollment.isFree
-                                ? isArabic
-                                  ? "هل أنت متأكد من إزالة الطالب من هذه الدورة؟"
-                                  : "Remove this student from this course?"
-                                : isArabic
-                                  ? "هل أنت متأكد؟ سيتم إلغاء الاشتراك وإيقاف التجديد التلقائي وإزالة الطالب من الدورة."
-                                  : "Are you sure? This will cancel the subscription, stop auto renewal, and remove the student from the course."
-                            )
-                          ) {
-                            event.preventDefault();
-                          }
-                        }}
+                        }
+                        onClick={() =>
+                          setConfirmAction({
+                            type: "reset",
+                            enrollment,
+                          })
+                        }
+                        className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        <button
-                          type="submit"
-                          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700"
-                        >
-                          {
-                            text.removeEnrollment
-                          }
-                        </button>
-                      </form>
+                        {
+                          text.resetProgress
+                        }
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() =>
+                          setConfirmAction({
+                            type: "remove",
+                            enrollment,
+                          })
+                        }
+                        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-50"
+                      >
+                        {
+                          text.removeEnrollment
+                        }
+                      </button>
                     </div>
 
                     {!enrollment.isFree &&
@@ -830,9 +917,17 @@ export default function AdminStudentDetailContent({
                                   key={
                                     days
                                   }
-                                  action={
-                                    extendStudentSubscription
-                                  }
+                                  onSubmit={async (
+                                    event
+                                  ) => {
+                                    event.preventDefault();
+
+                                    await runExtend(
+                                      new FormData(
+                                        event.currentTarget
+                                      )
+                                    );
+                                  }}
                                 >
                                   <input
                                     type="hidden"
@@ -860,7 +955,8 @@ export default function AdminStudentDetailContent({
 
                                   <button
                                     type="submit"
-                                    className="rounded-lg border px-3 py-2 text-sm font-bold transition hover:bg-black/5"
+                                    disabled={busy}
+                                    className="rounded-lg border px-3 py-2 text-sm font-bold transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
                                   >
                                     +
                                     {
@@ -875,9 +971,17 @@ export default function AdminStudentDetailContent({
                             )}
 
                             <form
-                              action={
-                                extendStudentSubscription
-                              }
+                              onSubmit={async (
+                                event
+                              ) => {
+                                event.preventDefault();
+
+                                await runExtend(
+                                  new FormData(
+                                    event.currentTarget
+                                  )
+                                );
+                              }}
                               className="flex flex-wrap items-center gap-2"
                             >
                               <input
@@ -910,7 +1014,8 @@ export default function AdminStudentDetailContent({
 
                               <button
                                 type="submit"
-                                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
+                                disabled={busy}
+                                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 {
                                   text.extend
@@ -927,6 +1032,81 @@ export default function AdminStudentDetailContent({
           </div>
         )}
       </section>
+
+      <ConfirmDialog
+        open={
+          confirmAction !==
+          null
+        }
+        title={
+          confirmAction?.type ===
+          "reset"
+            ? isArabic
+              ? "إعادة ضبط التقدم؟"
+              : "Reset progress?"
+            : isArabic
+              ? "إزالة الطالب من الدورة؟"
+              : "Remove student from course?"
+        }
+        description={
+          confirmAction?.type ===
+          "reset"
+            ? isArabic
+              ? "سيتم حذف تقدم الطالب في جميع دروس هذه الدورة وإعادته إلى 0%."
+              : "The student's lesson progress for this course will be reset to 0%."
+            : confirmAction?.enrollment
+                  .isFree
+              ? isArabic
+                ? "سيتم إزالة تسجيل الطالب من هذه الدورة."
+                : "The student's enrollment in this course will be removed."
+              : isArabic
+                ? "سيتم إلغاء الاشتراك، إيقاف التجديد التلقائي، ثم إزالة الطالب من الدورة."
+                : "The subscription will be cancelled, automatic renewal stopped, and the student removed from the course."
+        }
+        confirmText={
+          confirmAction?.type ===
+          "reset"
+            ? isArabic
+              ? "نعم، إعادة الضبط"
+              : "Yes, reset"
+            : isArabic
+              ? "نعم، إزالة"
+              : "Yes, remove"
+        }
+        cancelText={
+          isArabic
+            ? "إلغاء"
+            : "Cancel"
+        }
+        tone={
+          confirmAction?.type ===
+          "remove"
+            ? "danger"
+            : "warning"
+        }
+        busy={busy}
+        onCancel={() =>
+          setConfirmAction(
+            null
+          )
+        }
+        onConfirm={
+          runConfirmedAction
+        }
+      />
+
+      <ActionToast
+        message={
+          toast?.message ??
+          null
+        }
+        type={
+          toast?.type
+        }
+        onClose={() =>
+          setToast(null)
+        }
+      />
     </div>
   );
 }

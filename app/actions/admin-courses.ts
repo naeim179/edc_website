@@ -72,9 +72,14 @@ export async function createCourse(
     formData.get("delivery_type") ?? "recorded"
   );
 
-  const coursePrice = Number(
-    formData.get("course_price") ?? 0
-  );
+  const isFree =
+    formData.get("is_free") === "on";
+
+  const coursePrice = isFree
+    ? 0
+    : Number(
+        formData.get("course_price") ?? 0
+      );
 
   const isPublished =
     formData.get("is_published") === "on";
@@ -124,7 +129,7 @@ export async function createCourse(
         delivery_type: deliveryType,
         price: coursePrice,
         currency: "USD",
-        is_free: false,
+        is_free: isFree,
         discount_type: discountType,
         discount_value: discountValue,
         is_published: isPublished,

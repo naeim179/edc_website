@@ -55,9 +55,14 @@ type Course = {
 
   sections?: Section[];
 
-  course_instructors?: {
-    teacher?: Teacher | Teacher[] | null;
-  }[];
+  course_instructors?:
+    | {
+        teacher?: Teacher | Teacher[] | null;
+      }
+    | {
+        teacher?: Teacher | Teacher[] | null;
+      }[]
+    | null;
 };
 
 type SubscriptionInfo = {
@@ -226,13 +231,27 @@ export default function CourseDetailContent({
 
   /* ----- teacher ----- */
 
-  const teacherData = course.course_instructors?.[0]?.teacher ?? null;
+  const instructorData =
+    course.course_instructors ??
+    null;
 
-  const teacher = Array.isArray(teacherData)
-    ? teacherData[0] ?? null
-    : teacherData;
+  const instructor =
+    Array.isArray(instructorData)
+      ? instructorData[0] ?? null
+      : instructorData;
 
-  const teacherProfileData = teacher?.teacher_profiles ?? null;
+  const teacherData =
+    instructor?.teacher ??
+    null;
+
+  const teacher =
+    Array.isArray(teacherData)
+      ? teacherData[0] ?? null
+      : teacherData;
+
+  const teacherProfileData =
+    teacher?.teacher_profiles ??
+    null;
 
   const teacherProfile = Array.isArray(teacherProfileData)
     ? teacherProfileData[0] ?? null
@@ -537,10 +556,11 @@ export default function CourseDetailContent({
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <ContactTeacherButton
-                    courseId={course.id}
-                    teacherId={teacher.id}
-                  />
+                  {enrollmentId && (
+                    <ContactTeacherButton
+                      courseId={course.id}
+                    />
+                  )}
 
                   <Link
                     href={`/instructors/${teacher.id}`}

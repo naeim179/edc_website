@@ -3,29 +3,163 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export async function startConversation(courseId: string, teacherId: string) {
-  const supabase = await createClient();
+export async function startConversation(
+  courseId: string
+) {
+  const supabase =
+    await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: {
+      user,
+    },
+    error: userError,
+  } =
+    await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error("يجب تسجيل الدخول أولاً");
+  if (userError) {
+    throw new Error(
+      userError.message
+    );
   }
 
-  const { data: conversationId, error } = await supabase.rpc(
+  if (!user) {
+    throw new Error(
+      "يجب تسجيل الدخول أولاً"
+    );
+  }
+
+
+  const {
+    data: profile,
+    error: profileError,
+  } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq(
+      "id",
+      user.id
+    )
+    .maybeSingle();
+
+  if (profileError) {
+    throw new Error(
+      profileError.message
+    );
+  }
+
+  if (
+    profile?.role !==
+    "student"
+  ) {
+    throw new Error(
+      "بدء المحادثة متاح للطالب فقط"
+    );
+  }
+
+
+  /*
+   * The student MUST own / be enrolled in this course.
+   */
+  const {
+    data: enrollment,
+    error: enrollmentError,
+  } = await supabase
+    .from("enrollments")
+    .select("id")
+    .eq(
+      "student_id",
+      user.id
+    )
+    .eq(
+      "course_id",
+      courseId
+    )
+    .maybeSingle();
+
+  if (enrollmentError) {
+    throw new Error(
+      enrollmentError.message
+    );
+  }
+
+  if (!enrollment) {
+    throw new Error(
+      "يجب شراء الدورة أو التسجيل فيها أولاً"
+    );
+  }
+
+
+  /*
+   * NEVER accept teacherId from the browser.
+   * The server loads the ONE teacher assigned to this course.
+   */
+  const {
+    data: assignment,
+    error: assignmentError,
+  } = await supabase
+    .from(
+      "course_instructors"
+    )
+    .select(
+      "teacher_id"
+    )
+    .eq(
+      "course_id",
+      courseId
+    )
+    .maybeSingle();
+
+  if (assignmentError) {
+    throw new Error(
+      assignmentError.message
+    );
+  }
+
+  if (
+    !assignment?.teacher_id
+  ) {
+    throw new Error(
+      "لا يوجد مدرس معيّن لهذه الدورة"
+    );
+  }
+
+
+  const {
+    data: conversationId,
+    error,
+  } = await supabase.rpc(
     "start_conversation",
-    { p_course_id: courseId, p_teacher_id: teacherId }
+    {
+      p_course_id:
+        courseId,
+
+      p_teacher_id:
+        assignment.teacher_id,
+    }
   );
 
   if (error) {
-    console.error("startConversation error:", error.message);
-    throw new Error(error.message || "تعذر بدء المحادثة");
+    console.error(
+      "startConversation error:",
+      error.message
+    );
+
+    throw new Error(
+      error.message ||
+      "تعذر فتح المحادثة"
+    );
   }
 
-  return conversationId as string;
+  revalidatePath(
+    "/messages"
+  );
+
+  return (
+    conversationId as string
+  );
 }
+
 
 export async function sendMessage(
   conversationId: string,

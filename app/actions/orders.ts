@@ -136,14 +136,58 @@ export async function createOrder(
       error: enrollError,
     } = await couponAdmin
       .from("enrollments")
-      .insert({
-        student_id: user.id,
-        course_id: courseId,
-      });
+      .upsert(
+        {
+          student_id: user.id,
+          course_id: courseId,
+        },
+        {
+          onConflict: "student_id,course_id",
+          ignoreDuplicates: true,
+        }
+      );
 
     if (enrollError) {
       throw new Error(
         enrollError.message
+      );
+    }
+
+    // 100% coupon = free access for the selected duration.
+    const couponStartsAt = new Date();
+    const couponExpiresAt = new Date(couponStartsAt);
+    couponExpiresAt.setMonth(
+      couponExpiresAt.getMonth() + subscriptionMonths
+    );
+
+    const {
+      error: subscriptionError,
+    } = await couponAdmin
+      .from("subscriptions")
+      .upsert(
+        {
+          student_id: user.id,
+          course_id: courseId,
+          duration_months: subscriptionMonths,
+          amount: 0,
+          currency: "USD",
+          status: "active",
+          starts_at: couponStartsAt.toISOString(),
+          expires_at: couponExpiresAt.toISOString(),
+          auto_renew: false,
+          last_payment_at: null,
+          last_payment_tran_ref: null,
+          renewal_attempted_at: null,
+          renewal_failures: 0,
+        },
+        {
+          onConflict: "student_id,course_id",
+        }
+      );
+
+    if (subscriptionError) {
+      throw new Error(
+        subscriptionError.message
       );
     }
 

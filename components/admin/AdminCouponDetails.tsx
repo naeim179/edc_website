@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 
 import CopyCouponButton from "@/components/admin/CopyCouponButton";
+import { formatDateTime } from "@/lib/format-date";
 import {
   deleteCoupon,
   toggleCoupon,
@@ -25,11 +27,32 @@ type Props = {
   } | null;
 };
 
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-sm text-[var(--brand-text-muted)]">
+        {label}
+      </p>
+
+      <div className="mt-2 font-bold text-[var(--brand-text)]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminCouponDetails({
   coupon,
   courseTitle,
   usedUser,
 }: Props) {
+  const router = useRouter();
   const { language } = useLanguage();
   const isArabic = language === "ar";
 
@@ -45,144 +68,101 @@ export default function AdminCouponDetails({
     >
       <Link
         href="/admin/coupons"
-        className="inline-flex items-center rounded-xl border bg-white px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50"
+        className="inline-flex items-center rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface)] px-4 py-2 font-semibold text-[var(--brand-text)] transition hover:bg-[var(--brand-ink-soft)]"
       >
         {isArabic
           ? "← العودة إلى الكوبونات"
           : "← Back to Coupons"}
       </Link>
 
-      <section className="rounded-[28px] bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] p-8 text-white">
+      <section className="rounded-[28px] bg-gradient-to-l from-[var(--hero-start)] to-[var(--hero-end)] p-8 text-white">
         <h1 className="text-3xl font-bold">
           {isArabic
             ? "تفاصيل الكوبون"
             : "Coupon Details"}
         </h1>
 
-        <p className="mt-2 text-blue-100">
+        <p className="mt-2 text-white/70">
           {isArabic
             ? "عرض وإدارة معلومات هذا الكوبون"
             : "View and manage this coupon"}
         </p>
       </section>
 
-      <section className="rounded-2xl border bg-white p-6">
+      <section className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6">
         <div className="grid gap-6 md:grid-cols-2">
-          <div>
-            <p className="text-sm text-slate-500">
-              {isArabic ? "كود الكوبون" : "Coupon Code"}
-            </p>
-
-            <div className="mt-2 flex items-center gap-2">
-              <span className="text-xl font-bold">
-                {coupon.code}
-              </span>
-
+          <Field label={isArabic ? "كود الكوبون" : "Coupon Code"}>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{coupon.code}</span>
               <CopyCouponButton code={coupon.code} />
             </div>
-          </div>
+          </Field>
 
-          <div>
-            <p className="text-sm text-slate-500">
-              {isArabic ? "الدورة" : "Course"}
-            </p>
+          <Field label={isArabic ? "الدورة" : "Course"}>
+            {courseTitle ?? "-"}
+          </Field>
 
-            <p className="mt-2 font-bold">
-              {courseTitle ?? "-"}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              {isArabic ? "الحالة" : "Status"}
-            </p>
-
-            <p
-              className={`mt-2 inline-flex rounded-full px-3 py-1 text-sm font-bold ${
+          <Field label={isArabic ? "الحالة" : "Status"}>
+            <span
+              className={`inline-flex rounded-full px-3 py-1 text-sm font-bold ${
                 coupon.isActive
-                  ? "bg-green-50 text-green-700"
-                  : "bg-red-50 text-red-700"
+                  ? "bg-[var(--brand-success-bg)] text-[var(--brand-success)]"
+                  : "bg-[var(--brand-danger-bg)] text-[var(--brand-danger)]"
               }`}
             >
               {coupon.isActive
                 ? isArabic
-                  ? "فعال"
+                  ? "فعّال"
                   : "Active"
                 : isArabic
-                  ? "معطل"
+                  ? "معطّل"
                   : "Disabled"}
-            </p>
-          </div>
+            </span>
+          </Field>
 
-          <div>
-            <p className="text-sm text-slate-500">
-              {isArabic ? "مستخدم" : "Used"}
-            </p>
+          <Field label={isArabic ? "مستخدم" : "Used"}>
+            {coupon.isUsed
+              ? isArabic
+                ? "نعم"
+                : "Yes"
+              : isArabic
+                ? "لا"
+                : "No"}
+          </Field>
 
-            <p className="mt-2 font-bold">
-              {coupon.isUsed
-                ? isArabic
-                  ? "نعم"
-                  : "Yes"
-                : isArabic
-                  ? "لا"
-                  : "No"}
-            </p>
-          </div>
+          <Field label={isArabic ? "استخدمه" : "Used By"}>
+            {usedBy}
+          </Field>
 
-          <div>
-            <p className="text-sm text-slate-500">
-              {isArabic ? "استخدمه" : "Used By"}
-            </p>
+          <Field label={isArabic ? "تاريخ الاستخدام" : "Used At"}>
+            {coupon.usedAt
+              ? formatDateTime(coupon.usedAt, isArabic)
+              : "-"}
+          </Field>
 
-            <p className="mt-2 font-bold">
-              {usedBy}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              {isArabic ? "تاريخ الاستخدام" : "Used At"}
-            </p>
-
-            <p className="mt-2 font-bold">
-              {coupon.usedAt
-                ? new Date(
-                    coupon.usedAt
-                  ).toLocaleString()
-                : "-"}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">
-              {isArabic ? "تاريخ الإنشاء" : "Created At"}
-            </p>
-
-            <p className="mt-2 font-bold">
-              {new Date(
-                coupon.createdAt
-              ).toLocaleString()}
-            </p>
-          </div>
+          <Field label={isArabic ? "تاريخ الإنشاء" : "Created At"}>
+            {formatDateTime(coupon.createdAt, isArabic)}
+          </Field>
         </div>
       </section>
 
-      <section className="flex flex-wrap gap-3 rounded-2xl border bg-white p-6">
+      <section className="flex flex-wrap gap-3 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6">
+        {!coupon.isUsed && (
         <form
           action={async () => {
             await toggleCoupon(
               coupon.id,
               coupon.isActive
             );
+            router.refresh();
           }}
         >
           <button
             type="submit"
             className={
               coupon.isActive
-                ? "rounded-xl bg-red-50 px-5 py-3 font-bold text-red-700"
-                : "rounded-xl bg-green-50 px-5 py-3 font-bold text-green-700"
+                ? "rounded-xl bg-[var(--brand-danger-bg)] px-5 py-3 font-bold text-[var(--brand-danger)] transition hover:opacity-80"
+                : "rounded-xl bg-[var(--brand-success-bg)] px-5 py-3 font-bold text-[var(--brand-success)] transition hover:opacity-80"
             }
           >
             {coupon.isActive
@@ -194,6 +174,7 @@ export default function AdminCouponDetails({
                 : "Enable Coupon"}
           </button>
         </form>
+        )}
 
         <form
           action={async () => {

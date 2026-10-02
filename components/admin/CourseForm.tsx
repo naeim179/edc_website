@@ -209,112 +209,150 @@ export default function CourseForm({
           السعر
         </h2>
 
-        <div>
-          <label className="block mb-2 font-bold text-[var(--brand-text)]">
-            السعر الأساسي بالدولار (USD)
-          </label>
-
-          <input
-            name="course_price"
-            type="number"
-            min="0"
-            step="0.01"
-            required
-            defaultValue={course?.price ?? 0}
-            placeholder="مثال: 68"
-            className="w-full rounded-xl border px-4 py-3"
-          />
-        </div>
-
-        <div className="border-t pt-5 space-y-4">
-          <h3 className="font-bold">
-            الخصم
-          </h3>
-
-          <div>
-            <label className="block mb-2 font-bold text-[var(--brand-text)]">
-              نوع الخصم
-            </label>
-
-            <select
-              name="discount_type"
-              value={discountType}
-              onChange={(e) =>
-                setDiscountType(
-                  e.target.value as "percentage" | "fixed"
-                )
-              }
-              className="w-full rounded-xl border px-4 py-3"
-            >
-              <option value="percentage">
-                نسبة مئوية (%)
-              </option>
-
-              <option value="fixed">
-                مبلغ ثابت (USD)
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block mb-2 font-bold text-[var(--brand-text)]">
-              قيمة الخصم
-            </label>
-
+        <div className="grid grid-cols-2 gap-3">
+          <label
+            className={`border rounded-xl p-4 cursor-pointer transition ${
+              isFree
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-slate-200"
+            }`}
+          >
             <input
-              name="discount_value"
-              type="number"
-              min="0"
-              max={
-                discountType === "percentage"
-                  ? 100
-                  : undefined
-              }
-              step="0.01"
-              value={discountValue}
-              onChange={(e) =>
-                setDiscountValue(
-                  Number(e.target.value)
-                )
-              }
-              className="w-full rounded-xl border px-4 py-3"
-            />
-          </div>
-
-          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-            <p className="text-sm text-[var(--brand-text-muted)]">
-              السعر النهائي
-            </p>
-
-            <p className="text-2xl font-bold text-emerald-700 mt-1">
-              {calculatedFinalPrice.toFixed(2)} USD
-            </p>
-
-            {discountValue > 0 && (
-              <p className="text-sm text-slate-400 mt-1 line-through">
-                {price.toFixed(2)} USD
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {isEditing && (
-        <div className="border rounded-xl p-4">
-          <label className="flex items-center gap-3 font-bold">
-            <input
+              type="radio"
               name="is_free"
-              type="checkbox"
+              value="on"
               checked={isFree}
-              onChange={(e) =>
-                setIsFree(e.target.checked)
-              }
+              onChange={() => setIsFree(true)}
+              className="me-2"
             />
+            <span className="font-bold">
+              دورة مجانية
+            </span>
+          </label>
 
-            دورة مجانية
+          <label
+            className={`border rounded-xl p-4 cursor-pointer transition ${
+              !isFree
+                ? "border-blue-500 bg-blue-50"
+                : "border-slate-200"
+            }`}
+          >
+            <input
+              type="radio"
+              name="is_free"
+              value="off"
+              checked={!isFree}
+              onChange={() => setIsFree(false)}
+              className="me-2"
+            />
+            <span className="font-bold">
+              دورة مدفوعة
+            </span>
           </label>
         </div>
-      )}
+
+        {isFree ? (
+          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+            <p className="font-bold text-emerald-700">
+              هذه الدورة مجانية
+            </p>
+            <p className="text-sm text-emerald-700 mt-1">
+              لن يطلب من الطالب أي عملية دفع.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div>
+              <label className="block mb-2 font-bold text-[var(--brand-text)]">
+                السعر الأساسي بالدولار (USD)
+              </label>
+
+              <input
+                name="course_price"
+                type="number"
+                min="0"
+                step="0.01"
+                required
+                defaultValue={course?.price ?? 0}
+                placeholder="مثال: 68"
+                className="w-full rounded-xl border px-4 py-3"
+              />
+            </div>
+
+            <div className="border-t pt-5 space-y-4">
+              <h3 className="font-bold">
+                الخصم
+              </h3>
+
+              <div>
+                <label className="block mb-2 font-bold text-[var(--brand-text)]">
+                  نوع الخصم
+                </label>
+
+                <select
+                  name="discount_type"
+                  value={discountType}
+                  onChange={(e) =>
+                    setDiscountType(
+                      e.target.value as "percentage" | "fixed"
+                    )
+                  }
+                  className="w-full rounded-xl border px-4 py-3"
+                >
+                  <option value="percentage">
+                    نسبة مئوية (%)
+                  </option>
+
+                  <option value="fixed">
+                    مبلغ ثابت (USD)
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block mb-2 font-bold text-[var(--brand-text)]">
+                  قيمة الخصم
+                </label>
+
+                <input
+                  name="discount_value"
+                  type="number"
+                  min="0"
+                  max={
+                    discountType === "percentage"
+                      ? 100
+                      : undefined
+                  }
+                  step="0.01"
+                  value={discountValue}
+                  onChange={(e) =>
+                    setDiscountValue(
+                      Number(e.target.value)
+                    )
+                  }
+                  className="w-full rounded-xl border px-4 py-3"
+                />
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                <p className="text-sm text-[var(--brand-text-muted)]">
+                  السعر النهائي
+                </p>
+
+                <p className="text-2xl font-bold text-emerald-700 mt-1">
+                  {calculatedFinalPrice.toFixed(2)} USD
+                </p>
+
+                {discountValue > 0 && (
+                  <p className="text-sm text-slate-400 mt-1 line-through">
+                    {price.toFixed(2)} USD
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
       <div className="border rounded-xl p-4">
         <label className="flex items-center gap-3 font-bold">

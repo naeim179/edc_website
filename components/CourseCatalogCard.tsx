@@ -122,7 +122,7 @@ export default function CourseCatalogCard({
                   ? "مباشر"
                   : "Live"
                 : isArabic
-                  ? "مسجل"
+                  ? "فيديو مسجل"
                   : "Recorded"}
             </Badge>
           )}
@@ -154,15 +154,11 @@ export default function CourseCatalogCard({
           )}
 
 
-          <Badge variant={pricing.isFree ? "success" : "info"}>
-            {pricing.isFree
-              ? isArabic
-                ? "مجاني"
-                : "Free"
-              : isArabic
-                ? "مدفوع"
-                : "Paid"}
-          </Badge>
+          {(pricing.isFree || pricing.final <= 0) && (
+            <Badge variant="success">
+              {isArabic ? "مجاني" : "Free"}
+            </Badge>
+          )}
 
         </div>
 
@@ -285,7 +281,7 @@ export default function CourseCatalogCard({
                 {isArabic ? "مسجل" : "Enrolled"}
               </span>
 
-            ) : pricing.isFree ? (
+            ) : (pricing.isFree || pricing.final <= 0) ? (
 
               <span className="
                 text-lg

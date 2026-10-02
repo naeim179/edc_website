@@ -1,360 +1,537 @@
-import Link from "next/link";
-import AppShell from "@/components/AppShell";
-import TeacherProfileForm from "./TeacherProfileForm";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { translations } from "@/lib/i18n";
 import {
-  assignCourseToTeacher,
-  removeCourseFromTeacher,
-  updateTeacherAccount,
-} from "@/app/actions/teachers";
+  notFound,
+} from "next/navigation";
+
+import AppShell from "@/components/AppShell";
+import TeacherAdminManager from "@/components/admin/TeacherAdminManager";
+
+import {
+  createAdminClient,
+} from "@/lib/supabase/admin";
+
+import {
+  createClient,
+} from "@/lib/supabase/server";
+
+import {
+  requirePermission,
+} from "@/lib/auth/admin-access";
+
+
+type CourseInfo = {
+  id: string;
+  title: string;
+
+  course_type:
+    | "group"
+    | "private";
+
+  is_published:
+    | boolean
+    | null;
+
+  enrollments:
+    | {
+        id: string;
+        student_id: string;
+      }[]
+    | null;
+};
+
+
+type RawAssignment = {
+  id: string;
+
+  course:
+    | CourseInfo
+    | CourseInfo[]
+    | null;
+};
+
+
+function relationOne<T>(
+  value:
+    | T
+    | T[]
+    | null
+    | undefined
+): T | null {
+  if (
+    Array.isArray(value)
+  ) {
+    return (
+      value[0] ??
+      null
+    );
+  }
+
+  return (
+    value ??
+    null
+  );
+}
 
 
 export default async function TeacherManagePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{
+    id: string;
+  }>;
 }) {
+  const access =
+    await requirePermission(
+      "manage_teachers"
+    );
 
-  const { id } = await params;
+  const { id } =
+    await params;
 
-  const admin = createAdminClient();
-  const t = translations.ar;
+  const admin =
+    createAdminClient();
+
+  /*
+   * Normal authenticated admin client is used for conversations,
+   * because the chat table access is already protected by RLS.
+   */
+  const supabase =
+    await createClient();
 
 
-  const { data: teacher } = await admin
+  const {
+    data: teacher,
+    error: teacherError,
+  } = await admin
     .from("profiles")
     .select(`
       id,
       full_name,
+      phone,
       role,
-      created_at
+      created_at,
+      avatar_url
     `)
-    .eq("id", id)
-    .eq("role", "teacher")
+    .eq(
+      "id",
+      id
+    )
+    .eq(
+      "role",
+      "teacher"
+    )
     .maybeSingle();
 
 
-  if (!teacher) {
-    return (
-      <AppShell>
-        <div className="max-w-5xl mx-auto p-6" dir="rtl">
-          <h1 className="text-2xl font-bold">
-            {t.admin.teacherNotFound}
-          </h1>
-        </div>
-      </AppShell>
+  if (teacherError) {
+    throw new Error(
+      teacherError.message
     );
   }
 
 
+  if (!teacher) {
+    notFound();
+  }
 
-  const { data: teacherProfile } =
-    await admin
-      .from("teacher_profiles")
+
+  const [
+    profileResult,
+    authResult,
+    assignmentsResult,
+    coursesResult,
+    allAssignmentsResult,
+    conversationsResult,
+  ] = await Promise.all([
+    admin
+      .from(
+        "teacher_profiles"
+      )
       .select(`
         image_url,
         bio,
         specialization,
         experience_years
       `)
-      .eq("user_id", id)
-      .maybeSingle();
+      .eq(
+        "user_id",
+        id
+      )
+      .maybeSingle(),
 
+    admin.auth.admin
+      .getUserById(
+        id
+      ),
 
-
-  const { data: authData } =
-    await admin.auth.admin.getUserById(id);
-
-
-  const email =
-    authData.user?.email ?? "";
-
-
-
-  const { data: assignments } =
-    await admin
-      .from("course_instructors")
+    admin
+      .from(
+        "course_instructors"
+      )
       .select(`
         id,
-        course:courses(
+
+        course:courses (
           id,
           title,
-          course_type
+          course_type,
+          is_published,
+
+          enrollments (
+            id,
+            student_id
+          )
         )
       `)
-      .eq("teacher_id", id);
+      .eq(
+        "teacher_id",
+        id
+      ),
 
-
-
-  console.log("ASSIGNMENTS:", JSON.stringify(assignments, null, 2));
-
-  const { data: allCourses } =
-    await admin
+    admin
       .from("courses")
       .select(`
         id,
         title,
-        course_type
+        course_type,
+        is_published
       `)
-      .order("created_at", {
-        ascending:false,
-      });
+      .order(
+        "created_at",
+        {
+          ascending:
+            false,
+        }
+      ),
+
+    /*
+     * All assignments on the platform.
+     * Used to prevent a course assigned to Teacher A
+     * from appearing in Teacher B's selector.
+     */
+    admin
+      .from(
+        "course_instructors"
+      )
+      .select(
+        "course_id"
+      ),
+
+    supabase
+      .from(
+        "conversations"
+      )
+      .select(
+        "id",
+        {
+          count:
+            "exact",
+          head: true,
+        }
+      )
+      .eq(
+        "teacher_id",
+        id
+      ),
+  ]);
 
 
+  if (
+    profileResult.error
+  ) {
+    throw new Error(
+      profileResult.error.message
+    );
+  }
 
-  const assignedCourseIds =
+
+  if (
+    authResult.error
+  ) {
+    throw new Error(
+      authResult.error.message
+    );
+  }
+
+
+  if (
+    assignmentsResult.error
+  ) {
+    throw new Error(
+      assignmentsResult.error.message
+    );
+  }
+
+
+  if (
+    coursesResult.error
+  ) {
+    throw new Error(
+      coursesResult.error.message
+    );
+  }
+
+
+  if (
+    allAssignmentsResult.error
+  ) {
+    throw new Error(
+      allAssignmentsResult.error.message
+    );
+  }
+
+
+  if (
+    conversationsResult.error
+  ) {
+    console.error(
+      "Teacher conversations count error:",
+      conversationsResult.error
+    );
+  }
+
+
+  const authUser =
+    authResult.data.user as
+      typeof authResult.data.user & {
+        banned_until?:
+          | string
+          | null;
+      };
+
+
+  const bannedUntil =
+    authUser.banned_until ??
+    null;
+
+
+  const isBanned =
+    Boolean(
+      bannedUntil &&
+      new Date(
+        bannedUntil
+      ).getTime() >
+        Date.now()
+    );
+
+
+  /*
+   * Supabase relations can be returned as an object OR array
+   * depending on inferred relationship cardinality.
+   */
+  const assignments =
+    (
+      (
+        assignmentsResult.data ??
+        []
+      ) as unknown as RawAssignment[]
+    )
+      .map(
+        (item) => {
+          const course =
+            relationOne(
+              item.course
+            );
+
+          if (!course) {
+            return null;
+          }
+
+          return {
+            id:
+              item.id,
+
+            courseId:
+              course.id,
+
+            title:
+              course.title,
+
+            courseType:
+              course.course_type,
+
+            isPublished:
+              Boolean(
+                course.is_published
+              ),
+
+            studentsCount:
+              course
+                .enrollments
+                ?.length ??
+              0,
+
+            studentIds:
+              (
+                course.enrollments ??
+                []
+              ).map(
+                (
+                  enrollment
+                ) =>
+                  enrollment.student_id
+              ),
+          };
+        }
+      )
+      .filter(
+        (
+          item
+        ): item is NonNullable<
+          typeof item
+        > =>
+          item !== null
+      );
+
+
+  /*
+   * Every course already assigned to ANY teacher.
+   * These courses must not appear in the add-course selector.
+   */
+  const globallyAssignedCourseIds =
     new Set(
-      (assignments ?? [])
-        .map(
-          (item)=>item.course?.[0]?.id
+      (
+        allAssignmentsResult.data ??
+        []
+      ).map(
+        (
+          assignment
+        ) =>
+          assignment.course_id
+      )
+    );
+
+
+  const availableCourses =
+    (
+      coursesResult.data ??
+      []
+    ).filter(
+      (
+        course
+      ) =>
+        !globallyAssignedCourseIds.has(
+          course.id
         )
     );
 
 
-
-  const availableCourses =
-    (allCourses ?? [])
-      .filter(
-        (course)=>
-          !assignedCourseIds.has(course.id)
-      );
-
-
-
-  const updateAction =
-    updateTeacherAccount.bind(
-      null,
-      id
+  const studentIds =
+    new Set(
+      assignments.flatMap(
+        (
+          assignment
+        ) =>
+          assignment.studentIds
+      )
     );
 
 
-
-  const assignAction =
-    assignCourseToTeacher.bind(
-      null,
-      id
-    );
-
+  const profile =
+    profileResult.data;
 
 
   return (
     <AppShell>
+      <TeacherAdminManager
+        teacher={{
+          id:
+            teacher.id,
 
-      <div
-        className="max-w-5xl mx-auto p-6 space-y-6"
-        dir="rtl"
-      >
+          fullName:
+            teacher.full_name,
 
+          email:
+            authUser.email ??
+            "",
 
-        <div className="flex justify-between">
+          phone:
+            teacher.phone,
 
-          <h1 className="text-2xl font-bold">
-            {t.admin.manageTeacherAccount}
-          </h1>
+          createdAt:
+            teacher.created_at,
 
+          lastSignInAt:
+            authUser.last_sign_in_at ??
+            null,
+        }}
+        profile={{
+          imageUrl:
+            profile?.image_url ??
+            teacher.avatar_url ??
+            null,
 
-          <Link
-            href="/admin/teachers"
-            className="text-[#124b8a] font-bold"
-          >
-            {t.admin.back}
-          </Link>
+          specialization:
+            profile?.specialization ??
+            null,
 
-        </div>
+          experienceYears:
+            profile?.experience_years ??
+            0,
 
-
-
-        <TeacherProfileForm
-          teacherId={id}
-          profile={teacherProfile}
-        />
-
-
-
-        <form
-          action={updateAction}
-          className="bg-white border rounded-2xl p-6 space-y-4"
-        >
-
-          <h2 className="font-bold text-lg">
-            {t.admin.accountInfo}
-          </h2>
-
-
-          <input
-            name="fullName"
-            defaultValue={teacher.full_name ?? ""}
-            className="w-full border rounded-xl px-4 py-3"
-            placeholder={t.admin.name}
-          />
-
-
-          <input
-            name="email"
-            defaultValue={email}
-            className="w-full border rounded-xl px-4 py-3"
-            placeholder="Email"
-          />
-
-
-          <input
-            name="password"
-            type="password"
-            placeholder={t.admin.newPassword}
-            className="w-full border rounded-xl px-4 py-3"
-          />
-
-
-          <button
-            className="bg-[#124b8a] text-white px-6 py-3 rounded-xl font-bold"
-          >
-            {t.admin.saveChanges}
-          </button>
-
-
-        </form>
-
-
-
-
-        <div className="bg-white border rounded-2xl p-6">
-
-
-          <h2 className="font-bold mb-4">
-            {t.admin.assignedCourses}
-          </h2>
-
-
-          <div className="space-y-3">
-
-
-          {assignments?.map((item)=>{
-
-            const course = Array.isArray(item.course)
-              ? item.course[0]
-              : item.course;
-
-            return (
-
-            <div
-              key={item.id}
-              className="border rounded-xl p-4 flex justify-between"
-            >
-
-              <span className="font-bold">
-
-                {course?.title}
-
-                {" - "}
-
-                {
-                  course?.course_type === "group"
-                  ? "Group"
-                  : "Private"
-                }
-
-              </span>
-
-
-
-              <form
-                action={
-                  removeCourseFromTeacher.bind(
-                    null,
-                    id,
-                    item.id
-                  )
-                }
-              >
-
-                <button
-                  className="text-red-600 font-bold"
-                >
-                  {t.admin.remove}
-                </button>
-
-
-              </form>
-
-
-            </div>
-
+          bio:
+            profile?.bio ??
+            null,
+        }}
+        assignments={
+          assignments.map(
+            ({
+              studentIds:
+                _studentIds,
+              ...assignment
+            }) =>
+              assignment
           )
-          })}
+        }
+        availableCourses={
+          availableCourses.map(
+            (
+              course
+            ) => ({
+              id:
+                course.id,
 
+              title:
+                course.title,
 
-          </div>
+              courseType:
+                course.course_type as
+                  | "group"
+                  | "private",
 
+              isPublished:
+                Boolean(
+                  course.is_published
+                ),
+            })
+          )
+        }
+        stats={{
+          courses:
+            assignments.length,
 
-        </div>
+          students:
+            studentIds.size,
 
-
-
-
-        <form
-          action={assignAction}
-          className="bg-white border rounded-2xl p-6"
-        >
-
-
-          <h2 className="font-bold mb-4">
-            {t.admin.addCourseToTeacher}
-          </h2>
-
-
-
-          <select
-            name="courseId"
-            required
-            className="w-full border rounded-xl px-4 py-3 mb-4"
-          >
-
-            <option value="">
-              {t.admin.chooseCourse}
-            </option>
-
-
-
-            {availableCourses.map((course)=>(
-
-              <option
-                key={course.id}
-                value={course.id}
-              >
-
-                {course.title}
-
-                {" - "}
-
-                {
-                  course.course_type === "group"
-                  ? "Group"
-                  : "Private"
-                }
-
-              </option>
-
-            ))}
-
-
-          </select>
-
-
-
-          <button
-            className="bg-[#087a54] text-white px-6 py-3 rounded-xl font-bold"
-          >
-            {t.admin.add}
-          </button>
-
-
-        </form>
-
-
-
-      </div>
-
+          conversations:
+            conversationsResult.count ??
+            0,
+        }}
+        isBanned={
+          isBanned
+        }
+        bannedUntil={
+          bannedUntil
+        }
+        canDeleteTeacher={
+          access.isSuper
+        }
+        canManageCourses={
+          access.isSuper ||
+          access.permissions.includes(
+            "manage_courses"
+          )
+        }
+      />
     </AppShell>
   );
 }

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import AppShell from "@/components/AppShell";
 import AdminStudentDetailContent from "@/components/AdminStudentDetailContent";
+import StudentAccountActions from "@/components/admin/StudentAccountActions";
 import { requirePermission } from "@/lib/auth/admin-access";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -10,7 +11,10 @@ export default async function StudentDetailsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePermission("manage_students");
+  const access =
+    await requirePermission(
+      "manage_students"
+    );
 
   const { id } = await params;
   const admin = createAdminClient();
@@ -50,6 +54,27 @@ export default async function StudentDetailsPage({
       authUserResult.error.message
     );
   }
+
+  const authUser =
+    authUserResult.data.user as
+      typeof authUserResult.data.user & {
+        banned_until?:
+          | string
+          | null;
+      };
+
+  const bannedUntil =
+    authUser.banned_until ??
+    null;
+
+  const isBanned =
+    Boolean(
+      bannedUntil &&
+        new Date(
+          bannedUntil
+        ).getTime() >
+          Date.now()
+    );
 
   const student =
     studentResult.data;
@@ -318,8 +343,7 @@ export default async function StudentDetailsPage({
             student.phone,
 
           email:
-            authUserResult.data
-              .user.email ??
+            authUser.email ??
             null,
 
           createdAt:
@@ -327,6 +351,15 @@ export default async function StudentDetailsPage({
         }}
         enrollments={
           enrollmentsData
+        }
+      />
+
+      <StudentAccountActions
+        studentId={student.id}
+        isBanned={isBanned}
+        bannedUntil={bannedUntil}
+        canDeleteStudent={
+          access.isSuper
         }
       />
     </AppShell>

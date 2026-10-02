@@ -50,6 +50,7 @@ export default async function AppShell({
     <AppShellClient
       role={role}
       isAuthenticated={Boolean(user)}
+      userId={user?.id ?? null}
       isSuperAdmin={isSuperAdmin}
       permissions={permissions}
       userName={displayName}

@@ -1,38 +1,65 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { startConversation } from "@/app/actions/chat";
+import {
+  useTransition,
+} from "react";
+
+import {
+  useRouter,
+} from "next/navigation";
+
+import {
+  startConversation,
+} from "@/app/actions/chat";
+
 
 export default function StartConversationButton({
   courseId,
-  teacherId,
 }: {
   courseId: string;
-  teacherId: string;
+  teacherId?: string;
 }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const router =
+    useRouter();
+
+  const [
+    isPending,
+    startTransition,
+  ] = useTransition();
+
 
   function handleClick() {
-    startTransition(async () => {
-      try {
-        const conversationId = await startConversation(courseId, teacherId);
-        router.push(`/messages/${conversationId}`);
-      } catch (err) {
-        console.error(err);
-        alert(err instanceof Error ? err.message : "حدث خطأ");
+    startTransition(
+      async () => {
+        try {
+          const conversationId =
+            await startConversation(
+              courseId
+            );
+
+          router.push(
+            `/messages/${conversationId}`
+          );
+        } catch (error) {
+          console.error(
+            error
+          );
+        }
       }
-    });
+    );
   }
+
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       disabled={isPending}
-      className="bg-[#087a54] text-white px-5 py-2 rounded-lg font-bold disabled:opacity-50"
+      className="rounded-xl bg-[#087a54] px-5 py-2.5 font-bold text-white disabled:opacity-50"
     >
-      {isPending ? "جاري الفتح..." : "تواصل مع المدرس"}
+      {isPending
+        ? "جاري الفتح..."
+        : "تواصل مع المدرس"}
     </button>
   );
 }

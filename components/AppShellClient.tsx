@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -9,11 +10,13 @@ import {
 import { useLanguage } from "@/components/LanguageProvider";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
+import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   children: ReactNode;
   role: string | null;
   isAuthenticated: boolean;
+  userId: string | null;
   isSuperAdmin?: boolean;
   permissions?: string[] | null;
   userName: string;
@@ -24,6 +27,7 @@ export default function AppShellClient({
   children,
   role,
   isAuthenticated,
+  userId,
   isSuperAdmin = false,
   permissions = null,
   userName,
@@ -52,6 +56,109 @@ export default function AppShellClient({
       () => setMenuOpen(true),
       []
     );
+
+
+  // presence-heartbeat
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    const supabase =
+      createClient();
+
+    let stopped =
+      false;
+
+    async function heartbeat() {
+      if (stopped) {
+        return;
+      }
+
+      const {
+        error,
+      } = await supabase
+        .from(
+          "user_presence"
+        )
+        .upsert(
+          {
+            user_id:
+              userId,
+
+            last_seen:
+              new Date()
+                .toISOString(),
+          },
+          {
+            onConflict:
+              "user_id",
+          }
+        );
+
+      if (error) {
+        console.error(
+          "Presence heartbeat failed:",
+          error.message
+        );
+      }
+    }
+
+    void heartbeat();
+
+    const timer =
+      window.setInterval(
+        () => {
+          void heartbeat();
+        },
+        30000
+      );
+
+    const onFocus =
+      () => {
+        void heartbeat();
+      };
+
+    const onVisibility =
+      () => {
+        if (
+          document.visibilityState ===
+          "visible"
+        ) {
+          void heartbeat();
+        }
+      };
+
+    window.addEventListener(
+      "focus",
+      onFocus
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      onVisibility
+    );
+
+    return () => {
+      stopped = true;
+
+      window.clearInterval(
+        timer
+      );
+
+      window.removeEventListener(
+        "focus",
+        onFocus
+      );
+
+      document.removeEventListener(
+        "visibilitychange",
+        onVisibility
+      );
+    };
+  }, [
+    userId,
+  ]);
 
 
   return (

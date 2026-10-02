@@ -26,6 +26,7 @@ export default async function EditCoursePage({
       is_free,
       is_published,
       course_type,
+      delivery_type,
       discount_type,
       discount_value
     `)

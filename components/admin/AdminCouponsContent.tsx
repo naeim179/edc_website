@@ -4,11 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useLanguage } from "@/components/LanguageProvider";
-import {
-  createCoupon,
-  toggleCoupon,
-} from "@/app/actions/admin-coupons";
+import { createCoupon } from "@/app/actions/admin-coupons";
 import CopyCouponButton from "@/components/admin/CopyCouponButton";
+import { formatDate } from "@/lib/format-date";
 
 type Coupon = {
   id: string;
@@ -19,14 +17,12 @@ type Coupon = {
   used_at: string | null;
   created_at: string;
 
-  course: {
-    title: string;
-  }[] | null;
+  course: { title: string } | { title: string }[] | null;
 
-  user: {
-    full_name: string | null;
-    username: string | null;
-  }[] | null;
+  user:
+    | { full_name: string | null; username: string | null }
+    | { full_name: string | null; username: string | null }[]
+    | null;
 };
 
 type Course = {
@@ -38,6 +34,11 @@ type Props = {
   coupons: Coupon[];
   courses: Course[];
 };
+
+function firstOf<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
 
 export default function AdminCouponsContent({
   coupons,
@@ -75,13 +76,13 @@ export default function AdminCouponsContent({
       className="mx-auto w-full max-w-7xl space-y-6"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      <div className="flex items-center justify-between rounded-[28px] bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] p-8 text-white">
+      <div className="flex items-center justify-between gap-4 rounded-[28px] bg-gradient-to-l from-[var(--hero-start)] to-[var(--hero-end)] p-8 text-white">
         <div>
           <h1 className="text-3xl font-bold">
             {isArabic ? "إدارة الكوبونات" : "Manage Coupons"}
           </h1>
 
-          <p className="mt-2 text-blue-100">
+          <p className="mt-2 text-white/70">
             {isArabic
               ? "إنشاء وإدارة الكوبونات المجانية للدورات"
               : "Create and manage free course coupons"}
@@ -91,7 +92,7 @@ export default function AdminCouponsContent({
         <button
           type="button"
           onClick={() => setShowForm((value) => !value)}
-          className="rounded-xl bg-white px-5 py-3 font-bold text-[#124b8a]"
+          className="shrink-0 rounded-xl bg-[var(--brand-bg)] px-5 py-3 font-bold text-[var(--brand-ink)] transition hover:opacity-90"
         >
           + {isArabic ? "كوبون جديد" : "New Coupon"}
         </button>
@@ -100,7 +101,7 @@ export default function AdminCouponsContent({
       {showForm && (
         <form
           action={createCoupon}
-          className="rounded-2xl border bg-white p-6"
+          className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-[var(--brand-text)]"
         >
           <h2 className="mb-4 text-lg font-bold">
             {isArabic ? "إنشاء كوبون" : "Create Coupon"}
@@ -114,7 +115,7 @@ export default function AdminCouponsContent({
                 placeholder={
                   isArabic ? "كود الكوبون" : "Coupon Code"
                 }
-                className="flex-1 rounded-xl border px-4 py-3"
+                className="flex-1 rounded-xl border border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 py-3 text-[var(--brand-text)] outline-none focus:border-[var(--brand-ink)]"
               />
 
               <button
@@ -127,7 +128,7 @@ export default function AdminCouponsContent({
                     input.value = generateCode();
                   }
                 }}
-                className="rounded-xl bg-slate-100 px-4 font-bold"
+                className="rounded-xl bg-[var(--brand-ink-soft)] px-4 font-bold text-[var(--brand-ink)] transition hover:opacity-80"
               >
                 {isArabic ? "توليد" : "Generate"}
               </button>
@@ -136,7 +137,7 @@ export default function AdminCouponsContent({
             <select
               name="course_id"
               defaultValue=""
-              className="rounded-xl border px-4 py-3"
+              className="rounded-xl border border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 py-3 text-[var(--brand-text)] outline-none focus:border-[var(--brand-ink)]"
               required
             >
               <option value="">
@@ -156,44 +157,46 @@ export default function AdminCouponsContent({
 
           <button
             type="submit"
-            className="mt-4 rounded-xl bg-[#124b8a] px-6 py-3 font-bold text-white"
+            className="mt-4 rounded-xl bg-[var(--brand-ink)] px-6 py-3 font-bold text-[var(--brand-bg)] transition hover:bg-[var(--brand-ink-hover)]"
           >
             {isArabic ? "حفظ" : "Create"}
           </button>
         </form>
       )}
 
-      <div className="overflow-hidden rounded-2xl border bg-white">
+      <div className="overflow-hidden rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-text)]">
         {coupons.length > 0 ? (
           <table className="w-full">
-            <thead className="bg-slate-50">
+            <thead className="bg-[var(--brand-bg)] text-sm text-[var(--brand-text-muted)]">
               <tr>
-                <th className="p-4 text-start">
+                <th className="p-4 text-start font-semibold">
                   {isArabic ? "الكود" : "Code"}
                 </th>
 
-                <th className="p-4 text-start">
+                <th className="p-4 text-start font-semibold">
                   {isArabic ? "الدورة" : "Course"}
                 </th>
 
-                <th className="p-4 text-start">
+                <th className="p-4 text-start font-semibold">
                   {isArabic ? "الحالة" : "Status"}
                 </th>
 
-                <th className="p-4 text-start">
+                <th className="p-4 text-start font-semibold">
                   {isArabic ? "مستخدم" : "Used"}
                 </th>
 
-                <th className="p-4 text-start">
+                <th className="p-4 text-start font-semibold">
                   {isArabic ? "تاريخ الإنشاء" : "Created"}
                 </th>
+
+                <th className="w-12 p-4" aria-hidden="true"></th>
               </tr>
             </thead>
 
             <tbody>
               {coupons.map((coupon) => {
                 const courseTitle =
-                  coupon.course?.[0]?.title ?? "-";
+                  firstOf(coupon.course)?.title ?? "-";
 
                 return (
                   <tr
@@ -216,7 +219,7 @@ export default function AdminCouponsContent({
                         );
                       }
                     }}
-                    className="cursor-pointer border-t transition-colors hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
+                    className="group cursor-pointer border-t border-[var(--brand-border-soft)] transition-colors hover:bg-[var(--brand-ink-soft)] focus:bg-[var(--brand-ink-soft)] focus:outline-none"
                   >
                     <td className="p-4 font-bold">
                       <div
@@ -237,34 +240,21 @@ export default function AdminCouponsContent({
                     </td>
 
                     <td className="p-4">
-                      <form
-                        action={async () => {
-                          await toggleCoupon(
-                            coupon.id,
-                            coupon.is_active
-                          );
-                        }}
-                        onClick={(event) =>
-                          event.stopPropagation()
+                      <span
+                        className={
+                          coupon.is_active
+                            ? "rounded-lg bg-[var(--brand-success-bg)] px-3 py-1 text-sm font-bold text-[var(--brand-success)]"
+                            : "rounded-lg bg-[var(--brand-danger-bg)] px-3 py-1 text-sm font-bold text-[var(--brand-danger)]"
                         }
                       >
-                        <button
-                          type="submit"
-                          className={
-                            coupon.is_active
-                              ? "rounded-lg bg-red-50 px-3 py-1 text-sm font-bold text-red-700"
-                              : "rounded-lg bg-green-50 px-3 py-1 text-sm font-bold text-green-700"
-                          }
-                        >
-                          {coupon.is_active
-                            ? isArabic
-                              ? "تعطيل"
-                              : "Disable"
-                            : isArabic
-                              ? "تفعيل"
-                              : "Enable"}
-                        </button>
-                      </form>
+                        {coupon.is_active
+                          ? isArabic
+                            ? "فعّال"
+                            : "Active"
+                          : isArabic
+                            ? "معطّل"
+                            : "Disabled"}
+                      </span>
                     </td>
 
                     <td className="p-4">
@@ -277,10 +267,23 @@ export default function AdminCouponsContent({
                           : "No"}
                     </td>
 
-                    <td className="p-4 text-sm text-slate-500">
-                      {new Date(
-                        coupon.created_at
-                      ).toLocaleDateString()}
+                    <td className="p-4 text-sm text-[var(--brand-text-muted)]">
+                      {formatDate(coupon.created_at, isArabic)}
+                    </td>
+
+                    <td className="w-12 p-4 text-[var(--brand-text-faint)] transition-colors group-hover:text-[var(--brand-ink)]">
+                      <svg
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-5 w-5 rtl:rotate-180"
+                        aria-hidden="true"
+                      >
+                        <path d="M7 4l6 6-6 6" />
+                      </svg>
                     </td>
                   </tr>
                 );
@@ -288,7 +291,7 @@ export default function AdminCouponsContent({
             </tbody>
           </table>
         ) : (
-          <div className="p-10 text-center text-slate-500">
+          <div className="p-10 text-center text-[var(--brand-text-muted)]">
             {isArabic
               ? "لا توجد كوبونات حالياً."
               : "No coupons yet."}

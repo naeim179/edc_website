@@ -1,191 +1,303 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import {
+  revalidatePath,
+} from "next/cache";
 
+import {
+  createAdminClient,
+} from "@/lib/supabase/admin";
 
-async function assertAdminOrSelf(teacherId:string){
+import {
+  createClient,
+} from "@/lib/supabase/server";
 
-  const supabase = await createClient();
+import {
+  hasAdminPermission,
+} from "@/lib/auth/admin-access";
+
+async function assertAdminOrSelf(
+  teacherId: string
+) {
+  const supabase =
+    await createClient();
 
   const {
-    data:{user}
-  } = await supabase.auth.getUser();
+    data: { user },
+  } =
+    await supabase.auth.getUser();
 
-
-  if(!user){
-    throw new Error("Unauthorized");
+  if (!user) {
+    throw new Error(
+      "Unauthorized"
+    );
   }
 
-
-  const {data:profile}=await supabase
+  const {
+    data: profile,
+  } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id",user.id)
+    .eq(
+      "id",
+      user.id
+    )
     .maybeSingle();
 
-
-  if(
-    profile?.role !== "admin" &&
-    user.id !== teacherId
-  ){
-    throw new Error("Not allowed");
+  if (
+    user.id === teacherId &&
+    profile?.role ===
+      "teacher"
+  ) {
+    return;
   }
 
+  if (
+    profile?.role ===
+      "admin" &&
+    await hasAdminPermission(
+      "manage_teachers"
+    )
+  ) {
+    return;
+  }
+
+  throw new Error(
+    "Not allowed"
+  );
 }
 
-
-
-
 export async function updateTeacherProfile(
-  teacherId:string,
-  formData:FormData
-){
+  teacherId: string,
+  formData: FormData
+) {
+  await assertAdminOrSelf(
+    teacherId
+  );
 
-  await assertAdminOrSelf(teacherId);
+  const admin =
+    createAdminClient();
 
+  const imageUrl =
+    String(
+      formData.get(
+        "image_url"
+      ) ?? ""
+    ).trim();
 
-  const admin=createAdminClient();
+  const bio =
+    String(
+      formData.get(
+        "bio"
+      ) ?? ""
+    ).trim();
 
+  const specialization =
+    String(
+      formData.get(
+        "specialization"
+      ) ?? ""
+    ).trim();
 
-  const imageUrl=
-    String(formData.get("image_url") ?? "");
-
-
-  const bio=
-    String(formData.get("bio") ?? "");
-
-
-  const specialization=
-    String(formData.get("specialization") ?? "");
-
-
-  const experienceYears=
+  const experienceYears =
     Number(
-      formData.get("experience_years") ?? 0
+      formData.get(
+        "experience_years"
+      ) ?? 0
     );
 
-
-
-  const {error}=await admin
-    .from("teacher_profiles")
-    .upsert({
-
-      user_id:teacherId,
-
-      image_url:imageUrl || null,
-
-      bio,
-
-      specialization,
-
-      experience_years:experienceYears,
-
-    },
-    {
-      onConflict:"user_id"
-    });
-
-
-
-  if(error){
-    throw new Error(error.message);
+  if (
+    !Number.isInteger(
+      experienceYears
+    ) ||
+    experienceYears < 0 ||
+    experienceYears > 80
+  ) {
+    throw new Error(
+      "سنوات الخبرة غير صالحة"
+    );
   }
 
+  if (
+    bio.length > 3000
+  ) {
+    throw new Error(
+      "النبذة طويلة جداً"
+    );
+  }
 
-  const { error: avatarError } =
+  const { error } =
     await admin
-      .from("profiles")
-      .update({
-        avatar_url: imageUrl || null,
-      })
-      .eq("id", teacherId);
+      .from(
+        "teacher_profiles"
+      )
+      .upsert(
+        {
+          user_id:
+            teacherId,
 
+          image_url:
+            imageUrl ||
+            null,
+
+          bio,
+
+          specialization,
+
+          experience_years:
+            experienceYears,
+        },
+        {
+          onConflict:
+            "user_id",
+        }
+      );
+
+  if (error) {
+    throw new Error(
+      error.message
+    );
+  }
+
+  const {
+    error: avatarError,
+  } = await admin
+    .from("profiles")
+    .update({
+      avatar_url:
+        imageUrl ||
+        null,
+    })
+    .eq(
+      "id",
+      teacherId
+    );
 
   if (avatarError) {
-    throw new Error(avatarError.message);
+    throw new Error(
+      avatarError.message
+    );
   }
-
-
 
   revalidatePath(
     `/admin/teachers/${teacherId}`
   );
 
-  revalidatePath("/profile");
-  revalidatePath("/", "layout");
+  revalidatePath(
+    "/profile"
+  );
+
+  revalidatePath(
+    "/messages"
+  );
+
+  revalidatePath(
+    "/",
+    "layout"
+  );
 
 }
 
-
 export async function deleteTeacherAvatar(
-  teacherId:string
-){
+  teacherId: string
+) {
+  await assertAdminOrSelf(
+    teacherId
+  );
 
-  await assertAdminOrSelf(teacherId);
+  const admin =
+    createAdminClient();
 
-  const admin = createAdminClient();
-
-
-  const { data: teacherProfile } =
-    await admin
-      .from("teacher_profiles")
-      .select("image_url")
-      .eq("user_id", teacherId)
-      .maybeSingle();
-
+  const {
+    data: teacherProfile,
+  } = await admin
+    .from(
+      "teacher_profiles"
+    )
+    .select(
+      "image_url"
+    )
+    .eq(
+      "user_id",
+      teacherId
+    )
+    .maybeSingle();
 
   const imageUrl =
-    teacherProfile?.image_url;
-
+    teacherProfile
+      ?.image_url;
 
   if (imageUrl) {
-
     const path =
-      imageUrl.split("/images/")[1];
+      imageUrl.split(
+        "/images/"
+      )[1];
 
     if (path) {
       await admin.storage
         .from("images")
-        .remove([path]);
+        .remove([
+          path,
+        ]);
     }
-
   }
 
-
-  const { error: teacherError } =
-    await admin
-      .from("teacher_profiles")
-      .update({
-        image_url:null,
-      })
-      .eq("user_id", teacherId);
-
+  const {
+    error: teacherError,
+  } = await admin
+    .from(
+      "teacher_profiles"
+    )
+    .update({
+      image_url: null,
+    })
+    .eq(
+      "user_id",
+      teacherId
+    );
 
   if (teacherError) {
-    throw new Error(teacherError.message);
+    throw new Error(
+      teacherError.message
+    );
   }
 
-
-  const { error: profileError } =
-    await admin
-      .from("profiles")
-      .update({
-        avatar_url:null,
-      })
-      .eq("id", teacherId);
-
+  const {
+    error: profileError,
+  } = await admin
+    .from("profiles")
+    .update({
+      avatar_url: null,
+    })
+    .eq(
+      "id",
+      teacherId
+    );
 
   if (profileError) {
-    throw new Error(profileError.message);
+    throw new Error(
+      profileError.message
+    );
   }
-
 
   revalidatePath(
     `/admin/teachers/${teacherId}`
   );
 
-  revalidatePath("/profile");
-  revalidatePath("/", "layout");
+  revalidatePath(
+    "/profile"
+  );
+
+  revalidatePath(
+    "/messages"
+  );
+
+  revalidatePath(
+    "/",
+    "layout"
+  );
+
+  return {
+    success: true,
+  };
 }

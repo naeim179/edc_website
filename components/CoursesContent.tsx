@@ -85,8 +85,8 @@ export default function CoursesContent({
       <section className="
         rounded-3xl
         bg-gradient-to-l
-        from-[#124b8a]
-        to-[#1f5aa6]
+        from-[#1B4B43]
+        to-[#0F332D]
         p-8
         text-white
         shadow-sm

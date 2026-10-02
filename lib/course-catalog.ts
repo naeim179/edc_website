@@ -35,6 +35,7 @@ type RawCatalogCourse = {
   discount_value: number | null;
   delivery_type: "recorded" | "live";
   course_instructors?:
+    | { teacher?: RawTeacher | RawTeacher[] | null }
     | { teacher?: RawTeacher | RawTeacher[] | null }[]
     | null;
   sections?: { lessons?: { id: string }[] | null }[] | null;
@@ -111,11 +112,23 @@ export async function fetchCatalogCourses(
         0
       ) ?? 0;
 
-    const teacherData = course.course_instructors?.[0]?.teacher ?? null;
+    const instructorData =
+      course.course_instructors ??
+      null;
 
-    const teacher = Array.isArray(teacherData)
-      ? teacherData[0] ?? null
-      : teacherData;
+    const instructor =
+      Array.isArray(instructorData)
+        ? instructorData[0] ?? null
+        : instructorData;
+
+    const teacherData =
+      instructor?.teacher ??
+      null;
+
+    const teacher =
+      Array.isArray(teacherData)
+        ? teacherData[0] ?? null
+        : teacherData;
 
     const enrolledCourse = mine.get(course.id);
 

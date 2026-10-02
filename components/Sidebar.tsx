@@ -147,6 +147,11 @@ export default function Sidebar({
           label: text.teacherProfile,
           icon: <CapIcon />,
         },
+              {
+                href: "/messages",
+                label: text.messages,
+                icon: <MessageIcon />,
+              },
         {
           href: "/profile",
           label: text.profile,
