@@ -51,6 +51,10 @@ export default async function CourseDetailPage({
       discount_type,
       discount_value,
       course_type,
+      registration_open,
+      group_day_of_week,
+      group_start_time,
+      group_end_time,
 
       course_instructors (
         teacher:profiles (
@@ -133,6 +137,65 @@ export default async function CourseDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const {
+    data: registrationStateData,
+    error: registrationStateError,
+  } = await supabase.rpc(
+    "course_registration_state",
+    {
+      p_course_id: id,
+    }
+  );
+
+  if (registrationStateError) {
+    throw new Error(
+      registrationStateError.message
+    );
+  }
+
+  const registrationState =
+    String(
+      registrationStateData ??
+        "unavailable"
+    );
+
+  let hasOwnPrivateHold = false;
+  let ownPrivateBookingId:
+    string | null = null;
+
+  if (
+    user &&
+    course.course_type === "private"
+  ) {
+    const {
+      data: ownPrivateHold,
+      error: ownPrivateHoldError,
+    } = await supabase
+      .from("private_course_bookings")
+      .select("id")
+      .eq("course_id", id)
+      .eq("student_id", user.id)
+      .eq("status", "pending_payment")
+      .gt(
+        "hold_expires_at",
+        new Date().toISOString()
+      )
+      .maybeSingle();
+
+    if (ownPrivateHoldError) {
+      throw new Error(
+        ownPrivateHoldError.message
+      );
+    }
+
+    hasOwnPrivateHold =
+      Boolean(ownPrivateHold);
+
+    ownPrivateBookingId =
+      ownPrivateHold?.id ??
+      null;
+  }
 
   let enrollmentId:
     string | null = null;
@@ -363,6 +426,15 @@ export default async function CourseDetailPage({
         }
         progressPercent={
           progressPercent
+        }
+        registrationState={
+          registrationState
+        }
+        hasOwnPrivateHold={
+          hasOwnPrivateHold
+        }
+        ownPrivateBookingId={
+          ownPrivateBookingId
         }
       />
     </AppShell>

@@ -27,12 +27,30 @@ type Course = {
     id: string;
   }[] | null;
 
-  course_instructors: {
-    teacher_id: string;
-    teacher: {
-      full_name: string | null;
-    }[] | null;
-  }[] | null;
+  course_instructors:
+    | {
+        teacher_id: string;
+        teacher:
+          | {
+              full_name: string | null;
+            }
+          | {
+              full_name: string | null;
+            }[]
+          | null;
+      }[]
+    | {
+        teacher_id: string;
+        teacher:
+          | {
+              full_name: string | null;
+            }
+          | {
+              full_name: string | null;
+            }[]
+          | null;
+      }
+    | null;
 };
 
 type Props = {

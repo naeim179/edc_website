@@ -121,8 +121,18 @@ export default function Sidebar({
         },
         {
           href: "/admin/coupons",
-          label: "الكوبونات",
+          label: text.coupons,
           icon: <ReceiptIcon />,
+        },
+        {
+          href: "/admin/announcements",
+          label: t.announcements.navLabel,
+          icon: <AnnouncementIcon />,
+        },
+        {
+          href: "/admin/assignments",
+          label: t.assignments.navLabel,
+          icon: <AssignmentIcon />,
         },
         {
           href: "/admin/students",
@@ -141,6 +151,16 @@ export default function Sidebar({
           href: "/teacher/courses",
           label: text.teacherDashboard,
           icon: <DashboardIcon />,
+        },
+        {
+          href: "/teacher/assignments",
+          label: t.assignments.navLabel,
+          icon: <AssignmentIcon />,
+        },
+        {
+          href: "/teacher/assignment-submissions",
+          label: t.assignmentGrading.navLabel,
+          icon: <AssignmentIcon />,
         },
         {
           href: "/teacher/profile",
@@ -178,6 +198,11 @@ export default function Sidebar({
                 icon: <CapIcon />,
               },
               {
+                href: "/assignments",
+                label: t.assignments.navLabel,
+                icon: <AssignmentIcon />,
+              },
+              {
                 href: "/messages",
                 label: text.messages,
                 icon: <MessageIcon />,
@@ -196,6 +221,8 @@ export default function Sidebar({
     "/admin/teachers": "manage_teachers",
     "/admin/orders": "view_orders",
     "/admin/coupons": "manage_coupons",
+    "/admin/announcements": "manage_announcements",
+    "/admin/assignments": "manage_assignments",
     "/admin/students": "manage_students",
   };
 
@@ -345,6 +372,47 @@ function ShieldIcon() {
     >
       <path d="M12 3l8 3v6c0 4.5-3.2 8.3-8 9-4.8-.7-8-4.5-8-9V6l8-3z" />
       <path d="M9 12l2 2 4-4" />
+    </svg>
+  );
+}
+
+
+function AnnouncementIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M4 13V9a2 2 0 0 1 2-2h3l7-3v14l-7-3H6a2 2 0 0 1-2-2z" />
+      <path d="M9 15l1.5 5H7l-1.2-5" />
+      <path d="M19 8a4 4 0 0 1 0 6" />
+    </svg>
+  );
+}
+
+
+function AssignmentIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2z" />
+      <path d="M9 2h6v4H9z" />
+      <path d="M8 10h8M8 14h5" />
+      <path d="M15 17l1.5 1.5L20 15" />
     </svg>
   );
 }

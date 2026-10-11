@@ -26,6 +26,7 @@ export const en = {
     manageCourses: "Manage Courses",
     orders: "Orders",
     payments: "Payments",
+    coupons: "Coupons",
     students: "Students",
     teachers: "Teachers",
     profile: "Profile",
@@ -494,6 +495,325 @@ export const en = {
     close: "Close",
   },
 
+
+  adminCourseCard: {
+    noTeacher: "No Teacher",
+    free: "Free",
+    viewAsStudent: "View as Student",
+    delete: "Delete",
+    deleting: "Deleting...",
+    deleteConfirm: "Are you sure you want to delete this course?",
+  },
+
+
+  assignments: {
+    navLabel: "Assignments",
+    title: "Assignments",
+    subtitle: "Create and manage course assignments and student submissions without storing large files inside the database.",
+    teacherCenter: "Teacher Assignment Center",
+    adminCenter: "Assignment Management",
+    studentCenter: "Assignment Center",
+    myAssignments: "My Assignments",
+    studentSubtitle: "Track your course assignments and submission status.",
+    newAssignment: "Create New Assignment",
+    course: "Course",
+    chooseCourse: "Choose course",
+    assignmentTitle: "Assignment title",
+    titlePlaceholder: "Example: OOP Project",
+    instructions: "Instructions",
+    instructionsPlaceholder: "Describe exactly what the student needs to submit...",
+    deadline: "Submission deadline",
+    maxScore: "Maximum score",
+    attempts: "Submission attempts",
+    unlimited: "Unlimited",
+    allowLate: "Allow late submissions",
+    allowLateHint: "Students can submit after the deadline and the submission will be marked late.",
+    create: "Create Assignment",
+    creating: "Creating...",
+    created: "Assignment created successfully",
+    createError: "Unable to create assignment",
+    library: "Assignment Library",
+    currentAssignments: "Current Assignments",
+    empty: "No assignments yet.",
+    noCourses: "There are no courses available for assignments.",
+    noInstructions: "No additional instructions.",
+    noDeadline: "No deadline",
+    points: "points",
+    delete: "Delete Assignment",
+    deleteConfirm: "This will permanently delete the assignment, all submissions, uploaded files and audio recordings. Continue?",
+    deleteError: "Unable to delete assignment",
+    unknownCourse: "Unknown course",
+    notStarted: "Not started",
+    draft: "Draft",
+    submitted: "Submitted",
+    submittedLate: "Submitted late",
+    graded: "Graded",
+    returned: "Resubmission requested",
+    score: "Score",
+    noStudentAssignments: "You currently have no assignments.",
+    submissionComingNext: "Open the assignment to start your submission",
+    openAssignment: "Open Assignment",
+    backToAssignments: "Back to assignments",
+    status: "Status",
+    yourAnswer: "Your Answer",
+    answerHint: "You can combine written text, links, files and a voice recording in the same submission.",
+    writtenAnswer: "Written Answer",
+    writtenPlaceholder: "Write your answer here...",
+    links: "Links",
+    linksPlaceholder: "Enter one link per line",
+    linksHint: "Up to 5 links starting with http:// or https://",
+    attachments: "Files & Attachments",
+    fileHint: "Images, PDF, Word, PowerPoint, Excel, TXT or ZIP. Maximum 25MB per file.",
+    addFiles: "Add Files",
+    pendingUpload: "Waiting to save",
+    remove: "Remove",
+    voiceAnswer: "Voice Answer",
+    voiceHint: "You can record one voice answer directly from your microphone.",
+    startRecording: "Start Recording",
+    stopRecording: "Stop Recording",
+    savedRecording: "Saved voice recording",
+    newRecording: "New recording",
+    recordingUnsupported: "Voice recording is not supported by this browser.",
+    microphoneDenied: "Microphone access failed. Make sure microphone permission is enabled.",
+    audioTooLarge: "The voice recording is larger than 25MB.",
+    tooManyFiles: "You can attach up to 5 files.",
+    fileTooLarge: "Each file must be 25MB or smaller.",
+    tooManyLinks: "You can add up to 5 links.",
+    invalidLink: "One of the links is invalid.",
+    uploadError: "Unable to upload the file. Please try again.",
+    saveDraft: "Save Draft",
+    savingDraft: "Saving draft...",
+    draftSaved: "Draft saved successfully.",
+    saveError: "Unable to save the draft.",
+    submitAssignment: "Submit Assignment",
+    submitting: "Submitting assignment...",
+    submitConfirm: "Are you sure you want to submit? You will not be able to edit it unless the teacher returns it to you.",
+    submittedSuccess: "Assignment submitted successfully.",
+    submitError: "Unable to submit the assignment.",
+    submissionLocked: "This assignment has been graded and can no longer be edited.",
+    resubmitAvailable: "This assignment has already been submitted, but you still have attempts remaining. You can edit your answer and resubmit; a new attempt will be counted.",
+    resubmitAssignment: "Resubmit Assignment",
+    resubmitting: "Resubmitting assignment...",
+    deadlineClosed: "The deadline has passed and late submissions are not allowed.",
+    noAttempts: "You have used all available submission attempts.",
+  },
+
+  scheduling: {
+    settings: "Registration & Schedule Settings",
+    registrationStatus: "Registration status",
+    registrationOpen: "Open for registration",
+    registrationPaused: "Registration paused",
+    privateTitle: "Private 1-to-1",
+    groupTitle: "Group Course",
+    privateDescription:
+      "Set the days and time ranges students can choose from. You can add multiple ranges on the same day.",
+    groupDescription:
+      "Set the course's fixed weekly day and time range.",
+    weeklyDay: "Weekly day",
+    groupDayHint: "One fixed weekly schedule for all group students.",
+    oneSchedule: "One schedule",
+    currentSchedule: "Current schedule",
+    chooseDay: "Choose a day",
+    fromHour: "From",
+    toHour: "To",
+    weeklyAvailability: "Weekly availability",
+    privateAvailabilityHint:
+      "Add the available time ranges. Multiple ranges can be added on the same day.",
+    availablePeriod: "available period",
+    availablePeriods: "available periods",
+    unavailable: "Unavailable",
+    from: "From",
+    to: "To",
+    addPeriod: "Add period",
+    sunday: "Sunday",
+    monday: "Monday",
+    tuesday: "Tuesday",
+    wednesday: "Wednesday",
+    thursday: "Thursday",
+    friday: "Friday",
+    saturday: "Saturday",
+  },
+
+  booking: {
+    privateLabel: "PRIVATE 1-TO-1",
+    groupLabel: "GROUP COURSE",
+
+    backToCourse: "Back to course",
+
+    chooseScheduleTitle: "Choose your schedule",
+    chooseScheduleDescription:
+      "Choose exactly two appointments from the teacher's available time ranges. Both appointments may be on the same day or on different days.",
+
+    activeHold:
+      "You already have a temporary reservation. You can change your selection or continue to payment.",
+
+    availablePeriod: "available period",
+    availablePeriods: "available periods",
+    unavailable: "Unavailable",
+    period: "Time range",
+
+    selectedSchedule: "Your selected schedule",
+    appointment: "Appointment",
+    noSelection: "You haven't selected any appointments yet.",
+
+    maxTwo: "You can select a maximum of two appointments",
+    exactlyTwo: "You must select exactly two appointments to continue",
+
+    reserving: "Reserving your schedule...",
+    continueToPayment: "Continue to registration & payment",
+    temporaryHoldHint:
+      "Choose exactly two appointments. The course will then be held temporarily while you complete payment.",
+
+    courseUnavailable: "This course is currently unavailable",
+    unavailableText: "Please check again later for availability.",
+
+    bookedTitle: "Course booked",
+    bookedText:
+      "This course has already been booked by another student and is currently unavailable.",
+
+    heldTitle: "Course temporarily held",
+    heldText:
+      "Another student is currently completing the booking process. Please try again shortly.",
+
+    registrationPausedTitle: "Registration paused",
+    registrationPausedText:
+      "Registration for this course is currently paused.",
+
+    groupSchedule: "Group schedule",
+    registrationOpen: "Registration open",
+    registrationClosed: "Registration closed",
+
+    privateAvailable: "Available to book",
+    chooseTwoAppointments:
+      "Choose two appointments that suit you to complete your booking.",
+
+    privateBooked: "Currently booked",
+    privateBookedText:
+      "This 1-to-1 course has already been booked by one student.",
+
+    yourHold: "Your booking is on hold",
+    completePaymentToConfirm:
+      "Complete payment to confirm your booking.",
+
+    temporarilyHeld: "Temporarily held",
+    anotherStudentCheckout:
+      "Another student is currently completing checkout.",
+
+    privateClosed: "Registration paused",
+    privateClosedText:
+      "This course is currently unavailable for booking.",
+
+    continueBooking: "Continue booking",
+    chooseScheduleCta: "Choose schedule & book",
+
+    cancelBooking: "Cancel booking",
+    cancelConfirmTitle: "Cancel your temporary reservation?",
+    cancelConfirmText:
+      "The course will become immediately available to another student.",
+    confirmCancel: "Yes, cancel booking",
+    canceling: "Cancelling...",
+    back: "Back",
+    cancelError: "Unable to cancel the booking",
+
+    checkoutTitle: "Complete registration & payment",
+    renewalTitle: "Renew subscription",
+    courseSchedule: "Course schedule",
+    selectedAppointments: "Selected appointments",
+    privateBooking: "Private 1-to-1 booking",
+    holdExpired: "Reservation expired",
+    chooseAgain: "Choose appointments again",
+
+    subscriptionDuration: "Subscription duration",
+    oneMonth: "1 month",
+    threeMonths: "3 months",
+
+    freeCoupon: "Free coupon",
+    couponPlaceholder: "YW-FREE-XXXXXX",
+    verify: "Verify",
+    checking: "...",
+
+    paymentMethod: "Payment method",
+    paytabsHint: "Instant online payment",
+    cliqHint: "Manual transfer",
+    privateOnlinePaymentOnly:
+      "Private bookings use instant online payment to prevent the same course from being booked by more than one student.",
+
+    autoRenew: "Enable auto renewal",
+    autoRenewHint:
+      "You can disable it later from the course page.",
+
+    orderSummary: "Order summary",
+    course: "Course",
+    type: "Type",
+    duration: "Duration",
+    totalDue: "Total due",
+
+    confirmBooking: "Confirm booking",
+    getCourse: "Get course",
+    holdTimeEnded: "Reservation time expired",
+    paying: "Redirecting to payment...",
+    securePayment: "Secure payment",
+  },
+
+  announcements: {
+    navLabel: "Announcements",
+
+    centerBadge: "Communication Center",
+    title: "Announcements",
+    subtitle:
+      "Create an announcement that appears at the top of student or teacher pages. You can pause and reactivate it at any time.",
+
+    newAnnouncement: "New announcement",
+    whatToAnnounce: "What would you like to announce?",
+
+    audience: "Announcement audience",
+
+    students: "Students",
+    teachers: "Teachers",
+
+    studentHint:
+      "The announcement appears on student account pages.",
+    teacherHint:
+      "The announcement appears on teacher dashboard and teacher pages.",
+
+    titleLabel: "Announcement title",
+    titlePlaceholder: "Example: Class schedule update",
+
+    messageLabel: "Announcement message",
+    messagePlaceholder: "Write the announcement details here...",
+
+    publish: "Publish announcement",
+    publishing: "Publishing...",
+    publishedSuccess: "Announcement published successfully",
+    createError: "Unable to create announcement",
+    updateError: "Unable to update announcement",
+    deleteError: "Unable to delete announcement",
+
+    history: "Announcement history",
+    current: "Current announcements",
+    announcement: "announcement",
+    announcements: "announcements",
+    empty: "No announcements yet.",
+
+    studentBadge: "Students",
+    teacherBadge: "Teachers",
+
+    active: "Active",
+    paused: "Paused",
+
+    pause: "Pause",
+    activate: "Activate",
+    delete: "Delete",
+
+    deleteConfirm: "Delete this announcement permanently?",
+    confirmDelete: "Yes, delete",
+    cancel: "Cancel",
+
+    bannerStudent: "Student announcement",
+    bannerTeacher: "Teacher announcement",
+    fromAdmin: "From platform administration",
+  },
+
   staff: {
     navLabel: "Admin team",
     title: "Admin team",
@@ -523,9 +843,51 @@ export const en = {
       manage_courses: { label: "Manage courses", hint: "Create, edit and delete courses and lessons" },
       manage_students: { label: "Manage students", hint: "View students, extend subscriptions and manage enrollments" },
       manage_teachers: { label: "Manage teachers", hint: "View teachers and edit their details" },
-      manage_coupons: { label: "Manage coupons", hint: "Create and manage free course coupon codes" },
-      view_orders: { label: "Orders", hint: "View orders and payments" },
+      manage_coupons: { label: "Manage coupons", hint: "Create and manage free subscription and discount coupons" },
+      manage_announcements: { label: "Manage announcements", hint: "Create, pause and delete student and teacher announcements" },
+      manage_assignments: { label: "Manage assignments", hint: "Create, delete and review course assignments and student submissions" },
+      view_orders: { label: "Manage Payments", hint: "View and manage orders and payment operations" },
       moderate_messages: { label: "Moderate messages", hint: "View and manage conversations" },
     },
   },
+
+  assignmentGrading: {
+    navLabel: "Grade Assignments",
+    pageTitle: "Grade Assignments",
+    pageDescription: "Review student submissions, listen to recordings, open files, and add grades and feedback.",
+    noAssignments: "There are no assignments to grade right now.",
+    submissions: "Submissions",
+    waitingReview: "Waiting Review",
+    graded: "Graded",
+    maxScore: "Maximum Score",
+    reviewSubmissions: "Review Submissions",
+    back: "Back to assignments",
+    noSubmissions: "No students have submitted this assignment yet.",
+    attempt: "Attempt",
+    submitted: "Submitted",
+    late: "Late",
+    returned: "Returned",
+    writtenAnswer: "Written Answer",
+    noWrittenAnswer: "No written answer was provided.",
+    links: "Links",
+    attachments: "Files & Attachments",
+    openFile: "Open File",
+    voiceAnswer: "Voice Answer",
+    audioUnavailable: "The voice recording could not be loaded.",
+    grading: "Grade & Feedback",
+    score: "Score",
+    feedback: "Teacher Feedback",
+    feedbackPlaceholder: "Write feedback for the student...",
+    scoreRange: "Score must be between",
+    saveGrade: "Save Grade",
+    updateGrade: "Update Grade",
+    saving: "Saving...",
+    gradeSaved: "Grade saved successfully.",
+    returnToStudent: "Return for Revision",
+    returnConfirm: "This will reopen the assignment for the student to edit and resubmit. Continue?",
+    returnedSuccess: "The assignment was returned to the student.",
+    feedbackRequired: "Write feedback before returning the assignment.",
+    actionError: "Unable to complete the action.",
+  },
+
 };

@@ -2,6 +2,7 @@
 
 import { requirePermission } from "@/lib/auth/admin-access";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function getAdminOrders() {
   await requirePermission("view_orders");
@@ -110,21 +111,98 @@ export async function getAdminOrders() {
 
 export async function updateOrderStatus(
   orderId: string,
-  status: "paid" | "failed"
+  status:
+    | "paid"
+    | "failed"
 ) {
-  await requirePermission("view_orders");
+  await requirePermission(
+    "view_orders"
+  );
 
-  const supabase = await createClient();
+  const admin =
+    createAdminClient();
 
-  const { error } = await supabase
-    .from("orders")
-    .update({
-      status,
-    })
-    .eq("id", orderId);
+  if (
+    status ===
+    "paid"
+  ) {
+    const {
+      data: order,
+      error:
+        orderError,
+    } =
+      await admin
+        .from("orders")
+        .select(`
+          id,
+          payment_method
+        `)
+        .eq(
+          "id",
+          orderId
+        )
+        .maybeSingle();
+
+    if (
+      orderError ||
+      !order
+    ) {
+      throw new Error(
+        orderError?.message ??
+          "Order not found"
+      );
+    }
+
+    const {
+      error:
+        fulfillmentError,
+    } =
+      await admin.rpc(
+        "fulfill_subscription_order",
+        {
+          p_order_id:
+            order.id,
+          p_tran_ref:
+            `MANUAL-${String(
+              order.payment_method ??
+                "payment"
+            ).toUpperCase()}-${order.id}`,
+          p_token:
+            null,
+        }
+      );
+
+    if (
+      fulfillmentError
+    ) {
+      throw new Error(
+        fulfillmentError.message
+      );
+    }
+
+    return {
+      success: true,
+    };
+  }
+
+  const {
+    error,
+  } =
+    await admin
+      .from("orders")
+      .update({
+        status:
+          "failed",
+      })
+      .eq(
+        "id",
+        orderId
+      );
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 
   return {

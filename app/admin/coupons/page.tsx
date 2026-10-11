@@ -4,10 +4,11 @@ import AppShell from "@/components/AppShell";
 import AdminCouponsContent from "@/components/admin/AdminCouponsContent";
 
 import { getAdminAccess } from "@/lib/auth/admin-access";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function AdminCouponsPage() {
-  const access = await getAdminAccess();
+  const access =
+    await getAdminAccess();
 
   if (!access) {
     redirect("/");
@@ -15,56 +16,93 @@ export default async function AdminCouponsPage() {
 
   const canManage =
     access.isSuper ||
-    access.permissions.includes("manage_coupons");
+    access.permissions.includes(
+      "manage_coupons"
+    );
 
   if (!canManage) {
-    redirect("/admin");
+    redirect(
+      "/admin"
+    );
   }
 
-  const supabase = await createClient();
+  const admin =
+    createAdminClient();
 
-  const { data: coupons, error: couponsError } =
-    await supabase
-      .from("course_coupons")
+  const {
+    data: coupons,
+    error:
+      couponsError,
+  } =
+    await admin
+      .from(
+        "course_coupons"
+      )
       .select(`
         id,
         code,
+        coupon_type,
+        subscription_months,
+        discount_type,
+        discount_value,
         is_active,
-        is_used,
-        used_by,
-        used_at,
+        valid_from,
+        valid_until,
+        max_uses,
+        used_count,
         created_at,
         course:courses(
           title
-        ),
-        user:profiles(
-          full_name,
-          username
         )
       `)
-      .order("created_at", {
-        ascending: false,
-      });
+      .order(
+        "created_at",
+        {
+          ascending:
+            false,
+        }
+      );
 
   if (couponsError) {
-    throw new Error(couponsError.message);
+    throw new Error(
+      couponsError.message
+    );
   }
 
-  const { data: courses } = await supabase
-    .from("courses")
-    .select(`
-      id,
-      title
-    `)
-    .order("created_at", {
-      ascending: false,
-    });
+  const {
+    data: courses,
+    error:
+      coursesError,
+  } =
+    await admin
+      .from("courses")
+      .select(`
+        id,
+        title
+      `)
+      .order(
+        "created_at",
+        {
+          ascending:
+            false,
+        }
+      );
+
+  if (coursesError) {
+    throw new Error(
+      coursesError.message
+    );
+  }
 
   return (
     <AppShell>
       <AdminCouponsContent
-        coupons={coupons ?? []}
-        courses={courses ?? []}
+        coupons={
+          coupons ?? []
+        }
+        courses={
+          courses ?? []
+        }
       />
     </AppShell>
   );

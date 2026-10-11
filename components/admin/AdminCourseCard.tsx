@@ -28,12 +28,30 @@ type Course = {
     id: string;
   }[] | null;
 
-  course_instructors: {
-    teacher_id: string;
-    teacher: {
-      full_name: string | null;
-    }[] | null;
-  }[] | null;
+  course_instructors:
+    | {
+        teacher_id: string;
+        teacher:
+          | {
+              full_name: string | null;
+            }
+          | {
+              full_name: string | null;
+            }[]
+          | null;
+      }[]
+    | {
+        teacher_id: string;
+        teacher:
+          | {
+              full_name: string | null;
+            }
+          | {
+              full_name: string | null;
+            }[]
+          | null;
+      }
+    | null;
 };
 
 export default function AdminCourseCard({
@@ -42,7 +60,10 @@ export default function AdminCourseCard({
   course: Course;
 }) {
 
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+
+  const isArabic =
+    language === "ar";
 
   const sections = course.sections?.length ?? 0;
 
@@ -56,13 +77,30 @@ export default function AdminCourseCard({
   const students =
     course.enrollments?.length ?? 0;
 
+  const instructorRelation =
+    Array.isArray(course.course_instructors)
+      ? course.course_instructors[0] ?? null
+      : course.course_instructors;
+
+  const teacherRelation =
+    instructorRelation?.teacher ?? null;
+
+  const teacherProfile =
+    Array.isArray(teacherRelation)
+      ? teacherRelation[0] ?? null
+      : teacherRelation;
+
   const teacher =
-    course.course_instructors?.[0]?.teacher?.[0]?.full_name ??
-    "No Teacher";
+    teacherProfile?.full_name?.trim() ||
+    t.adminCourseCard.noTeacher;
 
 
   const date =
-    new Date(course.created_at).toLocaleDateString();
+    new Date(course.created_at).toLocaleDateString(
+      isArabic
+        ? "ar-JO"
+        : "en-US"
+    );
 
 
   return (
@@ -95,14 +133,33 @@ export default function AdminCourseCard({
 
         <div className="absolute top-3 left-3 flex gap-2">
 
-          <span className="
-            bg-white/90
-            px-3
-            py-1
-            rounded-full
-            text-xs
-            font-bold
-          ">
+          <span
+            className={`
+              inline-flex
+              items-center
+              gap-1.5
+              rounded-full
+              border
+              px-3
+              py-1
+              text-xs
+              font-bold
+              shadow-sm
+              ${
+                course.is_published
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-amber-200 bg-amber-50 text-amber-800"
+              }
+            `}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                course.is_published
+                  ? "bg-emerald-500"
+                  : "bg-amber-500"
+              }`}
+            />
+
             {course.is_published
               ? t.admin.published
               : t.admin.draft}
@@ -175,7 +232,7 @@ export default function AdminCourseCard({
             font-bold
           ">
             {course.is_free
-              ? "Free"
+              ? t.adminCourseCard.free
               : `${course.price ?? 0} ${course.currency ?? "USD"}`}
           </span>
 
@@ -260,7 +317,7 @@ export default function AdminCourseCard({
               text-sm
             "
           >
-            View as Student
+            {t.adminCourseCard.viewAsStudent}
           </Link>
 
         </div>

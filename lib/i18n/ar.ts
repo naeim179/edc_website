@@ -24,6 +24,7 @@ export const ar = {
     manageCourses: "إدارة الدورات",
     orders: "الطلبات",
     payments: "عمليات الدفع",
+    coupons: "الكوبونات",
     students: "الطلاب",
     teachers: "المدربين",
     profile: "الملف الشخصي",
@@ -482,6 +483,325 @@ export const ar = {
     close: "إغلاق",
   },
 
+
+  adminCourseCard: {
+    noTeacher: "لا يوجد معلم",
+    free: "مجاني",
+    viewAsStudent: "عرض كطالب",
+    delete: "حذف",
+    deleting: "جاري الحذف...",
+    deleteConfirm: "هل أنت متأكد من حذف هذه الدورة؟",
+  },
+
+
+  assignments: {
+    navLabel: "الواجبات",
+    title: "الواجبات",
+    subtitle: "إنشاء وإدارة واجبات الدورات وتسليمات الطلاب بدون تخزين الملفات داخل قاعدة البيانات.",
+    teacherCenter: "مركز واجبات المعلم",
+    adminCenter: "إدارة الواجبات",
+    studentCenter: "مركز الواجبات",
+    myAssignments: "واجباتي",
+    studentSubtitle: "تابع واجبات دوراتك وحالة كل تسليم.",
+    newAssignment: "إنشاء واجب جديد",
+    course: "الدورة",
+    chooseCourse: "اختر الدورة",
+    assignmentTitle: "عنوان الواجب",
+    titlePlaceholder: "مثال: مشروع OOP",
+    instructions: "التعليمات",
+    instructionsPlaceholder: "اكتب المطلوب من الطالب بالتفصيل...",
+    deadline: "آخر موعد للتسليم",
+    maxScore: "الدرجة الكاملة",
+    attempts: "عدد مرات التسليم",
+    unlimited: "غير محدود",
+    allowLate: "السماح بالتسليم المتأخر",
+    allowLateHint: "يمكن للطالب التسليم بعد الموعد وسيظهر كتسليم متأخر.",
+    create: "إنشاء الواجب",
+    creating: "جاري الإنشاء...",
+    created: "تم إنشاء الواجب بنجاح",
+    createError: "تعذر إنشاء الواجب",
+    library: "مكتبة الواجبات",
+    currentAssignments: "الواجبات الحالية",
+    empty: "لا يوجد واجبات حتى الآن.",
+    noCourses: "لا توجد دورات متاحة لإنشاء واجب عليها.",
+    noInstructions: "لا توجد تعليمات إضافية.",
+    noDeadline: "بدون موعد نهائي",
+    points: "درجة",
+    delete: "حذف الواجب",
+    deleteConfirm: "سيتم حذف الواجب وكل تسليماته وملفاته وتسجيلاته الصوتية نهائياً. هل تريد المتابعة؟",
+    deleteError: "تعذر حذف الواجب",
+    unknownCourse: "دورة غير معروفة",
+    notStarted: "لم يبدأ",
+    draft: "مسودة",
+    submitted: "تم التسليم",
+    submittedLate: "تم التسليم متأخراً",
+    graded: "تم التصحيح",
+    returned: "مطلوب إعادة التسليم",
+    score: "الدرجة",
+    noStudentAssignments: "لا يوجد واجبات مطلوبة منك حالياً.",
+    submissionComingNext: "يمكنك فتح الواجب والبدء بالتسليم",
+    openAssignment: "فتح الواجب",
+    backToAssignments: "العودة إلى الواجبات",
+    status: "الحالة",
+    yourAnswer: "إجابتك",
+    answerHint: "يمكنك استخدام الكتابة والروابط والملفات والتسجيل الصوتي معاً في نفس التسليم.",
+    writtenAnswer: "الإجابة الكتابية",
+    writtenPlaceholder: "اكتب إجابتك هنا...",
+    links: "الروابط",
+    linksPlaceholder: "ضع كل رابط في سطر منفصل",
+    linksHint: "حتى 5 روابط تبدأ بـ http:// أو https://",
+    attachments: "الملفات والمرفقات",
+    fileHint: "صور، PDF، Word، PowerPoint، Excel، TXT أو ZIP. الحد الأقصى 25MB للملف.",
+    addFiles: "إضافة ملفات",
+    pendingUpload: "بانتظار الحفظ",
+    remove: "إزالة",
+    voiceAnswer: "الإجابة الصوتية",
+    voiceHint: "يمكنك تسجيل إجابة صوتية واحدة مباشرة من المايك.",
+    startRecording: "بدء التسجيل",
+    stopRecording: "إيقاف التسجيل",
+    savedRecording: "التسجيل الصوتي المحفوظ",
+    newRecording: "تسجيل جديد",
+    recordingUnsupported: "المتصفح لا يدعم التسجيل الصوتي.",
+    microphoneDenied: "تعذر استخدام المايك. تأكد من إعطاء إذن الميكروفون.",
+    audioTooLarge: "التسجيل الصوتي أكبر من 25MB.",
+    tooManyFiles: "الحد الأقصى 5 ملفات.",
+    fileTooLarge: "حجم الملف يجب ألا يتجاوز 25MB.",
+    tooManyLinks: "الحد الأقصى 5 روابط.",
+    invalidLink: "يوجد رابط غير صالح.",
+    uploadError: "تعذر رفع الملف. حاول مرة أخرى.",
+    saveDraft: "حفظ كمسودة",
+    savingDraft: "جاري حفظ المسودة...",
+    draftSaved: "تم حفظ المسودة بنجاح.",
+    saveError: "تعذر حفظ المسودة.",
+    submitAssignment: "تسليم الواجب",
+    submitting: "جاري تسليم الواجب...",
+    submitConfirm: "هل أنت متأكد من تسليم الواجب؟ بعد التسليم لن تستطيع تعديله إلا إذا أعاده المدرس لك.",
+    submittedSuccess: "تم تسليم الواجب بنجاح.",
+    submitError: "تعذر تسليم الواجب.",
+    submissionLocked: "تم تصحيح هذا الواجب ولم يعد قابلاً للتعديل.",
+    resubmitAvailable: "تم تسليم هذا الواجب، لكن ما زال لديك محاولات متبقية. يمكنك تعديل إجابتك وإعادة التسليم، وسيتم احتساب محاولة جديدة.",
+    resubmitAssignment: "إعادة تسليم الواجب",
+    resubmitting: "جاري إعادة تسليم الواجب...",
+    deadlineClosed: "انتهى موعد التسليم ولا يسمح المدرس بالتسليم المتأخر.",
+    noAttempts: "لقد استخدمت جميع محاولات التسليم المتاحة.",
+  },
+
+  scheduling: {
+    settings: "إعدادات التسجيل والمواعيد",
+    registrationStatus: "حالة التسجيل",
+    registrationOpen: "مفتوح للتسجيل",
+    registrationPaused: "التسجيل متوقف",
+    privateTitle: "Private 1-to-1",
+    groupTitle: "Group Course",
+    privateDescription:
+      "حدد الأيام والفترات المتاحة للطالب، ويمكن إضافة أكثر من فترة في نفس اليوم.",
+    groupDescription:
+      "حدد اليوم والوقت الأسبوعي الثابت للدورة من الساعة إلى الساعة.",
+    weeklyDay: "اليوم الأسبوعي",
+    groupDayHint: "موعد أسبوعي واحد ثابت لجميع طلاب القروب.",
+    oneSchedule: "موعد واحد",
+    currentSchedule: "الموعد الحالي",
+    chooseDay: "اختر اليوم",
+    fromHour: "من الساعة",
+    toHour: "إلى الساعة",
+    weeklyAvailability: "جدول التوفر الأسبوعي",
+    privateAvailabilityHint:
+      "أضف الفترات المتاحة من الساعة إلى الساعة. ويمكن إضافة أكثر من فترة في نفس اليوم.",
+    availablePeriod: "فترة متاحة",
+    availablePeriods: "فترات متاحة",
+    unavailable: "غير متاح",
+    from: "من",
+    to: "إلى",
+    addPeriod: "إضافة الفترة",
+    sunday: "الأحد",
+    monday: "الإثنين",
+    tuesday: "الثلاثاء",
+    wednesday: "الأربعاء",
+    thursday: "الخميس",
+    friday: "الجمعة",
+    saturday: "السبت",
+  },
+
+  booking: {
+    privateLabel: "PRIVATE 1-TO-1",
+    groupLabel: "GROUP COURSE",
+
+    backToCourse: "العودة إلى الدورة",
+
+    chooseScheduleTitle: "اختر مواعيدك",
+    chooseScheduleDescription:
+      "اختر موعدين بالضبط من الفترات التي حددها المدرس. يمكن أن يكون الموعدان في نفس اليوم أو في يومين مختلفين.",
+
+    activeHold:
+      "لديك حجز مؤقت قائم. يمكنك تعديل اختيارك أو المتابعة إلى الدفع.",
+
+    availablePeriod: "فترة متاحة",
+    availablePeriods: "فترات متاحة",
+    unavailable: "غير متاح",
+    period: "الفترة",
+
+    selectedSchedule: "جدولك المختار",
+    appointment: "الموعد",
+    noSelection: "لم تختر أي موعد بعد.",
+
+    maxTwo: "يمكنك اختيار موعدين كحد أقصى",
+    exactlyTwo: "يجب اختيار موعدين بالضبط للمتابعة",
+
+    reserving: "جاري تثبيت الموعد...",
+    continueToPayment: "متابعة إلى التسجيل والدفع",
+    temporaryHoldHint:
+      "اختر موعدين بالضبط، ثم سيتم حجز الدورة لك مؤقتاً أثناء إتمام عملية الدفع.",
+
+    courseUnavailable: "هذه الدورة غير متاحة حالياً",
+    unavailableText: "يمكنك العودة لاحقاً لمعرفة توفرها.",
+
+    bookedTitle: "الدورة محجوزة",
+    bookedText:
+      "تم حجز هذه الدورة لطالب آخر وهي غير متوفرة حالياً.",
+
+    heldTitle: "الدورة قيد الحجز",
+    heldText:
+      "يوجد طالب آخر يكمل عملية الحجز حالياً. حاول مرة أخرى بعد قليل.",
+
+    registrationPausedTitle: "التسجيل متوقف",
+    registrationPausedText:
+      "تم إيقاف التسجيل في هذه الدورة حالياً.",
+
+    groupSchedule: "موعد القروب",
+    registrationOpen: "التسجيل مفتوح",
+    registrationClosed: "التسجيل مغلق",
+
+    privateAvailable: "متاحة للحجز",
+    chooseTwoAppointments:
+      "اختر موعدين يناسبانك لإكمال الحجز.",
+
+    privateBooked: "محجوزة حالياً",
+    privateBookedText:
+      "تم حجز هذه الدورة لطالب واحد.",
+
+    yourHold: "حجزك قيد الانتظار",
+    completePaymentToConfirm:
+      "أكمل عملية الدفع لتثبيت الحجز.",
+
+    temporarilyHeld: "قيد الحجز مؤقتاً",
+    anotherStudentCheckout:
+      "طالب آخر يكمل عملية الحجز حالياً.",
+
+    privateClosed: "التسجيل متوقف",
+    privateClosedText:
+      "هذه الدورة غير متاحة للحجز حالياً.",
+
+    continueBooking: "إكمال الحجز",
+    chooseScheduleCta: "اختيار المواعيد والحجز",
+
+    cancelBooking: "إلغاء الحجز",
+    cancelConfirmTitle: "هل تريد إلغاء الحجز المؤقت؟",
+    cancelConfirmText:
+      "ستصبح الدورة متاحة مباشرة لطالب آخر.",
+    confirmCancel: "نعم، إلغاء الحجز",
+    canceling: "جاري الإلغاء...",
+    back: "رجوع",
+    cancelError: "تعذر إلغاء الحجز",
+
+    checkoutTitle: "إكمال التسجيل والدفع",
+    renewalTitle: "تجديد الاشتراك",
+    courseSchedule: "موعد الدورة",
+    selectedAppointments: "المواعيد المختارة",
+    privateBooking: "حجز Private 1-to-1",
+    holdExpired: "انتهى الحجز",
+    chooseAgain: "اختيار المواعيد من جديد",
+
+    subscriptionDuration: "مدة الاشتراك",
+    oneMonth: "شهر واحد",
+    threeMonths: "3 أشهر",
+
+    freeCoupon: "كوبون مجاني",
+    couponPlaceholder: "YW-FREE-XXXXXX",
+    verify: "تحقق",
+    checking: "...",
+
+    paymentMethod: "طريقة الدفع",
+    paytabsHint: "دفع إلكتروني مباشر",
+    cliqHint: "تحويل يدوي",
+    privateOnlinePaymentOnly:
+      "حجز الـPrivate يستخدم الدفع الإلكتروني المباشر لضمان عدم حجز نفس الدورة لأكثر من طالب.",
+
+    autoRenew: "تفعيل التجديد التلقائي",
+    autoRenewHint:
+      "يمكنك إيقافه لاحقاً من صفحة الدورة.",
+
+    orderSummary: "ملخص الطلب",
+    course: "الدورة",
+    type: "النوع",
+    duration: "المدة",
+    totalDue: "الإجمالي المستحق",
+
+    confirmBooking: "تأكيد الحجز",
+    getCourse: "الحصول على الدورة",
+    holdTimeEnded: "انتهت مدة الحجز",
+    paying: "جاري تحويلك إلى الدفع...",
+    securePayment: "عملية آمنة ومحمية",
+  },
+
+  announcements: {
+    navLabel: "الإعلانات",
+
+    centerBadge: "مركز التواصل",
+    title: "الإعلانات",
+    subtitle:
+      "أنشئ إعلاناً يظهر مباشرة في أعلى صفحات الطلاب أو المعلمين. يمكنك إيقاف الإعلان وإعادة تفعيله في أي وقت.",
+
+    newAnnouncement: "إعلان جديد",
+    whatToAnnounce: "ماذا تريد أن تعلن؟",
+
+    audience: "جمهور الإعلان",
+
+    students: "الطلاب",
+    teachers: "المعلمين",
+
+    studentHint:
+      "يظهر الإعلان في صفحات حسابات الطلاب.",
+    teacherHint:
+      "يظهر الإعلان في لوحة وصفحات المعلمين.",
+
+    titleLabel: "عنوان الإعلان",
+    titlePlaceholder: "مثال: تغيير موعد المحاضرة",
+
+    messageLabel: "نص الإعلان",
+    messagePlaceholder: "اكتب تفاصيل الإعلان هنا...",
+
+    publish: "نشر الإعلان",
+    publishing: "جاري النشر...",
+    publishedSuccess: "تم نشر الإعلان بنجاح",
+    createError: "تعذر إنشاء الإعلان",
+    updateError: "تعذر تحديث الإعلان",
+    deleteError: "تعذر حذف الإعلان",
+
+    history: "سجل الإعلانات",
+    current: "الإعلانات الحالية",
+    announcement: "إعلان",
+    announcements: "إعلانات",
+    empty: "لا يوجد إعلانات حتى الآن.",
+
+    studentBadge: "الطلاب",
+    teacherBadge: "المعلمين",
+
+    active: "نشط",
+    paused: "متوقف",
+
+    pause: "إيقاف",
+    activate: "تفعيل",
+    delete: "حذف",
+
+    deleteConfirm: "حذف الإعلان نهائياً؟",
+    confirmDelete: "نعم، حذف",
+    cancel: "تراجع",
+
+    bannerStudent: "إعلان للطلاب",
+    bannerTeacher: "إعلان للمعلمين",
+    fromAdmin: "من إدارة المنصة",
+  },
+
   staff: {
     navLabel: "فريق الإدارة",
     title: "فريق الإدارة",
@@ -511,9 +831,51 @@ export const ar = {
       manage_courses: { label: "إدارة الدورات", hint: "إنشاء وتعديل وحذف الدورات والدروس" },
       manage_students: { label: "إدارة الطلاب", hint: "عرض الطلاب وتمديد الاشتراكات وإدارة التسجيل" },
       manage_teachers: { label: "إدارة المدربين", hint: "عرض المدربين وتعديل بياناتهم" },
-      manage_coupons: { label: "إدارة الكوبونات", hint: "إنشاء وإدارة أكواد الكوبونات المجانية للدورات" },
-      view_orders: { label: "الطلبات", hint: "عرض الطلبات وعمليات الدفع" },
+      manage_coupons: { label: "إدارة الكوبونات", hint: "إنشاء وإدارة كوبونات الاشتراك المجاني والخصومات" },
+      manage_announcements: { label: "إدارة الإعلانات", hint: "إنشاء وإيقاف وحذف إعلانات الطلاب والمعلمين" },
+      manage_assignments: { label: "إدارة الواجبات", hint: "إنشاء وحذف ومتابعة واجبات الدورات وتسليمات الطلاب" },
+      view_orders: { label: "إدارة عمليات الدفع", hint: "عرض وإدارة الطلبات وعمليات الدفع" },
       moderate_messages: { label: "مراقبة الرسائل", hint: "الاطلاع على المحادثات وإدارتها" },
     },
   },
+
+  assignmentGrading: {
+    navLabel: "تصحيح الواجبات",
+    pageTitle: "تصحيح الواجبات",
+    pageDescription: "راجع تسليمات الطلاب، استمع للتسجيلات، افتح الملفات وأضف الدرجة والملاحظات.",
+    noAssignments: "لا توجد واجبات لتصحيحها حالياً.",
+    submissions: "التسليمات",
+    waitingReview: "بانتظار التصحيح",
+    graded: "تم التصحيح",
+    maxScore: "الدرجة الكاملة",
+    reviewSubmissions: "عرض وتصحيح التسليمات",
+    back: "العودة إلى الواجبات",
+    noSubmissions: "لا توجد تسليمات من الطلاب لهذا الواجب حتى الآن.",
+    attempt: "المحاولة",
+    submitted: "تم التسليم",
+    late: "متأخر",
+    returned: "أُعيد للطالب",
+    writtenAnswer: "الإجابة الكتابية",
+    noWrittenAnswer: "لا توجد إجابة كتابية.",
+    links: "الروابط",
+    attachments: "الملفات والمرفقات",
+    openFile: "فتح الملف",
+    voiceAnswer: "الإجابة الصوتية",
+    audioUnavailable: "تعذر تحميل التسجيل الصوتي.",
+    grading: "التصحيح والدرجة",
+    score: "الدرجة",
+    feedback: "ملاحظات المدرس",
+    feedbackPlaceholder: "اكتب ملاحظاتك للطالب...",
+    scoreRange: "يجب أن تكون الدرجة بين",
+    saveGrade: "حفظ الدرجة",
+    updateGrade: "تحديث الدرجة",
+    saving: "جاري الحفظ...",
+    gradeSaved: "تم حفظ الدرجة بنجاح.",
+    returnToStudent: "إرجاع للطالب للتعديل",
+    returnConfirm: "سيتم فتح الواجب للطالب من جديد حتى يعدله ويعيد تسليمه. هل تريد المتابعة؟",
+    returnedSuccess: "تم إرجاع الواجب للطالب.",
+    feedbackRequired: "اكتب ملاحظة للطالب قبل إرجاع الواجب.",
+    actionError: "تعذر تنفيذ العملية.",
+  },
+
 };

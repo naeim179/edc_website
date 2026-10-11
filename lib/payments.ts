@@ -1,9 +1,166 @@
-import { createAdminClient } from "@/lib/supabase/admin";
-import { queryTransaction } from "@/lib/paytabs";
+import {
+  createAdminClient,
+} from "@/lib/supabase/admin";
+
+import {
+  queryTransaction,
+} from "@/lib/paytabs";
+
+function unpaidResult() {
+  return {
+    paid:
+      false as const,
+    courseId:
+      null as string | null,
+    expiresAt:
+      null as string | null,
+    autoRenew:
+      false,
+  };
+}
+
+async function cancelPrivateBooking(
+  bookingId:
+    | string
+    | null
+) {
+  if (!bookingId) {
+    return;
+  }
+
+  const admin =
+    createAdminClient();
+
+  await admin
+    .from(
+      "private_course_bookings"
+    )
+    .update({
+      status:
+        "cancelled",
+      cancelled_at:
+        new Date()
+          .toISOString(),
+    })
+    .eq(
+      "id",
+      bookingId
+    )
+    .eq(
+      "status",
+      "pending_payment"
+    );
+}
+
+async function confirmPrivateBooking(
+  bookingId:
+    | string
+    | null,
+  userId: string,
+  courseId: string
+) {
+  if (!bookingId) {
+    return;
+  }
+
+  const admin =
+    createAdminClient();
+
+  const {
+    data:
+      currentBooking,
+    error:
+      currentError,
+  } = await admin
+    .from(
+      "private_course_bookings"
+    )
+    .select(`
+      id,
+      status,
+      student_id,
+      course_id
+    `)
+    .eq(
+      "id",
+      bookingId
+    )
+    .maybeSingle();
+
+  if (
+    currentError ||
+    !currentBooking
+  ) {
+    throw new Error(
+      currentError?.message ??
+        "Private booking not found"
+    );
+  }
+
+  if (
+    currentBooking.student_id !==
+      userId ||
+    currentBooking.course_id !==
+      courseId
+  ) {
+    throw new Error(
+      "Private booking mismatch"
+    );
+  }
+
+  if (
+    currentBooking.status ===
+    "confirmed"
+  ) {
+    return;
+  }
+
+  if (
+    currentBooking.status !==
+    "pending_payment"
+  ) {
+    throw new Error(
+      "Private booking is no longer available"
+    );
+  }
+
+  const {
+    error:
+      updateError,
+  } = await admin
+    .from(
+      "private_course_bookings"
+    )
+    .update({
+      status:
+        "confirmed",
+      confirmed_at:
+        new Date()
+          .toISOString(),
+      hold_expires_at:
+        null,
+    })
+    .eq(
+      "id",
+      bookingId
+    )
+    .eq(
+      "status",
+      "pending_payment"
+    );
+
+  if (updateError) {
+    throw new Error(
+      updateError.message
+    );
+  }
+}
 
 export async function fulfillPaymentByTranRef(
   tranRef: string,
-  callbackToken?: string | null
+  callbackToken?:
+    | string
+    | null
 ) {
   const result =
     await queryTransaction(
@@ -22,12 +179,7 @@ export async function fulfillPaymentByTranRef(
       | undefined;
 
   if (!orderId) {
-    return {
-      paid: false as const,
-      courseId: null as string | null,
-      expiresAt: null as string | null,
-      autoRenew: false,
-    };
+    return unpaidResult();
   }
 
   const supabase =
@@ -35,7 +187,8 @@ export async function fulfillPaymentByTranRef(
 
   const {
     data: order,
-    error: orderError,
+    error:
+      orderError,
   } = await supabase
     .from("orders")
     .select(`
@@ -47,86 +200,87 @@ export async function fulfillPaymentByTranRef(
       currency,
       subscription_months,
       auto_renew_requested,
-      fulfilled_at
+      fulfilled_at,
+      private_booking_id
     `)
-    .eq("id", orderId)
+    .eq(
+      "id",
+      orderId
+    )
     .maybeSingle();
 
   if (
     orderError ||
     !order
   ) {
-    return {
-      paid: false as const,
-      courseId: null as string | null,
-      expiresAt: null as string | null,
-      autoRenew: false,
-    };
+    return unpaidResult();
   }
 
   if (
-    responseStatus === "P" ||
-    responseStatus === "H"
+    responseStatus ===
+      "P" ||
+    responseStatus ===
+      "H"
   ) {
     if (
-      order.status !== "paid" &&
-      order.status !== "pending"
+      order.status !==
+        "paid" &&
+      order.status !==
+        "pending"
     ) {
-      const {
-        error,
-      } = await supabase
+      await supabase
         .from("orders")
         .update({
-          status: "pending",
+          status:
+            "pending",
         })
-        .eq("id", order.id);
-
-      if (error) {
-        throw new Error(
-          error.message
+        .eq(
+          "id",
+          order.id
         );
-      }
     }
 
-    return {
-      paid: false as const,
-      courseId: null as string | null,
-      expiresAt: null as string | null,
-      autoRenew: false,
-    };
+    return unpaidResult();
   }
 
   if (
-    responseStatus !== "A"
+    responseStatus !==
+    "A"
   ) {
     if (
       responseStatus &&
-      order.status !== "paid"
+      order.status !==
+        "paid"
     ) {
       const {
-        error,
+        error:
+          failError,
       } = await supabase
         .from("orders")
         .update({
-          status: "failed",
+          status:
+            "failed",
           paytabs_tran_ref:
             tranRef,
         })
-        .eq("id", order.id);
+        .eq(
+          "id",
+          order.id
+        );
 
-      if (error) {
+      if (failError) {
         throw new Error(
-          error.message
+          failError.message
         );
       }
+
+      await cancelPrivateBooking(
+        order.private_booking_id ??
+          null
+      );
     }
 
-    return {
-      paid: false as const,
-      courseId: null as string | null,
-      expiresAt: null as string | null,
-      autoRenew: false,
-    };
+    return unpaidResult();
   }
 
   const paytabsAmount =
@@ -135,20 +289,20 @@ export async function fulfillPaymentByTranRef(
     );
 
   const orderAmount =
-    Number(order.amount);
+    Number(
+      order.amount
+    );
 
   const paytabsCurrency =
     typeof result?.cart_currency ===
     "string"
-      ? result.cart_currency
-          .toUpperCase()
+      ? result.cart_currency.toUpperCase()
       : "";
 
   const orderCurrency =
     typeof order.currency ===
     "string"
-      ? order.currency
-          .toUpperCase()
+      ? order.currency.toUpperCase()
       : "";
 
   const amountMatches =
@@ -164,7 +318,8 @@ export async function fulfillPaymentByTranRef(
     ) < 0.001;
 
   const currencyMatches =
-    paytabsCurrency !== "" &&
+    paytabsCurrency !==
+      "" &&
     paytabsCurrency ===
       orderCurrency;
 
@@ -173,32 +328,38 @@ export async function fulfillPaymentByTranRef(
     !currencyMatches
   ) {
     if (
-      order.status !== "paid"
+      order.status !==
+      "paid"
     ) {
       const {
-        error,
+        error:
+          failError,
       } = await supabase
         .from("orders")
         .update({
-          status: "failed",
+          status:
+            "failed",
           paytabs_tran_ref:
             tranRef,
         })
-        .eq("id", order.id);
+        .eq(
+          "id",
+          order.id
+        );
 
-      if (error) {
+      if (failError) {
         throw new Error(
-          error.message
+          failError.message
         );
       }
+
+      await cancelPrivateBooking(
+        order.private_booking_id ??
+          null
+      );
     }
 
-    return {
-      paid: false as const,
-      courseId: null as string | null,
-      expiresAt: null as string | null,
-      autoRenew: false,
-    };
+    return unpaidResult();
   }
 
   const queryToken =
@@ -213,36 +374,48 @@ export async function fulfillPaymentByTranRef(
     null;
 
   const {
-    data: fulfillment,
-    error: fulfillmentError,
+    data:
+      fulfillment,
+    error:
+      fulfillmentError,
   } = await supabase.rpc(
     "fulfill_subscription_order",
     {
-      p_order_id: order.id,
-      p_tran_ref: tranRef,
-      p_token: token,
+      p_order_id:
+        order.id,
+      p_tran_ref:
+        tranRef,
+      p_token:
+        token,
     }
   );
 
-  if (fulfillmentError) {
+  if (
+    fulfillmentError
+  ) {
     throw new Error(
       fulfillmentError.message
     );
   }
 
-  /*
-   * callback and return page can race.
-   * If return fulfilled first without a token,
-   * callback can safely attach the verified token later.
-   */
+  await confirmPrivateBooking(
+    order.private_booking_id ??
+      null,
+    order.user_id,
+    order.course_id
+  );
+
   if (
     order.auto_renew_requested &&
     token
   ) {
     const {
-      data: subscription,
+      data:
+        subscription,
     } = await supabase
-      .from("subscriptions")
+      .from(
+        "subscriptions"
+      )
       .select("id")
       .eq(
         "student_id",
@@ -256,7 +429,8 @@ export async function fulfillPaymentByTranRef(
 
     if (subscription) {
       const {
-        error: tokenError,
+        error:
+          tokenError,
       } = await supabase
         .from(
           "subscription_payment_tokens"
@@ -285,11 +459,15 @@ export async function fulfillPaymentByTranRef(
       }
 
       const {
-        error: autoRenewError,
+        error:
+          autoRenewError,
       } = await supabase
-        .from("subscriptions")
+        .from(
+          "subscriptions"
+        )
         .update({
-          auto_renew: true,
+          auto_renew:
+            true,
           updated_at:
             new Date()
               .toISOString(),
@@ -299,7 +477,9 @@ export async function fulfillPaymentByTranRef(
           subscription.id
         );
 
-      if (autoRenewError) {
+      if (
+        autoRenewError
+      ) {
         throw new Error(
           autoRenewError.message
         );
@@ -314,33 +494,10 @@ export async function fulfillPaymentByTranRef(
       ? fulfillment[0]
       : fulfillment;
 
-  // Create chat conversation after successful payment
-  const { data: instructor } =
-    await supabase
-      .from("course_instructors")
-      .select("teacher_id")
-      .eq("course_id", order.course_id)
-      .limit(1)
-      .maybeSingle();
-
-  if (instructor?.teacher_id) {
-    const { error: conversationError } =
-      await supabase.rpc("start_conversation_for_student", {
-          p_student_id: order.user_id,
-          p_course_id: order.course_id,
-          p_teacher_id: instructor.teacher_id,
-        });
-
-    if (conversationError) {
-      console.error(
-        "Create conversation failed:",
-        conversationError.message
-      );
-    }
-  }
-
   return {
-    paid: true as const,
+    paid:
+      true as const,
+
     courseId:
       order.course_id as string,
 

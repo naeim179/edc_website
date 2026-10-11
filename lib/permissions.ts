@@ -4,6 +4,8 @@ export const PERMISSION_KEYS = [
   "manage_teachers",
   "view_orders",
   "manage_coupons",
+  "manage_announcements",
+  "manage_assignments",
   "moderate_messages",
 ] as const;
 

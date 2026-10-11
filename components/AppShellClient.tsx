@@ -10,6 +10,7 @@ import {
 import { useLanguage } from "@/components/LanguageProvider";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = {
@@ -21,6 +22,13 @@ type Props = {
   permissions?: string[] | null;
   userName: string;
   avatarUrl: string | null;
+  announcements?: {
+    id: string;
+    title: string;
+    message: string;
+    audience: "student" | "teacher";
+    created_at: string;
+  }[];
 };
 
 export default function AppShellClient({
@@ -32,6 +40,7 @@ export default function AppShellClient({
   permissions = null,
   userName,
   avatarUrl,
+  announcements = [],
 }: Props) {
 
   const [menuOpen,setMenuOpen] =
@@ -191,6 +200,13 @@ export default function AppShellClient({
         />
       </div>
 
+        {announcements.length > 0 && (
+          <AnnouncementBanner
+            announcements={
+              announcements
+            }
+          />
+        )}
 
         <section
           className="yw-content"

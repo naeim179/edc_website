@@ -28,7 +28,11 @@ export default async function EditCoursePage({
       course_type,
       delivery_type,
       discount_type,
-      discount_value
+      discount_value,
+      registration_open,
+      group_day_of_week,
+      group_start_time,
+      group_end_time
     `)
     .eq("id", id)
     .maybeSingle();
@@ -41,6 +45,32 @@ export default async function EditCoursePage({
     return null;
   }
 
+  const {
+    data: privateSlots,
+    error: privateSlotsError,
+  } = await supabase
+    .from("private_course_availability")
+    .select(`
+      id,
+      day_of_week,
+      start_time,
+      end_time
+    `)
+    .eq("course_id", id)
+    .eq("is_active", true)
+    .order("day_of_week", {
+      ascending: true,
+    })
+    .order("start_time", {
+      ascending: true,
+    });
+
+  if (privateSlotsError) {
+    throw new Error(
+      privateSlotsError.message
+    );
+  }
+
   return (
     <AppShell>
       <div className="max-w-4xl mx-auto w-full space-y-6">
@@ -48,7 +78,13 @@ export default async function EditCoursePage({
           تعديل الدورة
         </h1>
 
-        <CourseForm course={course} />
+        <CourseForm
+          course={{
+            ...course,
+            private_slots:
+              privateSlots ?? [],
+          }}
+        />
       </div>
     </AppShell>
   );

@@ -159,7 +159,39 @@ export async function teacherCreateLesson(
     throw new Error("عنوان الدرس مطلوب");
   }
 
-  const video = readLessonVideoForm(formData);
+  if (
+    lessonType !== "recorded" &&
+    lessonType !== "live"
+  ) {
+    throw new Error("نوع الدرس غير صحيح");
+  }
+
+  const liveUrl =
+    String(
+      formData.get("content_url") ?? ""
+    ).trim();
+
+  if (
+    lessonType === "live" &&
+    !liveUrl
+  ) {
+    throw new Error(
+      "رابط الجلسة المباشرة مطلوب"
+    );
+  }
+
+  const video =
+    lessonType === "live"
+      ? {
+          content_url: liveUrl,
+          video_provider: null,
+          youtube_video_id: null,
+          mux_asset_id: null,
+          mux_playback_id: null,
+          bunny_library_id: null,
+          bunny_video_id: null,
+        }
+      : readLessonVideoForm(formData);
 
   const admin = createAdminClient();
 
@@ -172,8 +204,14 @@ export async function teacherCreateLesson(
       order_index: orderIndex,
       is_free_preview: isFreePreview,
       lesson_type: lessonType,
-      live_platform: lessonType === "live" ? livePlatform : null,
-      live_schedule: lessonType === "live" ? liveSchedule : null,
+      live_platform:
+        lessonType === "live"
+          ? livePlatform
+          : null,
+      live_schedule:
+        lessonType === "live"
+          ? liveSchedule
+          : null,
     });
 
   if (error) {
@@ -182,6 +220,10 @@ export async function teacherCreateLesson(
 
   revalidatePath(
     `/teacher/courses/${courseId}/sections/${sectionId}/lessons`
+  );
+
+  revalidatePath(
+    `/teacher/courses/${courseId}/sections`
   );
 }
 
@@ -194,16 +236,71 @@ export async function teacherUpdateLesson(
   await requireCourseAccess(courseId);
   await requireSectionInCourse(sectionId, courseId);
 
-  const title = String(formData.get("title") ?? "").trim();
-  const orderIndex = Number(formData.get("order_index") ?? 0);
+  const title =
+    String(
+      formData.get("title") ?? ""
+    ).trim();
+
+  const orderIndex =
+    Number(
+      formData.get("order_index") ?? 0
+    );
+
   const isFreePreview =
     formData.get("is_free_preview") === "on";
+
+  const lessonType =
+    String(
+      formData.get("lesson_type") ?? "recorded"
+    );
+
+  const livePlatform =
+    String(
+      formData.get("live_platform") ?? ""
+    );
+
+  const liveSchedule =
+    String(
+      formData.get("live_schedule") ?? ""
+    );
+
+  const liveUrl =
+    String(
+      formData.get("content_url") ?? ""
+    ).trim();
 
   if (!title) {
     throw new Error("عنوان الدرس مطلوب");
   }
 
-  const video = readLessonVideoForm(formData);
+  if (
+    lessonType !== "recorded" &&
+    lessonType !== "live"
+  ) {
+    throw new Error("نوع الدرس غير صحيح");
+  }
+
+  if (
+    lessonType === "live" &&
+    !liveUrl
+  ) {
+    throw new Error(
+      "رابط الجلسة المباشرة مطلوب"
+    );
+  }
+
+  const video =
+    lessonType === "live"
+      ? {
+          content_url: liveUrl,
+          video_provider: null,
+          youtube_video_id: null,
+          mux_asset_id: null,
+          mux_playback_id: null,
+          bunny_library_id: null,
+          bunny_video_id: null,
+        }
+      : readLessonVideoForm(formData);
 
   const admin = createAdminClient();
 
@@ -225,6 +322,15 @@ export async function teacherUpdateLesson(
       ...video,
       order_index: orderIndex,
       is_free_preview: isFreePreview,
+      lesson_type: lessonType,
+      live_platform:
+        lessonType === "live"
+          ? livePlatform
+          : null,
+      live_schedule:
+        lessonType === "live"
+          ? liveSchedule
+          : null,
     })
     .eq("id", lessonId);
 
@@ -234,6 +340,10 @@ export async function teacherUpdateLesson(
 
   revalidatePath(
     `/teacher/courses/${courseId}/sections/${sectionId}/lessons`
+  );
+
+  revalidatePath(
+    `/teacher/courses/${courseId}/sections`
   );
 }
 
@@ -259,6 +369,10 @@ export async function teacherDeleteLesson(
 
   revalidatePath(
     `/teacher/courses/${courseId}/sections/${sectionId}/lessons`
+  );
+
+  revalidatePath(
+    `/teacher/courses/${courseId}/sections`
   );
 }
 

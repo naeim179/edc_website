@@ -11,6 +11,8 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import ContactTeacherButton from "@/components/chat/ContactTeacherButton";
 import ProgressBar from "@/components/ui/ProgressBar";
+import CourseAvailabilityCard from "@/components/CourseAvailabilityCard";
+import CancelPrivateHoldButton from "@/components/booking/CancelPrivateHoldButton";
 
 type Lesson = {
   id: string;
@@ -52,6 +54,10 @@ type Course = {
   discount_type: "percentage" | "fixed" | null;
   discount_value: number | null;
   course_type: "group" | "private";
+  registration_open: boolean;
+  group_day_of_week: number | null;
+  group_start_time: string | null;
+  group_end_time: string | null;
 
   sections?: Section[];
 
@@ -83,6 +89,9 @@ type Props = {
   totalLessons: number;
   completedLessons: number;
   progressPercent: number;
+  registrationState: string;
+  hasOwnPrivateHold: boolean;
+  ownPrivateBookingId: string | null;
 };
 
 /* ---------- helpers ---------- */
@@ -193,6 +202,9 @@ export default function CourseDetailContent({
   totalLessons,
   completedLessons,
   progressPercent,
+  registrationState,
+  hasOwnPrivateHold,
+  ownPrivateBookingId,
 }: Props) {
   const { language, t } = useLanguage();
   const isArabic = language === "ar";
@@ -442,6 +454,28 @@ export default function CourseDetailContent({
             </div>
           </div>
 
+          <CourseAvailabilityCard
+            courseType={course.course_type}
+            registrationOpen={
+              course.registration_open
+            }
+            registrationState={
+              registrationState
+            }
+            hasOwnPrivateHold={
+              hasOwnPrivateHold
+            }
+            groupDayOfWeek={
+              course.group_day_of_week
+            }
+            groupStartTime={
+              course.group_start_time
+            }
+            groupEndTime={
+              course.group_end_time
+            }
+          />
+
           {/* PROGRESS */}
 
           {enrollmentId && (
@@ -491,12 +525,57 @@ export default function CourseDetailContent({
                   {ctaLabel}
                 </Button>
               ) : null
+            ) : course.course_type === "private" ? (
+              registrationState === "available" ||
+              (
+                registrationState === "held" &&
+                hasOwnPrivateHold
+              ) ? (
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                  <Link
+                    href={`/courses/${course.id}/schedule`}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#C9704A] px-6 py-3.5 font-bold text-white shadow-[0_10px_25px_rgba(201,112,74,0.18)] transition hover:bg-[#B15F3B] sm:w-auto"
+                  >
+                    {hasOwnPrivateHold
+                      ? isArabic
+                        ? "إكمال الحجز"
+                        : "Continue booking"
+                      : isArabic
+                        ? "اختيار المواعيد والحجز"
+                        : "Choose schedule"}
+                  </Link>
+
+                  {hasOwnPrivateHold &&
+                    ownPrivateBookingId && (
+                      <CancelPrivateHoldButton
+                        bookingId={
+                          ownPrivateBookingId
+                        }
+                        courseId={
+                          course.id
+                        }
+                      />
+                    )}
+                </div>
+              ) : (
+                <span className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-2xl bg-[#EEEAE4] px-6 py-3.5 font-bold text-[#948B80] sm:w-auto">
+                  {registrationState === "booked"
+                    ? t.booking.privateBooked
+                    : registrationState === "held"
+                      ? t.booking.temporarilyHeld
+                      : t.booking.registrationClosed}
+                </span>
+              )
+            ) : !course.registration_open ? (
+              <span className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-2xl bg-[#EEEAE4] px-6 py-3.5 font-bold text-[#948B80] sm:w-auto">
+                {t.booking.registrationClosed}
+              </span>
             ) : course.is_free ? (
               <EnrollButton courseId={course.id} />
             ) : (
               <Link
                 href={`/checkout/${course.id}`}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#C9704A] px-6 py-3 font-bold text-white transition hover:bg-[#B15F3B]"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#C9704A] px-6 py-3.5 font-bold text-white transition hover:bg-[#B15F3B] sm:w-auto"
               >
                 {t.courses.chooseSubscription}
               </Link>

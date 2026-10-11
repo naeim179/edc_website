@@ -1,6 +1,7 @@
 "use client";
 
 import ImageUploader from "@/components/ui/ImageUploader";
+import CourseSchedulingFields from "@/components/admin/CourseSchedulingFields";
 
 import { useState } from "react";
 import {
@@ -22,6 +23,18 @@ type Course = {
   delivery_type?: "recorded" | "live";
   discount_type?: "percentage" | "fixed" | null;
   discount_value?: number | null;
+
+  registration_open?: boolean;
+  group_day_of_week?: number | null;
+  group_start_time?: string | null;
+  group_end_time?: string | null;
+
+  private_slots?: {
+    id?: string;
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+  }[];
 };
 
 export default function CourseForm({
@@ -173,6 +186,25 @@ export default function CourseForm({
           </div>
         </div>
       )}
+
+      <CourseSchedulingFields
+        courseType={courseType}
+        initialRegistrationOpen={
+          course?.registration_open ?? true
+        }
+        initialGroupDay={
+          course?.group_day_of_week ?? null
+        }
+        initialGroupTime={
+          course?.group_start_time ?? null
+        }
+        initialGroupEndTime={
+          course?.group_end_time ?? null
+        }
+        initialPrivateSlots={
+          course?.private_slots ?? []
+        }
+      />
 
       <div className="bg-[var(--brand-surface)] border rounded-xl p-5 space-y-5">
         <h2 className="font-bold text-lg">

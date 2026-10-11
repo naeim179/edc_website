@@ -2,7 +2,6 @@
 
 import { useLanguage } from "@/components/LanguageProvider";
 import CreateSectionForm from "@/app/teacher/courses/[id]/sections/CreateSectionForm";
-import CreateLessonForm from "@/app/teacher/courses/[id]/sections/[sectionId]/CreateLessonForm";
 
 type Section = {
   id: string;
@@ -78,10 +77,6 @@ export default function TeacherSectionsContent({
               ))}
 
 
-              <CreateLessonForm
-                courseId={courseId}
-                sectionId={section.id}
-              />
 
             </div>
 
