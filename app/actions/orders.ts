@@ -835,6 +835,54 @@ export async function createOrder(
   }
 
   if (
+    discountCouponCode &&
+    chargedAmount <= 0
+  ) {
+    const {
+      error:
+        zeroFulfillmentError,
+    } = await admin.rpc(
+      "fulfill_zero_discount_order",
+      {
+        p_order_id:
+          orderId,
+        p_user_id:
+          user.id,
+      }
+    );
+
+    if (
+      zeroFulfillmentError
+    ) {
+      throw new Error(
+        couponCheckoutError(
+          zeroFulfillmentError.message
+        )
+      );
+    }
+
+    revalidatePath(
+      "/my-courses"
+    );
+
+    revalidatePath(
+      "/courses"
+    );
+
+    revalidatePath(
+      `/courses/${courseId}`
+    );
+
+    revalidatePath(
+      "/admin/coupons"
+    );
+
+    redirect(
+      `/courses/${courseId}`
+    );
+  }
+
+  if (
     validatedBookingId
   ) {
     const {

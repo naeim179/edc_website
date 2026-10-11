@@ -383,6 +383,8 @@ export default function AdminStudentDetailContent({
       new Date(
         subscription.expiresAt
       ).getTime() <=
+        // Subscription access intentionally depends on current time.
+        // eslint-disable-next-line react-hooks/purity
         Date.now()
     ) {
       return "expired";
@@ -461,6 +463,8 @@ export default function AdminStudentDetailContent({
 
     const diff =
       expiry.getTime() -
+      // Remaining subscription time intentionally depends on current time.
+      // eslint-disable-next-line react-hooks/purity
       Date.now();
 
     if (

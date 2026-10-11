@@ -7,7 +7,6 @@ import EnrollButton from "@/components/EnrollButton";
 import SubscriptionRenewalControls from "@/components/SubscriptionRenewalControls";
 import { useLanguage } from "@/components/LanguageProvider";
 
-import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import ContactTeacherButton from "@/components/chat/ContactTeacherButton";
 import ProgressBar from "@/components/ui/ProgressBar";

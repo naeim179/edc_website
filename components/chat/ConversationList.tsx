@@ -172,8 +172,13 @@ export default function ConversationList({
     useState<Filter>("all");
 
   useEffect(() => {
-    setConversations(
-      initialConversations
+    window.setTimeout(
+      () => {
+        setConversations(
+          initialConversations
+        );
+      },
+      0
     );
   }, [
     initialConversations,

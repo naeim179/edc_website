@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -504,7 +505,7 @@ export default function MessageThread({
     readOnly,
   ]);
 
-  async function updatePresence() {
+  const updatePresence = useCallback(async () => {
     if (readOnly) {
       return;
     }
@@ -524,9 +525,9 @@ export default function MessageThread({
           new Date()
             .toISOString(),
       });
-  }
+  }, [currentUserId, readOnly]);
 
-  async function checkOtherPresence() {
+  const checkOtherPresence = useCallback(async () => {
     const supabase =
       createClient();
 
@@ -576,10 +577,10 @@ export default function MessageThread({
     setOtherOnline(
       diff < 90000
     );
-  }
+  }, [conversation.student_id, conversation.teacher_id, currentUserId]);
 
 
-  async function refreshMessages() {
+  const refreshMessages = useCallback(async () => {
     const supabase =
       createClient();
 
@@ -619,7 +620,7 @@ export default function MessageThread({
         data as ChatMessage[]
       );
     }
-  }
+  }, [conversationId]);
 
   useEffect(() => {
     let mounted =
@@ -653,10 +654,8 @@ export default function MessageThread({
       );
     };
   }, [
-    currentUserId,
-    conversation.student_id,
-    conversation.teacher_id,
-    readOnly,
+    updatePresence,
+    checkOtherPresence,
   ]);
 
   useEffect(() => {
@@ -756,6 +755,7 @@ export default function MessageThread({
     conversationId,
     currentUserId,
     readOnly,
+    refreshMessages,
   ]);
 
   function handleTyping(

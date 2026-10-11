@@ -15,8 +15,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { language, t } = useLanguage();
-  const isArabic = language === "ar";
+  const { t } = useLanguage();
   const supabase = createClient();
 
   const [fullName, setFullName] = useState("");

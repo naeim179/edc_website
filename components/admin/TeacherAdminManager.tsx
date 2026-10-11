@@ -200,8 +200,13 @@ export default function TeacherAdminManager({
     useState("");
 
   useEffect(() => {
-    setImageUrl(
-      profile.imageUrl
+    window.setTimeout(
+      () => {
+        setImageUrl(
+          profile.imageUrl
+        );
+      },
+      0
     );
   }, [
     profile.imageUrl,

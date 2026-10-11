@@ -359,8 +359,13 @@ export default function AssignmentSubmissionForm({
 
   useEffect(
     () => {
-      setNowMs(
-        Date.now()
+      window.setTimeout(
+        () => {
+          setNowMs(
+            Date.now()
+          );
+        },
+        0
       );
 
       const timer =
@@ -903,7 +908,10 @@ export default function AssignmentSubmissionForm({
               ({
                 url,
                 ...item
-              }) => item
+              }) => {
+                void url;
+                return item;
+              }
             ),
             ...newFiles,
           ],
@@ -912,7 +920,10 @@ export default function AssignmentSubmissionForm({
               ({
                 url,
                 ...item
-              }) => item
+              }) => {
+                void url;
+                return item;
+              }
             ),
             ...newAudio,
           ].slice(-1),

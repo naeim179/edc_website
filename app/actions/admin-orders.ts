@@ -153,6 +153,15 @@ export async function updateOrderStatus(
       );
     }
 
+    if (
+      order.payment_method !==
+      "cliq"
+    ) {
+      throw new Error(
+        "Only CliQ orders can be manually approved."
+      );
+    }
+
     const {
       error:
         fulfillmentError,

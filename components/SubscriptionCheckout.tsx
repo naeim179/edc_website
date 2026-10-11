@@ -55,7 +55,7 @@ type Props = {
   bookingSlots?: BookingSlot[];
 };
 
-const DAYS = [
+const DAYS_AR = [
   "الأحد",
   "الإثنين",
   "الثلاثاء",
@@ -65,11 +65,23 @@ const DAYS = [
   "السبت",
 ];
 
+const DAYS_EN = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 function formatTime(
   value:
     | string
     | null
     | undefined
+,
+  isArabic: boolean
 ) {
   if (!value) {
     return "—";
@@ -87,8 +99,12 @@ function formatTime(
 
   const suffix =
     hour >= 12
-      ? "م"
-      : "ص";
+      ? isArabic
+        ? "م"
+        : "PM"
+      : isArabic
+        ? "ص"
+        : "AM";
 
   return `${
     hour % 12 || 12
@@ -152,6 +168,11 @@ export default function SubscriptionCheckout({
 
   const isArabic =
     language === "ar";
+
+  const days =
+    isArabic
+      ? DAYS_AR
+      : DAYS_EN;
 
   const [
     months,
@@ -351,7 +372,7 @@ export default function SubscriptionCheckout({
   }[] = [
     {
       value: 1,
-      label: "شهر واحد",
+      label: (isArabic ? "شهر واحد" : "1 Month"),
       totalLabel:
         `${monthlyPriceUsd.toFixed(
           2
@@ -359,7 +380,7 @@ export default function SubscriptionCheckout({
     },
     {
       value: 3,
-      label: "3 أشهر",
+      label: (isArabic ? "3 أشهر" : "3 Months"),
       totalLabel:
         `${(
           monthlyPriceUsd *
@@ -380,7 +401,7 @@ export default function SubscriptionCheckout({
         className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[#6B6155] transition hover:text-[#1B4B43]"
       >
         <ArrowBackIcon />
-        العودة إلى الدورة
+        {isArabic ? "العودة إلى الدورة" : "Back to Course"}
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_350px] lg:items-start">
@@ -395,8 +416,8 @@ export default function SubscriptionCheckout({
 
             <h1 className="mt-2 text-2xl font-bold text-[#2A2420] md:text-3xl">
               {isRenewal
-                ? "تجديد الاشتراك"
-                : "إكمال التسجيل والدفع"}
+                ? (isArabic ? "تجديد الاشتراك" : "Renew Subscription")
+                : (isArabic ? "إكمال التسجيل والدفع" : "Complete Registration and Payment")}
             </h1>
 
             <p className="mt-2 text-sm text-[#A69C8C]">
@@ -410,25 +431,21 @@ export default function SubscriptionCheckout({
               null && (
               <div className="mt-6 rounded-2xl border border-[#E3EAE6] bg-[#FAFCFB] p-5">
                 <p className="text-xs font-bold text-[#A06A45]">
-                  موعد الدورة
+                  {isArabic ? "موعد الدورة" : "Course Schedule"}
                 </p>
 
                 <p className="mt-2 text-lg font-bold text-[#24332E]">
                   {
-                    DAYS[
+                    days[
                       groupDayOfWeek
                     ]
                   }
                 </p>
 
                 <p className="mt-1 text-sm text-[#66736E]">
-                  {formatTime(
-                    groupStartTime
-                  )}{" "}
+                  {formatTime(groupStartTime, isArabic)}{" "}
                   →{" "}
-                  {formatTime(
-                    groupEndTime
-                  )}
+                  {formatTime(groupEndTime, isArabic)}
                 </p>
               </div>
             )}
@@ -438,11 +455,11 @@ export default function SubscriptionCheckout({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold text-[#A06A45]">
-                    المواعيد المختارة
+                    {isArabic ? "المواعيد المختارة" : "Selected Appointments"}
                   </p>
 
                   <h2 className="mt-1 font-bold text-[#24332E]">
-                    حجز Private 1-to-1
+                    {isArabic ? "حجز Private 1-to-1" : "Private 1-to-1 Booking"}
                   </h2>
                 </div>
 
@@ -455,7 +472,7 @@ export default function SubscriptionCheckout({
                     }`}
                   >
                     {holdExpired
-                      ? "انتهى الحجز"
+                      ? (isArabic ? "انتهى الحجز" : "Booking Expired")
                       : countdown}
                   </span>
                 )}
@@ -472,14 +489,14 @@ export default function SubscriptionCheckout({
                       className="rounded-xl border border-[#E3EAE6] bg-white p-4"
                     >
                       <p className="text-xs font-bold text-[#A06A45]">
-                        الموعد{" "}
+                        {isArabic ? "الموعد" : "Appointment"}{" "}
                         {index +
                           1}
                       </p>
 
                       <p className="mt-1 font-bold text-[#24332E]">
                         {
-                          DAYS[
+                          days[
                             slot
                               .day_of_week
                           ]
@@ -487,13 +504,9 @@ export default function SubscriptionCheckout({
                       </p>
 
                       <p className="mt-1 text-sm text-[#66736E]">
-                        {formatTime(
-                          slot.start_time
-                        )}{" "}
+                        {formatTime(slot.start_time, isArabic)}{" "}
                         →{" "}
-                        {formatTime(
-                          slot.end_time
-                        )}
+                        {formatTime(slot.end_time, isArabic)}
                       </p>
                     </div>
                   )
@@ -505,7 +518,7 @@ export default function SubscriptionCheckout({
                   href={`/courses/${courseId}/schedule`}
                   className="mt-4 inline-flex rounded-xl bg-[#1B4B43] px-4 py-2.5 text-sm font-bold text-white"
                 >
-                  اختيار المواعيد من جديد
+                  {isArabic ? "اختيار المواعيد من جديد" : "Choose Appointments Again"}
                 </Link>
               )}
             </div>
@@ -513,7 +526,7 @@ export default function SubscriptionCheckout({
 
           <div className="mt-7">
             <h2 className="mb-3 font-bold text-[#2A2420]">
-              مدة الاشتراك
+              {isArabic ? "مدة الاشتراك" : "Subscription Duration"}
             </h2>
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -739,7 +752,7 @@ export default function SubscriptionCheckout({
             totalUsd > 0 && (
               <div className="mt-6">
                 <h2 className="mb-3 font-bold text-[#2A2420]">
-                  طريقة الدفع
+                  {isArabic ? "طريقة الدفع" : "Payment Method"}
                 </h2>
 
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -766,7 +779,7 @@ export default function SubscriptionCheckout({
                     </p>
 
                     <p className="mt-1 text-xs text-[#8C978F]">
-                      دفع إلكتروني مباشر
+                      {isArabic ? "دفع إلكتروني مباشر" : "Direct Online Payment"}
                     </p>
                   </button>
 
@@ -794,7 +807,7 @@ export default function SubscriptionCheckout({
                       </p>
 
                       <p className="mt-1 text-xs text-[#8C978F]">
-                        تحويل يدوي
+                        {isArabic ? "تحويل يدوي" : "Manual Transfer"}
                       </p>
                     </button>
                   )}
@@ -802,7 +815,7 @@ export default function SubscriptionCheckout({
 
                 {privateNewBooking && (
                   <p className="mt-3 text-xs leading-6 text-[#8C978F]">
-                    حجز الـPrivate يستخدم الدفع الإلكتروني المباشر لضمان عدم حجز نفس الدورة لأكثر من طالب.
+                    {isArabic ? "حجز الـPrivate يستخدم الدفع الإلكتروني المباشر لضمان عدم حجز نفس الدورة لأكثر من طالب." : "Private bookings use direct online payment to prevent the same course from being booked by more than one student."}
                   </p>
                 )}
               </div>
@@ -811,11 +824,11 @@ export default function SubscriptionCheckout({
           <label className="mt-6 flex cursor-pointer items-start justify-between gap-4 rounded-2xl bg-[#F7F3EC] p-4">
             <span>
               <span className="block font-bold text-[#2A2420]">
-                تفعيل التجديد التلقائي
+                {isArabic ? "تفعيل التجديد التلقائي" : "Enable Auto-Renewal"}
               </span>
 
               <span className="mt-1 block text-sm text-[#6B6155]">
-                يمكنك إيقافه لاحقاً من صفحة الدورة.
+                {isArabic ? "يمكنك إيقافه لاحقاً من صفحة الدورة." : "You can disable it later from the course page."}
               </span>
             </span>
 
@@ -843,13 +856,13 @@ export default function SubscriptionCheckout({
 
         <aside className="rounded-[26px] border border-[#E8E1D4] bg-white p-5 sm:p-6 lg:sticky lg:top-4">
           <h2 className="text-lg font-bold text-[#2A2420]">
-            ملخص الطلب
+            {isArabic ? "ملخص الطلب" : "Order Summary"}
           </h2>
 
           <div className="mt-5 space-y-3 text-sm">
             <div className="flex justify-between gap-4">
               <span className="text-[#A69C8C]">
-                الدورة
+                {isArabic ? "الدورة" : "Course"}
               </span>
 
               <span className="max-w-[11rem] text-left font-semibold text-[#2A2420]">
@@ -859,33 +872,33 @@ export default function SubscriptionCheckout({
 
             <div className="flex justify-between gap-4">
               <span className="text-[#A69C8C]">
-                النوع
+                {isArabic ? "النوع" : "Type"}
               </span>
 
               <span className="font-semibold text-[#2A2420]">
                 {courseType ===
                 "private"
-                  ? "Private 1-to-1"
-                  : "Group"}
+                  ? (isArabic ? "Private 1-to-1" : "Private 1-to-1")
+                  : (isArabic ? "Group" : "Group")}
               </span>
             </div>
 
             <div className="flex justify-between gap-4">
               <span className="text-[#A69C8C]">
-                المدة
+                {isArabic ? "المدة" : "Duration"}
               </span>
 
               <span className="font-semibold text-[#2A2420]">
                 {months === 1
-                  ? "شهر واحد"
-                  : "3 أشهر"}
+                  ? (isArabic ? "شهر واحد" : "1 Month")
+                  : (isArabic ? "3 أشهر" : "3 Months")}
               </span>
             </div>
           </div>
 
           <div className="mt-5 border-t border-[#F0EBE1] pt-5">
             <p className="text-sm text-[#A69C8C]">
-              الإجمالي المستحق
+              {isArabic ? "الإجمالي المستحق" : "Total Due"}
             </p>
 
             <p className="mt-1 text-3xl font-bold text-[#2A2420]">

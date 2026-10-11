@@ -326,7 +326,14 @@ export default function AdminCoursesContent({
 
         <select
           value={filter}
-          onChange={(e)=>setFilter(e.target.value as any)}
+          onChange={(e)=>
+            setFilter(
+              e.target.value as
+                | "all"
+                | "published"
+                | "draft"
+            )
+          }
           className="border rounded-xl px-4 py-3"
         >
           <option value="all">All</option>
@@ -337,7 +344,14 @@ export default function AdminCoursesContent({
 
         <select
           value={courseTypeFilter}
-          onChange={(e)=>setCourseTypeFilter(e.target.value as any)}
+          onChange={(e)=>
+            setCourseTypeFilter(
+              e.target.value as
+                | "all"
+                | "group"
+                | "private"
+            )
+          }
           className="border rounded-xl px-4 py-3"
         >
           <option value="all">All Types</option>
@@ -352,7 +366,14 @@ export default function AdminCoursesContent({
 
         <select
           value={sort}
-          onChange={(e)=>setSort(e.target.value as any)}
+          onChange={(e)=>
+            setSort(
+              e.target.value as
+                | "latest"
+                | "students"
+                | "lessons"
+            )
+          }
           className="border rounded-xl px-4 py-3 bg-white"
         >
           <option value="latest">

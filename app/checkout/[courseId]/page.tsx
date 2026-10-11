@@ -174,6 +174,8 @@ export default async function CheckoutPage({
       new Date(
         booking.hold_expires_at
       ).getTime() <=
+        // The private-booking hold must be checked against request time.
+        // eslint-disable-next-line react-hooks/purity
         Date.now()
     ) {
       redirect(

@@ -108,8 +108,13 @@ export default function AdminCouponDetails({
     >(null);
 
   useEffect(() => {
-    setNowMs(
-      Date.now()
+    window.setTimeout(
+      () => {
+        setNowMs(
+          Date.now()
+        );
+      },
+      0
     );
   }, []);
 

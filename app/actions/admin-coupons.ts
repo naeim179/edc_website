@@ -242,10 +242,10 @@ export async function createCoupon(
     if (
       discountType ===
         "percentage" &&
-      discountValue >= 100
+      discountValue > 100
     ) {
       throw new Error(
-        "Percentage discount must be less than 100%. Use a free subscription coupon for free access."
+        "Percentage discount cannot exceed 100%."
       );
     }
   }
@@ -433,10 +433,48 @@ export async function deleteCoupon(
     );
   }
 
+  const admin =
+    createAdminClient();
+
+  const {
+    count: historyCount,
+    error: historyError,
+  } =
+    await admin
+      .from(
+        "coupon_redemptions"
+      )
+      .select(
+        "id",
+        {
+          count: "exact",
+          head: true,
+        }
+      )
+      .eq(
+        "coupon_id",
+        id
+      );
+
+  if (historyError) {
+    throw new Error(
+      historyError.message
+    );
+  }
+
+  if (
+    (historyCount ?? 0) >
+    0
+  ) {
+    throw new Error(
+      "This coupon has usage history and cannot be deleted. Disable it instead."
+    );
+  }
+
   const {
     error,
   } =
-    await createAdminClient()
+    await admin
       .from(
         "course_coupons"
       )

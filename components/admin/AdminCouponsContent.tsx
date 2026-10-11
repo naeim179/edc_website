@@ -123,8 +123,13 @@ export default function AdminCouponsContent({
     >(null);
 
   useEffect(() => {
-    setNowMs(
-      Date.now()
+    window.setTimeout(
+      () => {
+        setNowMs(
+          Date.now()
+        );
+      },
+      0
     );
 
     const timer =

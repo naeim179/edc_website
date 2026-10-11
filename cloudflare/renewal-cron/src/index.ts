@@ -44,7 +44,7 @@ async function runRenewals(
   );
 }
 
-export default {
+const renewalWorker = {
   async scheduled(
     _controller: unknown,
     env: Env,
@@ -76,3 +76,5 @@ export default {
     );
   },
 };
+
+export default renewalWorker;

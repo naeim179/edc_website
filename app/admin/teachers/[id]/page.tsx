@@ -310,6 +310,8 @@ export default async function TeacherManagePage({
       new Date(
         bannedUntil
       ).getTime() >
+        // Current time is intentionally checked for account-ban status.
+        // eslint-disable-next-line react-hooks/purity
         Date.now()
     );
 
@@ -473,14 +475,7 @@ export default async function TeacherManagePage({
             null,
         }}
         assignments={
-          assignments.map(
-            ({
-              studentIds:
-                _studentIds,
-              ...assignment
-            }) =>
-              assignment
-          )
+          assignments
         }
         availableCourses={
           availableCourses.map(

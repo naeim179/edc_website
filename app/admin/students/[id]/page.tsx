@@ -73,6 +73,8 @@ export default async function StudentDetailsPage({
         new Date(
           bannedUntil
         ).getTime() >
+          // Current time is intentionally checked for account-ban status.
+          // eslint-disable-next-line react-hooks/purity
           Date.now()
     );
 
