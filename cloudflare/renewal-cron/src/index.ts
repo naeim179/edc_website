@@ -1,6 +1,7 @@
 interface Env {
   APP_URL: string;
   CRON_SECRET: string;
+  MAIN_APP: { fetch: typeof fetch };
 }
 
 interface WorkerExecutionContext {
@@ -17,7 +18,7 @@ async function runRenewals(
     );
 
   const response =
-    await fetch(
+    await env.MAIN_APP.fetch(
       `${appUrl}/api/subscriptions/renew`,
       {
         method: "GET",

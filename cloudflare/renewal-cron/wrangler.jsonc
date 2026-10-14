@@ -1,15 +1,25 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-
   "name": "your-way-subscription-renewal",
-
   "main": "src/index.ts",
-
   "compatibility_date": "2026-09-21",
-
   "triggers": {
     "crons": [
       "0 * * * *"
     ]
+  },
+  "services": [
+    {
+      "binding": "MAIN_APP",
+      "service": "educational-platform"
+    }
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    }
   }
 }
