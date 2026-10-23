@@ -90,6 +90,7 @@ type Props = {
   progressPercent: number;
   registrationState: string;
   hasOwnPrivateHold: boolean;
+  hasOwnConfirmedPrivateBooking: boolean;
   ownPrivateBookingId: string | null;
 };
 
@@ -203,6 +204,7 @@ export default function CourseDetailContent({
   progressPercent,
   registrationState,
   hasOwnPrivateHold,
+  hasOwnConfirmedPrivateBooking,
   ownPrivateBookingId,
 }: Props) {
   const { language, t } = useLanguage();
@@ -453,27 +455,35 @@ export default function CourseDetailContent({
             </div>
           </div>
 
-          <CourseAvailabilityCard
-            courseType={course.course_type}
-            registrationOpen={
-              course.registration_open
-            }
-            registrationState={
-              registrationState
-            }
-            hasOwnPrivateHold={
-              hasOwnPrivateHold
-            }
-            groupDayOfWeek={
-              course.group_day_of_week
-            }
-            groupStartTime={
-              course.group_start_time
-            }
-            groupEndTime={
-              course.group_end_time
-            }
-          />
+          {course.course_type === "private" &&
+          hasOwnConfirmedPrivateBooking ? (
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[26px] border border-emerald-200 bg-[#F8FBF9] p-6">
+              <div>
+                <p className="text-xs font-bold text-emerald-700">PRIVATE 1-TO-1</p>
+                <h2 className="mt-2 text-xl font-bold text-[#1B4B43]">
+                  {isArabic ? "محجوزة لك" : "Reserved for you"}
+                </h2>
+                <p className="mt-1 text-sm text-[#6B6155]">
+                  {isArabic
+                    ? "تم تأكيد حجزك لهذه الدورة."
+                    : "Your booking for this course is confirmed."}
+                </p>
+              </div>
+              <span className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-800">
+                {isArabic ? "محجوزة لك" : "Reserved for you"}
+              </span>
+            </div>
+          ) : (
+            <CourseAvailabilityCard
+              courseType={course.course_type}
+              registrationOpen={course.registration_open}
+              registrationState={registrationState}
+              hasOwnPrivateHold={hasOwnPrivateHold}
+              groupDayOfWeek={course.group_day_of_week}
+              groupStartTime={course.group_start_time}
+              groupEndTime={course.group_end_time}
+            />
+          )}
 
           {/* PROGRESS */}
 
@@ -559,7 +569,11 @@ export default function CourseDetailContent({
               ) : (
                 <span className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-2xl bg-[#EEEAE4] px-6 py-3.5 font-bold text-[#948B80] sm:w-auto">
                   {registrationState === "booked"
-                    ? t.booking.privateBooked
+                    ? hasOwnConfirmedPrivateBooking
+                      ? isArabic
+                        ? "محجوزة لك"
+                        : "Reserved for you"
+                      : t.booking.privateBooked
                     : registrationState === "held"
                       ? t.booking.temporarilyHeld
                       : t.booking.registrationClosed}

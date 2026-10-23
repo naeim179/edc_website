@@ -160,6 +160,7 @@ export default async function CourseDetailPage({
         "unavailable"
     );
 
+  let hasOwnConfirmedPrivateBooking = false;
   let hasOwnPrivateHold = false;
   let ownPrivateBookingId:
     string | null = null;
@@ -195,6 +196,21 @@ export default async function CourseDetailPage({
     ownPrivateBookingId =
       ownPrivateHold?.id ??
       null;
+
+    const { data: confirmedBooking, error: confirmedBookingError } =
+      await supabase
+        .from("private_course_bookings")
+        .select("id")
+        .eq("course_id", id)
+        .eq("student_id", user.id)
+        .eq("status", "confirmed")
+        .maybeSingle();
+
+    if (confirmedBookingError) {
+      throw new Error(confirmedBookingError.message);
+    }
+
+    hasOwnConfirmedPrivateBooking = Boolean(confirmedBooking);
   }
 
   let enrollmentId:
@@ -432,6 +448,9 @@ export default async function CourseDetailPage({
         }
         hasOwnPrivateHold={
           hasOwnPrivateHold
+        }
+        hasOwnConfirmedPrivateBooking={
+          hasOwnConfirmedPrivateBooking
         }
         ownPrivateBookingId={
           ownPrivateBookingId
