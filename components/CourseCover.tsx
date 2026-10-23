@@ -21,10 +21,19 @@ function pickGradient(seed: string) {
 type Props = {
   image?: string | null;
   title: string;
+  /** نسخة صغيرة للمصغّرات (٦٤–٨٠px): حرف واحد بدل العنوان كامل حتى ما ينقص */
+  compact?: boolean;
+  /** false = أيقونة كتاب بالوسط بدل تكرار العنوان (لما العنوان ظاهر تحت الغلاف) */
+  showTitle?: boolean;
 };
 
 /** صورة الدورة، أو غلاف مصمم بعنوان بارز إذا ما في صورة */
-export default function CourseCover({ image, title }: Props) {
+export default function CourseCover({
+  image,
+  title,
+  compact = false,
+  showTitle = true,
+}: Props) {
   if (image) {
     return (
       <div className="relative h-full w-full overflow-hidden">
@@ -32,9 +41,42 @@ export default function CourseCover({ image, title }: Props) {
           src={image}
           alt=""
           fill
-          sizes="(max-width: 768px) 100vw, 400px"
+          sizes={compact ? "80px" : "(max-width: 768px) 100vw, 400px"}
           className="object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
         />
+      </div>
+    );
+  }
+
+  if (compact) {
+    const initial = Array.from(title.trim())[0] ?? "";
+
+    return (
+      <div
+        className={`relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br ${pickGradient(
+          title
+        )}`}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute -bottom-4 -end-4 h-12 w-12 rotate-45 bg-white/[0.08]"
+        />
+
+        {initial ? (
+          <span
+            aria-hidden="true"
+            className="relative text-2xl font-bold uppercase text-white"
+          >
+            {initial}
+          </span>
+        ) : (
+          <BookIcon
+            width={24}
+            height={24}
+            strokeWidth={1.6}
+            className="relative text-white/70"
+          />
+        )}
       </div>
     );
   }
@@ -55,16 +97,27 @@ export default function CourseCover({ image, title }: Props) {
         className="absolute -top-12 -start-8 h-28 w-28 rotate-45 bg-white/[0.05]"
       />
 
-      <BookIcon
-        width={20}
-        height={20}
-        strokeWidth={1.6}
-        className="absolute end-4 top-4 text-white/40"
-      />
+      {showTitle ? (
+        <>
+          <BookIcon
+            width={20}
+            height={20}
+            strokeWidth={1.6}
+            className="absolute end-4 top-4 text-white/40"
+          />
 
-      <p className="relative line-clamp-3 text-xl font-bold leading-snug text-white">
-        {title}
-      </p>
+          <p className="relative line-clamp-3 text-xl font-bold leading-snug text-white">
+            {title}
+          </p>
+        </>
+      ) : (
+        <BookIcon
+          width={44}
+          height={44}
+          strokeWidth={1.4}
+          className="relative mx-auto text-white/60"
+        />
+      )}
     </div>
   );
 }

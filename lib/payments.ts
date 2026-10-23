@@ -1,517 +1,118 @@
-import {
-  createAdminClient,
-} from "@/lib/supabase/admin";
-
-import {
-  queryTransaction,
-} from "@/lib/paytabs";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { queryTransaction } from "@/lib/paytabs";
 
 function unpaidResult() {
   return {
-    paid:
-      false as const,
-    courseId:
-      null as string | null,
-    expiresAt:
-      null as string | null,
-    autoRenew:
-      false,
+    paid: false as const,
+    courseId: null as string | null,
+    expiresAt: null as string | null,
+    autoRenew: false,
   };
 }
 
-async function cancelPrivateBooking(
-  bookingId:
-    | string
-    | null
-) {
-  if (!bookingId) {
-    return;
-  }
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-  const admin =
-    createAdminClient();
-
-  await admin
-    .from(
-      "private_course_bookings"
-    )
-    .update({
-      status:
-        "cancelled",
-      cancelled_at:
-        new Date()
-          .toISOString(),
-    })
-    .eq(
-      "id",
-      bookingId
-    )
-    .eq(
-      "status",
-      "pending_payment"
-    );
-}
-
-async function confirmPrivateBooking(
-  bookingId:
-    | string
-    | null,
-  userId: string,
-  courseId: string
-) {
-  if (!bookingId) {
-    return;
-  }
-
-  const admin =
-    createAdminClient();
-
-  const {
-    data:
-      currentBooking,
-    error:
-      currentError,
-  } = await admin
-    .from(
-      "private_course_bookings"
-    )
-    .select(`
-      id,
-      status,
-      student_id,
-      course_id
-    `)
-    .eq(
-      "id",
-      bookingId
-    )
-    .maybeSingle();
-
-  if (
-    currentError ||
-    !currentBooking
-  ) {
-    throw new Error(
-      currentError?.message ??
-        "Private booking not found"
-    );
-  }
-
-  if (
-    currentBooking.student_id !==
-      userId ||
-    currentBooking.course_id !==
-      courseId
-  ) {
-    throw new Error(
-      "Private booking mismatch"
-    );
-  }
-
-  if (
-    currentBooking.status ===
-    "confirmed"
-  ) {
-    return;
-  }
-
-  if (
-    currentBooking.status !==
-    "pending_payment"
-  ) {
-    throw new Error(
-      "Private booking is no longer available"
-    );
-  }
-
-  const {
-    error:
-      updateError,
-  } = await admin
-    .from(
-      "private_course_bookings"
-    )
-    .update({
-      status:
-        "confirmed",
-      confirmed_at:
-        new Date()
-          .toISOString(),
-      hold_expires_at:
-        null,
-    })
-    .eq(
-      "id",
-      bookingId
-    )
-    .eq(
-      "status",
-      "pending_payment"
-    );
-
-  if (updateError) {
-    throw new Error(
-      updateError.message
-    );
-  }
-}
-
+// Only PayTabs's server-side /payment/query response is used as evidence
+// of approval. Return URLs and callback bodies are never trusted as proof.
 export async function fulfillPaymentByTranRef(
   tranRef: string,
-  callbackToken?:
-    | string
-    | null
+  callbackToken?: string | null,
+  expectedUserId?: string | null
 ) {
-  const result =
-    await queryTransaction(
-      tranRef
-    );
+  if (!tranRef || tranRef.length > 256) return unpaidResult();
 
-  const responseStatus =
-    result?.payment_result
-      ?.response_status as
-      | string
-      | undefined;
+  const result = await queryTransaction(tranRef);
+  const responseStatus = result?.payment_result?.response_status;
+  const cartId = typeof result?.cart_id === "string" ? result.cart_id : "";
 
-  const orderId =
-    result?.cart_id as
-      | string
-      | undefined;
-
-  if (!orderId) {
+  if (responseStatus !== "A") {
+    // Decline of one transaction does not close a PayTabs payment page.
+    // Another transaction on the same page may still succeed later.
     return unpaidResult();
   }
 
-  const supabase =
-    createAdminClient();
+  const admin = createAdminClient();
 
-  const {
-    data: order,
-    error:
-      orderError,
-  } = await supabase
-    .from("orders")
-    .select(`
-      id,
-      user_id,
-      course_id,
-      status,
-      amount,
-      currency,
-      subscription_months,
-      auto_renew_requested,
-      fulfilled_at,
-      private_booking_id
-    `)
-    .eq(
-      "id",
-      orderId
-    )
+  const markForReview = async (
+    reason: string,
+    orderId: string | null,
+    attemptId: string | null
+  ) => {
+    const { error } = await admin.from("paytabs_fulfillment_reviews").upsert(
+      { tran_ref: tranRef, reason, order_id: orderId, attempt_id: attemptId },
+      { onConflict: "tran_ref", ignoreDuplicates: true }
+    );
+    if (error) throw new Error(`PayTabs review recording failed: ${error.message}`);
+    return unpaidResult();
+  };
+
+  if (!UUID.test(cartId)) {
+    if (expectedUserId) return unpaidResult();
+    return markForReview("APPROVED_INVALID_CART_ID", null, null);
+  }
+
+  // New checkout: cart_id is the immutable attempt UUID.
+  const { data: attempt, error: attemptError } = await admin
+    .from("paytabs_payment_attempts")
+    .select("id,order_id")
+    .eq("id", cartId)
     .maybeSingle();
+  if (attemptError) throw new Error(attemptError.message);
 
-  if (
-    orderError ||
-    !order
-  ) {
+  const orderId = attempt?.order_id ?? cartId;
+  const { data: order, error: orderError } = await admin
+    .from("orders")
+    .select("id,user_id,course_id")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (orderError) throw new Error(orderError.message);
+
+  // A public return URL must not let one student process another's sale.
+  // Trusted signed webhooks and the renewal worker do not pass this option.
+  if (expectedUserId && (!order || order.user_id !== expectedUserId)) {
     return unpaidResult();
   }
 
-  if (
-    responseStatus ===
-      "P" ||
-    responseStatus ===
-      "H"
-  ) {
-    if (
-      order.status !==
-        "paid" &&
-      order.status !==
-        "pending"
-    ) {
-      await supabase
-        .from("orders")
-        .update({
-          status:
-            "pending",
-        })
-        .eq(
-          "id",
-          order.id
-        );
-    }
-
-    return unpaidResult();
+  if (!order) {
+    return markForReview("APPROVED_ORDER_NOT_FOUND", null, attempt?.id ?? null);
   }
 
-  if (
-    responseStatus !==
-    "A"
-  ) {
-    if (
-      responseStatus &&
-      order.status !==
-        "paid"
-    ) {
-      const {
-        error:
-          failError,
-      } = await supabase
-        .from("orders")
-        .update({
-          status:
-            "failed",
-          paytabs_tran_ref:
-            tranRef,
-        })
-        .eq(
-          "id",
-          order.id
-        );
-
-      if (failError) {
-        throw new Error(
-          failError.message
-        );
-      }
-
-      await cancelPrivateBooking(
-        order.private_booking_id ??
-          null
-      );
-    }
-
-    return unpaidResult();
-  }
-
-  const paytabsAmount =
-    Number(
-      result?.cart_amount
-    );
-
-  const orderAmount =
-    Number(
-      order.amount
-    );
-
-  const paytabsCurrency =
-    typeof result?.cart_currency ===
-    "string"
+  const amount = Number(result?.cart_amount);
+  const currency =
+    typeof result?.cart_currency === "string"
       ? result.cart_currency.toUpperCase()
       : "";
-
-  const orderCurrency =
-    typeof order.currency ===
-    "string"
-      ? order.currency.toUpperCase()
-      : "";
-
-  const amountMatches =
-    Number.isFinite(
-      paytabsAmount
-    ) &&
-    Number.isFinite(
-      orderAmount
-    ) &&
-    Math.abs(
-      paytabsAmount -
-        orderAmount
-    ) < 0.001;
-
-  const currencyMatches =
-    paytabsCurrency !==
-      "" &&
-    paytabsCurrency ===
-      orderCurrency;
-
-  if (
-    !amountMatches ||
-    !currencyMatches
-  ) {
-    if (
-      order.status !==
-      "paid"
-    ) {
-      const {
-        error:
-          failError,
-      } = await supabase
-        .from("orders")
-        .update({
-          status:
-            "failed",
-          paytabs_tran_ref:
-            tranRef,
-        })
-        .eq(
-          "id",
-          order.id
-        );
-
-      if (failError) {
-        throw new Error(
-          failError.message
-        );
-      }
-
-      await cancelPrivateBooking(
-        order.private_booking_id ??
-          null
-      );
-    }
-
-    return unpaidResult();
+  if (!Number.isFinite(amount) || amount <= 0 || !currency) {
+    return markForReview("APPROVED_INVALID_AMOUNT_OR_CURRENCY", order.id, attempt?.id ?? null);
   }
-
-  const queryToken =
-    typeof result?.token ===
-    "string"
-      ? result.token
-      : null;
 
   const token =
-    callbackToken ||
-    queryToken ||
-    null;
+    callbackToken || (typeof result?.token === "string" ? result.token : null);
 
-  const {
-    data:
-      fulfillment,
-    error:
-      fulfillmentError,
-  } = await supabase.rpc(
-    "fulfill_subscription_order",
+  const { data: rows, error: fulfillmentError } = await admin.rpc(
+    "fulfill_verified_paytabs_order",
     {
-      p_order_id:
-        order.id,
-      p_tran_ref:
-        tranRef,
-      p_token:
-        token,
+      p_order_id: order.id,
+      p_attempt_id: attempt?.id ?? null,
+      p_tran_ref: tranRef,
+      p_amount: amount,
+      p_currency: currency,
+      p_token: token,
     }
   );
-
-  if (
-    fulfillmentError
-  ) {
-    throw new Error(
-      fulfillmentError.message
-    );
+  if (fulfillmentError) {
+    // The DB RPC handles ordinary business conflicts atomically and records
+    // review rows. Unexpected DB errors must propagate so webhooks retry.
+    throw new Error(fulfillmentError.message);
   }
 
-  await confirmPrivateBooking(
-    order.private_booking_id ??
-      null,
-    order.user_id,
-    order.course_id
-  );
-
-  if (
-    order.auto_renew_requested &&
-    token
-  ) {
-    const {
-      data:
-        subscription,
-    } = await supabase
-      .from(
-        "subscriptions"
-      )
-      .select("id")
-      .eq(
-        "student_id",
-        order.user_id
-      )
-      .eq(
-        "course_id",
-        order.course_id
-      )
-      .maybeSingle();
-
-    if (subscription) {
-      const {
-        error:
-          tokenError,
-      } = await supabase
-        .from(
-          "subscription_payment_tokens"
-        )
-        .upsert(
-          {
-            subscription_id:
-              subscription.id,
-            token,
-            token_tran_ref:
-              tranRef,
-            updated_at:
-              new Date()
-                .toISOString(),
-          },
-          {
-            onConflict:
-              "subscription_id",
-          }
-        );
-
-      if (tokenError) {
-        throw new Error(
-          tokenError.message
-        );
-      }
-
-      const {
-        error:
-          autoRenewError,
-      } = await supabase
-        .from(
-          "subscriptions"
-        )
-        .update({
-          auto_renew:
-            true,
-          updated_at:
-            new Date()
-              .toISOString(),
-        })
-        .eq(
-          "id",
-          subscription.id
-        );
-
-      if (
-        autoRenewError
-      ) {
-        throw new Error(
-          autoRenewError.message
-        );
-      }
-    }
-  }
-
-  const row =
-    Array.isArray(
-      fulfillment
-    )
-      ? fulfillment[0]
-      : fulfillment;
+  const row = Array.isArray(rows) ? rows[0] : rows;
+  if (row?.result_state !== "paid") return unpaidResult();
 
   return {
-    paid:
-      true as const,
-
-    courseId:
-      order.course_id as string,
-
-    expiresAt:
-      row?.subscription_expires_at ??
-      null,
-
-    autoRenew:
-      Boolean(
-        row?.subscription_auto_renew
-      ) ||
-      Boolean(
-        order.auto_renew_requested &&
-          token
-      ),
+    paid: true as const,
+    courseId: order.course_id as string,
+    expiresAt: row.subscription_expires_at ?? null,
+    autoRenew: Boolean(row.subscription_auto_renew),
   };
 }

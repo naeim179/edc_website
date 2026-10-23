@@ -72,6 +72,8 @@ export default function CourseCatalogCard({
   const completed =
     enrolled && progress >= 100;
 
+  const hasLessons = lessons > 0;
+
 
   const actionText =
     enrolled
@@ -92,6 +94,9 @@ export default function CourseCatalogCard({
     <Card
       className="
         group
+        flex
+        h-full
+        flex-col
         overflow-hidden
         transition
         hover:-translate-y-1
@@ -104,12 +109,13 @@ export default function CourseCatalogCard({
 
       <Link
         href={`/courses/${id}`}
-        className="relative block aspect-video overflow-hidden"
+        className="relative block aspect-video shrink-0 overflow-hidden"
       >
 
         <CourseCover
           image={image}
           title={title}
+          showTitle={false}
         />
 
 
@@ -169,6 +175,7 @@ export default function CourseCatalogCard({
       <CardContent
         className="
           flex
+          flex-1
           flex-col
           gap-4
         "
@@ -176,7 +183,7 @@ export default function CourseCatalogCard({
 
 
         {category && (
-          <Badge>
+          <Badge className="self-start">
             {category}
           </Badge>
         )}
@@ -238,7 +245,7 @@ export default function CourseCatalogCard({
           </span>
 
 
-          {enrolled && (
+          {enrolled && hasLessons && (
             <span className="font-bold">
               {progress}%
             </span>
@@ -249,7 +256,7 @@ export default function CourseCatalogCard({
 
 
 
-        {enrolled && (
+        {enrolled && hasLessons && (
 
           <ProgressBar
             value={progress}
@@ -261,7 +268,9 @@ export default function CourseCatalogCard({
 
 
         <div className="
+          mt-auto
           border-t
+          border-[var(--brand-border)]
           pt-4
           flex
           items-center
@@ -271,17 +280,7 @@ export default function CourseCatalogCard({
 
           <div>
 
-            {enrolled ? (
-
-              <span className="
-                text-lg
-                font-bold
-                text-[var(--brand-ink)]
-              ">
-                {isArabic ? "مسجل" : "Enrolled"}
-              </span>
-
-            ) : (pricing.isFree || pricing.final <= 0) ? (
+            {enrolled ? null : (pricing.isFree || pricing.final <= 0) ? (
 
               <span className="
                 text-lg
@@ -320,7 +319,7 @@ export default function CourseCatalogCard({
 
           <Link
             href={`/courses/${id}`}
-            className="
+            className={`
               rounded-xl
               bg-[var(--brand-ink)]
               px-5
@@ -331,7 +330,8 @@ export default function CourseCatalogCard({
               flex
               items-center
               gap-2
-            "
+              ${enrolled ? "w-full justify-center" : ""}
+            `}
           >
 
             {actionText}

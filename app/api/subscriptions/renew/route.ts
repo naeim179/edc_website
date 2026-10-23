@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
   createRecurringPayment,
+  queryTransaction,
 } from "@/lib/paytabs";
 
 import {
@@ -102,8 +103,8 @@ export async function GET(
   for (
     const claim of claims
   ) {
-    let orderId:
-      string | null = null;
+    let orderId: string | null = null;
+    let paymentTranRef: string | null = null;
 
     try {
       const {
@@ -186,6 +187,7 @@ export async function GET(
           ? response.tran_ref
           : null;
 
+      paymentTranRef = tranRef;
       if (!tranRef) {
         throw new Error(
           "PayTabs did not return tran_ref"
@@ -197,42 +199,54 @@ export async function GET(
           tranRef
         );
 
-      if (
-        !fulfillment.paid
-      ) {
-        throw new Error(
-          "Recurring payment was not approved"
-        );
+      if (!fulfillment.paid) {
+        // Only PayTabs's verified transaction query can prove rejection.
+        // Pending / ambiguous / approved-but-unfulfilled require review.
+        const verified = await queryTransaction(tranRef);
+        const status = verified?.payment_result?.response_status;
+        if (typeof status === "string" && status !== "A" &&
+            status !== "P" && status !== "H") {
+          const { data: rejected, error: rejectError } = await admin
+            .from("orders")
+            .update({ status: "failed", paytabs_tran_ref: tranRef })
+            .eq("id", order.id)
+            .eq("status", "pending")
+            .select("id")
+            .maybeSingle();
+          if (rejectError) throw new Error(rejectError.message);
+          if (rejected) {
+            const { error: failureError } = await admin.rpc(
+              "record_subscription_renewal_failure",
+              { p_subscription_id: claim.subscription_id }
+            );
+            if (failureError) throw new Error(failureError.message);
+          }
+          failed++;
+          continue;
+        }
+        throw new Error("Recurring payment requires verification or review");
       }
 
       successful++;
     } catch {
       failed++;
-
+      // An exception or missing transaction reference is NOT proof that
+      // PayTabs did not charge the card. Preserve the pending order so the
+      // renewal claim cannot charge it again; require reconciliation.
       if (orderId) {
-        await admin
-          .from("orders")
-          .update({
-            status:
-              "failed",
-          })
-          .eq(
-            "id",
-            orderId
-          )
-          .eq(
-            "status",
-            "pending"
-          );
-      }
-
-      await admin.rpc(
-        "record_subscription_renewal_failure",
-        {
-          p_subscription_id:
-            claim.subscription_id,
+        const { error: reviewError } = await admin
+          .from("paytabs_fulfillment_reviews")
+          .upsert({
+            order_id: orderId,
+            tran_ref: paymentTranRef ?? `RENEWAL-UNKNOWN-${orderId}`,
+            reason: "RENEWAL_RESULT_UNCERTAIN",
+          }, { onConflict: "tran_ref", ignoreDuplicates: true });
+        if (reviewError) {
+          throw new Error(`Renewal reconciliation logging failed: ${reviewError.message}`);
         }
-      );
+      }
+      // Do not increment renewal_failures until a decline is verified.
+
     }
   }
 

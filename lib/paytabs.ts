@@ -10,6 +10,7 @@ const SERVER_KEY =
 
 type CreatePaymentParams = {
   orderId: string;
+  cartId?: string;
   amount: number;
   currency: string;
   description: string;
@@ -111,7 +112,7 @@ export async function createPaymentPage(
         tran_type: "sale",
         tran_class: "ecom",
 
-        cart_id: params.orderId,
+        cart_id: params.cartId ?? params.orderId,
         cart_currency: params.currency,
         cart_amount: params.amount,
         cart_description: params.description,

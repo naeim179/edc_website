@@ -442,6 +442,37 @@ export async function createOrder(
       ).toFixed(2)
     );
 
+  // Never reprice or replace a pending order that may already have a
+  // live PayTabs checkout (including legacy checkouts from before migration).
+  const { data: existingPending, error: pendingError } = await admin
+    .from("orders")
+    .select("id,payment_method,source")
+    .eq("user_id", user.id)
+    .eq("course_id", courseId)
+    .eq("status", "pending")
+    .maybeSingle();
+  if (pendingError) throw new Error(pendingError.message);
+  if (existingPending) {
+    // Re-open the original CliQ upload page without repricing or creating a new order.
+    if (paymentMethod === "cliq" && existingPending.payment_method === "cliq" &&
+        existingPending.source === "manual") {
+      redirect(`/checkout/success?order=${existingPending.id}&method=cliq`);
+    }
+    const { data: priorAttempt, error: priorError } = await admin
+      .from("paytabs_payment_attempts")
+      .select("payment_url,status")
+      .eq("order_id", existingPending.id)
+      .maybeSingle();
+    if (priorError) throw new Error(priorError.message);
+    if (paymentMethod === "paytabs" && priorAttempt?.payment_url &&
+        priorAttempt.status !== "requires_review") {
+      redirect(priorAttempt.payment_url);
+    }
+    throw new Error(
+      "هناك عملية دفع سابقة لهذه الدورة لم تُحسم بعد. لا تبدأ دفعة جديدة؛ تواصل مع الدعم للتحقق منها."
+    );
+  }
+
   let normalizedCouponCode:
     string | null =
     null;
@@ -658,97 +689,17 @@ export async function createOrder(
       validatedBookingId,
   };
 
-  const {
-    data:
-      existingPendingOrder,
-  } =
-    await admin
-      .from("orders")
-      .select(
-        "id,status"
-      )
-      .eq(
-        "user_id",
-        user.id
-      )
-      .eq(
-        "course_id",
-        courseId
-      )
-      .eq(
-        "status",
-        "pending"
-      )
-      .maybeSingle();
-
-  let orderId:
-    string;
-
-  if (
-    existingPendingOrder
-  ) {
-    const {
-      error:
-        updateError,
-    } =
-      await admin
-        .from("orders")
-        .update(
-          orderFields
-        )
-        .eq(
-          "id",
-          existingPendingOrder.id
-        )
-        .eq(
-          "status",
-          "pending"
-        );
-
-    if (
-      updateError
-    ) {
-      throw new Error(
-        updateError.message
-      );
-    }
-
-    orderId =
-      existingPendingOrder.id;
-  } else {
-    const {
-      data:
-        newOrder,
-      error:
-        orderError,
-    } =
-      await admin
-        .from("orders")
-        .insert({
-          user_id:
-            user.id,
-          course_id:
-            courseId,
-          status:
-            "pending",
-          ...orderFields,
-        })
-        .select("id")
-        .single();
-
-    if (
-      orderError ||
-      !newOrder
-    ) {
-      throw new Error(
-        orderError?.message ??
-          "تعذر إنشاء الطلب"
-      );
-    }
-
-    orderId =
-      newOrder.id;
+  // A distinct new order is created only when no pending payment exists.
+  // The partial unique index also rejects concurrent duplicate inserts.
+  const { data: newOrder, error: orderError } = await admin
+    .from("orders")
+    .insert({ user_id: user.id, course_id: courseId, status: "pending", ...orderFields })
+    .select("id")
+    .single();
+  if (orderError || !newOrder) {
+    throw new Error(orderError?.message ?? "تعذر إنشاء الطلب");
   }
+  const orderId = newOrder.id;
 
   const {
     error:
@@ -774,6 +725,7 @@ export async function createOrder(
 
   let chargedAmount =
     originalTotalUsd;
+  let appliedDiscountCouponId: string | null = null;
 
   if (
     discountCouponCode
@@ -832,6 +784,7 @@ export async function createOrder(
       Number(
         reservation.final_amount
       );
+    appliedDiscountCouponId = String(reservation.coupon_id);
   }
 
   if (
@@ -929,46 +882,67 @@ export async function createOrder(
     );
   }
 
-  let paymentUrl:
-    string;
-
-  try {
-    paymentUrl =
-      await createPaymentPage({
-        orderId,
-        amount:
-          chargedAmount,
-        currency:
-          "USD",
-        description,
-        customerEmail:
-          user.email ??
-          "",
-        customerName:
-          user.email
-            ?.split("@")[0] ??
-          "Student",
-        siteUrl:
-          SITE_URL,
-        tokenize:
-          effectiveAutoRenew,
-      });
-  } catch (error) {
-    if (
-      discountCouponCode
-    ) {
-      await admin.rpc(
-        "clear_coupon_from_order",
-        {
-          p_order_id:
-            orderId,
-          p_user_id:
-            user.id,
-        }
-      );
+  // Atomically reserve the immutable snapshot before contacting PayTabs.
+  const { data: attemptId, error: attemptError } = await admin.rpc(
+    "begin_paytabs_checkout_attempt",
+    {
+      p_order_id: orderId,
+      p_user_id: user.id,
+      p_amount: chargedAmount,
+      p_currency: "USD",
+      p_months: subscriptionMonths,
+      p_coupon_id: appliedDiscountCouponId,
+      p_booking_id: validatedBookingId,
+      p_auto_renew: effectiveAutoRenew,
     }
+  );
+  if (attemptError || !attemptId) {
+    throw new Error(attemptError?.message ?? "تعذر تثبيت محاولة الدفع");
+  }
 
-    throw error;
+  let paymentUrl: string;
+  try {
+    paymentUrl = await createPaymentPage({
+      orderId,
+      cartId: String(attemptId),
+      amount: chargedAmount,
+      currency: "USD",
+      description,
+      customerEmail: user.email ?? "",
+      customerName: user.email?.split("@")[0] ?? "Student",
+      siteUrl: SITE_URL,
+      tokenize: effectiveAutoRenew,
+    });
+  } catch {
+    // Network failures can occur AFTER PayTabs accepted the request.
+    // Never release the coupon, cancel Private or generate a second cart.
+    await admin.from("paytabs_payment_attempts")
+      .update({ status: "uncertain", updated_at: new Date().toISOString() })
+      .eq("id", attemptId)
+      .eq("status", "created");
+    throw new Error(
+      "لم نتمكن من تأكيد إنشاء صفحة الدفع. لا تعِد الدفع الآن؛ تواصل مع الدعم للتحقق من العملية."
+    );
+  }
+
+  const { data: saved, error: saveError } = await admin
+    .from("paytabs_payment_attempts")
+    .update({ payment_url: paymentUrl, status: "initiated", updated_at: new Date().toISOString() })
+    .eq("id", attemptId)
+    .eq("status", "created")
+    .select("id")
+    .maybeSingle();
+  if (saveError) throw new Error(saveError.message);
+  // A fast signed callback might already have finalized this attempt.
+  if (!saved) {
+    const { data: existingAttempt } = await admin
+      .from("paytabs_payment_attempts")
+      .select("status")
+      .eq("id", attemptId)
+      .maybeSingle();
+    if (existingAttempt?.status !== "approved") {
+      throw new Error("تعذر تسجيل رابط الدفع؛ تواصل مع الدعم قبل المحاولة مرة أخرى.");
+    }
   }
 
   redirect(

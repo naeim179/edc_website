@@ -166,20 +166,7 @@ export async function updateOrderStatus(
       error:
         fulfillmentError,
     } =
-      await admin.rpc(
-        "fulfill_subscription_order",
-        {
-          p_order_id:
-            order.id,
-          p_tran_ref:
-            `MANUAL-${String(
-              order.payment_method ??
-                "payment"
-            ).toUpperCase()}-${order.id}`,
-          p_token:
-            null,
-        }
-      );
+      await admin.rpc("fulfill_verified_cliq_order", { p_order_id: order.id })
 
     if (
       fulfillmentError
@@ -195,6 +182,7 @@ export async function updateOrderStatus(
   }
 
   const {
+    data: updatedOrder,
     error,
   } =
     await admin
@@ -203,18 +191,19 @@ export async function updateOrderStatus(
         status:
           "failed",
       })
-      .eq(
-        "id",
-        orderId
-      );
+      .eq("id", orderId)
+      .eq("payment_method", "cliq")
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
 
   if (error) {
-    throw new Error(
-      error.message
-    );
+    throw new Error(error.message);
   }
 
-  return {
-    success: true,
-  };
+  if (!updatedOrder) {
+    throw new Error("Only pending CliQ orders can be marked failed.");
+  }
+
+  return { success: true };
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 import { fulfillPaymentByTranRef } from "@/lib/payments";
 import CliqPaymentUpload from "@/components/CliqPaymentUpload";
 
@@ -34,7 +35,10 @@ export default async function CheckoutSuccessPage({
 
   let autoRenew = false;
 
-  if (params.tranRef) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (params.tranRef && user) {
     for (
       let attempt = 0;
       attempt < 5;
@@ -43,7 +47,9 @@ export default async function CheckoutSuccessPage({
       try {
         const result =
           await fulfillPaymentByTranRef(
-            params.tranRef
+            params.tranRef,
+            null,
+            user.id
           );
 
         if (result.paid) {

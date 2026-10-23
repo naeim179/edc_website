@@ -30,18 +30,44 @@ export default function HomeContent({
   const { language, t } = useLanguage();
   const isArabic = language === "ar";
 
+  const pluralAr = (
+    n: number,
+    f: { one: string; two: string; few: string; many: string }
+  ) => (n === 1 ? f.one : n === 2 ? f.two : n >= 11 ? f.many : f.few);
+
   const statItems = [
     {
       value: stats.enrolled,
-      label: t.home.enrolledCourses,
+      label: isArabic
+        ? pluralAr(stats.enrolled, {
+            one: "دورة مسجلة",
+            two: "دورتان مسجلتان",
+            few: "دورات مسجلة",
+            many: "دورة مسجلة",
+          })
+        : t.home.enrolledCourses,
     },
     {
       value: stats.completedLessons,
-      label: t.home.completedLessons,
+      label: isArabic
+        ? pluralAr(stats.completedLessons, {
+            one: "درس مكتمل",
+            two: "درسان مكتملان",
+            few: "دروس مكتملة",
+            many: "درس مكتمل",
+          })
+        : t.home.completedLessons,
     },
     {
       value: stats.completedCourses,
-      label: t.home.completedCourses,
+      label: isArabic
+        ? pluralAr(stats.completedCourses, {
+            one: "دورة مكتملة",
+            two: "دورتان مكتملتان",
+            few: "دورات مكتملة",
+            many: "دورة مكتملة",
+          })
+        : t.home.completedCourses,
     },
   ];
 
@@ -138,6 +164,7 @@ export default function HomeContent({
             >
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl sm:h-20 sm:w-20">
                 <CourseCover
+                  compact
                   image={continueCourse.image}
                   title={continueCourse.title}
                 />
@@ -160,6 +187,7 @@ export default function HomeContent({
                   {continueCourse.title}
                 </h2>
 
+                {continueCourse.totalLessons > 0 ? (
                 <div className="mt-3 flex items-center gap-3">
                   <div
                     className="h-2 flex-1 overflow-hidden rounded-full sm:max-w-xs"
@@ -194,14 +222,34 @@ export default function HomeContent({
                       : `${continueCourse.completedLessons}/${continueCourse.totalLessons}`}
                   </span>
                 </div>
+                ) : (
+                  <p
+                    className="mt-3 text-xs"
+                    style={{ color: "var(--brand-text-muted)" }}
+                  >
+                    {isArabic ? "لا توجد دروس بعد" : "No lessons yet"}
+                  </p>
+                )}
               </div>
 
               <span
                 className="inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition"
                 style={{ backgroundColor: "var(--brand-ink)" }}
               >
-                <PlayIcon width={14} height={14} />
-                {continueCourse.progress > 0
+                {continueCourse.totalLessons > 0 ? (
+                  <PlayIcon width={14} height={14} />
+                ) : (
+                  <ArrowIcon
+                    width={14}
+                    height={14}
+                    className="rtl:rotate-180"
+                  />
+                )}
+                {continueCourse.totalLessons === 0
+                  ? isArabic
+                    ? "عرض الدورة"
+                    : "View course"
+                  : continueCourse.progress > 0
                   ? isArabic
                     ? "متابعة"
                     : "Continue"
