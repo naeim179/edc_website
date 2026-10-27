@@ -21,6 +21,10 @@ export default async function CheckoutSuccessPage({
   const isCliq =
     params.method === "cliq";
 
+  const cliqAlias = process.env.CLIQ_ALIAS?.trim();
+  const cliqAccountName = process.env.CLIQ_ACCOUNT_NAME?.trim();
+  const cliqReady = Boolean(cliqAlias && cliqAccountName);
+
   const orderId =
     params.order ?? null;
 
@@ -94,24 +98,26 @@ export default async function CheckoutSuccessPage({
           </h1>
 
           <p className="text-slate-600 mb-4">
-            قم بتحويل المبلغ إلى حساب CliQ التالي ثم ارفع إثبات التحويل.
+            {cliqReady ? "قم بتحويل المبلغ إلى حساب CliQ التالي ثم ارفع إثبات التحويل." : "الدفع عبر CliQ غير متاح حاليًا. يرجى اختيار طريقة دفع أخرى."}
           </p>
 
+          {cliqReady && (
           <div className="bg-slate-50 rounded-xl p-5 text-right mb-5">
             <p className="font-bold">
-              اسم الحساب: Your Way
+              اسم الحساب: {cliqAccountName}
             </p>
 
             <p className="mt-2">
-              رقم CliQ: YOUR_CLIQ_NUMBER
+              معرّف CliQ: {cliqAlias}
             </p>
 
             <p className="mt-2 text-sm text-slate-500">
               سيتم تفعيل الدورة بعد مراجعة التحويل.
             </p>
           </div>
+          )}
 
-          {orderId && (
+          {cliqReady && orderId && (
             <CliqPaymentUpload
               orderId={orderId}
             />

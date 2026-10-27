@@ -1,6 +1,6 @@
 "use server";
 
-import { requirePermission } from "@/lib/auth/admin-access";
+import { requirePermission, requireSuperAdmin } from "@/lib/auth/admin-access";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -64,6 +64,8 @@ export async function getAdminOrders() {
         .in("id", userIds),
     ]);
 
+  const proofStorage = createAdminClient().storage;
+
   const ordersWithProof = await Promise.all(
     orders.map(async (order) => {
       if (!order.payment_proof) {
@@ -71,7 +73,7 @@ export async function getAdminOrders() {
       }
 
       const { data } =
-        await supabase.storage
+        await proofStorage
           .from("payment-proofs")
           .createSignedUrl(
             order.payment_proof,
@@ -81,8 +83,7 @@ export async function getAdminOrders() {
       return {
         ...order,
         payment_proof:
-          data?.signedUrl ??
-          order.payment_proof,
+          data?.signedUrl ?? null,
       };
     })
   );
@@ -118,6 +119,7 @@ export async function updateOrderStatus(
   await requirePermission(
     "view_orders"
   );
+  await requireSuperAdmin();
 
   const admin =
     createAdminClient();
@@ -135,7 +137,9 @@ export async function updateOrderStatus(
         .from("orders")
         .select(`
           id,
-          payment_method
+          payment_method,
+          status,
+          payment_proof
         `)
         .eq(
           "id",
@@ -160,6 +164,19 @@ export async function updateOrderStatus(
       throw new Error(
         "Only CliQ orders can be manually approved."
       );
+    }
+
+    if (order.status !== "pending" || !order.payment_proof) {
+      throw new Error("لا يمكن تأكيد الطلب قبل رفع الإثبات أو بعد حسم حالة الدفع.");
+    }
+
+    const { data: proofLink, error: proofError } =
+      await admin.storage
+        .from("payment-proofs")
+        .createSignedUrl(order.payment_proof, 60);
+
+    if (proofError || !proofLink?.signedUrl) {
+      throw new Error("تعذّر الوصول إلى إثبات الدفع، تم منع الموافقة.");
     }
 
     const {

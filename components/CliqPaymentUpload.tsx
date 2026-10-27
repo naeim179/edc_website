@@ -57,16 +57,31 @@ export default function CliqPaymentUpload({
         رفع إثبات تحويل CliQ
       </h3>
 
-      <input
-        className="mt-4 block w-full min-w-0 text-sm"
-        type="file"
-        accept="image/*"
-        onChange={(e) =>
-          setFile(
-            e.target.files?.[0] ?? null
-          )
-        }
-      />
+      <div className="mt-4 flex flex-col items-center gap-3">
+        <input
+          id="cliq-payment-proof"
+          className="peer sr-only"
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setFile(e.target.files?.[0] ?? null)
+          }
+        />
+
+        <label
+          htmlFor="cliq-payment-proof"
+          className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-[#124b8a] bg-white px-6 py-3 font-bold text-[#124b8a] transition hover:bg-blue-50 peer-focus-visible:outline peer-focus-visible:outline-2"
+        >
+          إرفاق الإثبات
+        </label>
+
+        <p
+          role="status"
+          className="max-w-full break-all text-sm text-slate-600"
+        >
+          {file ? file.name : "لم يتم اختيار صورة بعد"}
+        </p>
+      </div>
 
       <button
         type="button"
