@@ -482,7 +482,7 @@ export async function createOrder(
     null;
 
   let effectiveAutoRenew =
-    autoRenew;
+    autoRenew && paymentMethod === "paytabs";
 
   if (couponCode) {
     normalizedCouponCode =

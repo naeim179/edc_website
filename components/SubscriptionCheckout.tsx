@@ -821,6 +821,7 @@ export default function SubscriptionCheckout({
               </div>
             )}
 
+          {paymentMethod === "paytabs" && (
           <label className="mt-6 flex cursor-pointer items-start justify-between gap-4 rounded-2xl bg-[#F7F3EC] p-4">
             <span>
               <span className="block font-bold text-[#2A2420]">
@@ -852,6 +853,7 @@ export default function SubscriptionCheckout({
               className="mt-1 h-5 w-5"
             />
           </label>
+          )}
         </section>
 
         <aside className="rounded-[26px] border border-[#E8E1D4] bg-white p-5 sm:p-6 lg:sticky lg:top-4">
@@ -920,7 +922,7 @@ export default function SubscriptionCheckout({
                 months
               }
               autoRenew={
-                autoRenew
+                paymentMethod === "paytabs" && autoRenew
               }
               paymentMethod={
                 paymentMethod
