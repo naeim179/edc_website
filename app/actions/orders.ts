@@ -460,17 +460,28 @@ export async function createOrder(
     }
     const { data: priorAttempt, error: priorError } = await admin
       .from("paytabs_payment_attempts")
-      .select("payment_url,status")
+      .select("payment_url,status,created_at")
       .eq("order_id", existingPending.id)
       .maybeSingle();
     if (priorError) throw new Error(priorError.message);
-    if (paymentMethod === "paytabs" && priorAttempt?.payment_url &&
-        priorAttempt.status !== "requires_review") {
+    // Never reopen an old hosted payment page.
+    // A pending order is preserved for reconciliation, not duplicated.
+    const attemptAgeMs = priorAttempt?.created_at
+      ? Date.now() - new Date(priorAttempt.created_at).getTime()
+      : Number.NaN;
+
+    if (
+      paymentMethod === "paytabs" &&
+      existingPending.payment_method === "paytabs" &&
+      priorAttempt?.status === "initiated" &&
+      priorAttempt.payment_url &&
+      Number.isFinite(attemptAgeMs) &&
+      attemptAgeMs >= 0 &&
+      attemptAgeMs < 4 * 60 * 1000
+    ) {
       redirect(priorAttempt.payment_url);
     }
-    throw new Error(
-      "هناك عملية دفع سابقة لهذه الدورة لم تُحسم بعد. لا تبدأ دفعة جديدة؛ تواصل مع الدعم للتحقق منها."
-    );
+    return { checkoutError: "PAYMENT_PENDING_REVIEW" as const };
   }
 
   let normalizedCouponCode:
@@ -663,6 +674,30 @@ export async function createOrder(
 
   const description =
     `${course.title} - ${subscriptionMonths} month subscription`;
+
+  let paytabsCustomerName =
+    user.email?.split("@")[0] || "Student";
+
+  if (paymentMethod === "paytabs") {
+    const { data: customerProfile, error: customerProfileError } =
+      await admin
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (customerProfileError) {
+      throw new Error("تعذر قراءة بيانات الطالب لإتمام الدفع");
+    }
+
+    const fullName = customerProfile?.full_name
+      ?.trim()
+      .replace(/\s+/g, " ");
+
+    if (fullName) {
+      paytabsCustomerName = fullName.slice(0, 120);
+    }
+  }
 
   const orderFields = {
     amount:
@@ -909,7 +944,7 @@ export async function createOrder(
       currency: "USD",
       description,
       customerEmail: user.email ?? "",
-      customerName: user.email?.split("@")[0] ?? "Student",
+      customerName: paytabsCustomerName,
       siteUrl: SITE_URL,
       tokenize: effectiveAutoRenew,
     });
@@ -920,9 +955,7 @@ export async function createOrder(
       .update({ status: "uncertain", updated_at: new Date().toISOString() })
       .eq("id", attemptId)
       .eq("status", "created");
-    throw new Error(
-      "لم نتمكن من تأكيد إنشاء صفحة الدفع. لا تعِد الدفع الآن؛ تواصل مع الدعم للتحقق من العملية."
-    );
+    return { checkoutError: "PAYMENT_INIT_UNCERTAIN" as const };
   }
 
   const { data: saved, error: saveError } = await admin

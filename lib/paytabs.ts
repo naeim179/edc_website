@@ -118,6 +118,7 @@ export async function createPaymentPage(
         cart_description: params.description,
 
         paypage_lang: "ar",
+        paypage_ttl: 5,
 
         ...(params.tokenize
           ? {
@@ -128,11 +129,6 @@ export async function createPaymentPage(
         customer_details: {
           name: params.customerName,
           email: params.customerEmail,
-          street1: "N/A",
-          city: "Amman",
-          state: "Amman",
-          country: "JO",
-          zip: "00000",
         },
 
         callback:

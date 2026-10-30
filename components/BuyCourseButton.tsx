@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useState,
   useTransition,
 } from "react";
 
@@ -42,6 +43,14 @@ export default function BuyCourseButton({
     t,
   } = useLanguage();
 
+  const isArabic = /[\u0600-\u06FF]/.test(
+    t.booking.continueToPayment
+  );
+
+  const [errorCode, setErrorCode] = useState<
+    "pending" | "uncertain" | "generic" | null
+  >(null);
+
   const [
     pending,
     startTransition,
@@ -56,23 +65,37 @@ export default function BuyCourseButton({
       return;
     }
 
-    startTransition(
-      async () => {
-        await createOrder(
+    setErrorCode(null);
+
+    startTransition(async () => {
+      try {
+        const result = await createOrder(
           courseId,
           subscriptionMonths,
           autoRenew,
           paymentMethod,
           couponCode,
-          privateBookingId ??
-            undefined
+          privateBookingId ?? undefined
         );
+
+        if (result && typeof result === "object" && "checkoutError" in result) {
+          setErrorCode(
+            result.checkoutError === "PAYMENT_PENDING_REVIEW"
+              ? "pending"
+              : result.checkoutError === "PAYMENT_INIT_UNCERTAIN"
+                ? "uncertain"
+                : "generic"
+          );
+        }
+      } catch {
+        setErrorCode("generic");
       }
-    );
+    });
   }
 
   return (
-    <button
+    <div className="w-full">
+      <button
       type="button"
       disabled={
         pending ||
@@ -87,6 +110,27 @@ export default function BuyCourseButton({
         ? t.booking.paying
         : label ??
           t.booking.continueToPayment}
-    </button>
+      </button>
+
+      {errorCode && (
+        <p
+          role="alert"
+          aria-live="assertive"
+          className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800"
+        >
+          {errorCode === "pending"
+            ? isArabic
+              ? "توجد عملية دفع سابقة لهذه الدورة قيد التحقق. يرجى التواصل مع الدعم قبل إعادة المحاولة."
+              : "A previous payment for this course is still under review. Please contact support before retrying."
+            : errorCode === "uncertain"
+              ? isArabic
+                ? "تعذر تأكيد إنشاء صفحة الدفع. يرجى التواصل مع الدعم قبل المحاولة مجددًا."
+                : "Payment page creation could not be confirmed. Please contact support before retrying."
+              : isArabic
+                ? "تعذر إكمال الطلب. يرجى التواصل مع الدعم قبل إعادة الدفع."
+                : "Unable to complete the request. Please contact support before retrying payment."}
+        </p>
+      )}
+    </div>
   );
 }

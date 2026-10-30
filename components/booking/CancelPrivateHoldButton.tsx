@@ -64,9 +64,18 @@ export default function CancelPrivateHoldButton({
     startTransition(
       async () => {
         try {
-          await releasePrivateSchedule(
+          const result = await releasePrivateSchedule(
             bookingId
           );
+
+          if (!result.success) {
+            setError(
+              isArabic
+                ? "لا يزال طلب الدفع قيد التحقق. إذا ألغيت الدفع، حاول مرة أخرى بعد انتهاء صفحة الدفع."
+                : "Payment is still being verified. If you cancelled, try again after the payment page expires."
+            );
+            return;
+          }
 
           router.replace(
             `/courses/${courseId}`

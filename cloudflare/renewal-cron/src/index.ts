@@ -45,15 +45,44 @@ async function runRenewals(
   );
 }
 
+async function runReconciliation(env: Env) {
+  const appUrl = env.APP_URL.replace(/\/+$/, "");
+
+  const response = await env.MAIN_APP.fetch(
+    appUrl + "/api/payments/reconcile",
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + env.CRON_SECRET,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "PayTabs reconciliation HTTP " + response.status
+    );
+  }
+
+  console.log(
+    "PayTabs reconciliation:",
+    await response.text()
+  );
+}
+
 const renewalWorker = {
   async scheduled(
-    _controller: unknown,
+    controller: { cron: string },
     env: Env,
     ctx: WorkerExecutionContext
   ) {
-    ctx.waitUntil(
-      runRenewals(env)
-    );
+    if (controller.cron === "0 * * * *") {
+      ctx.waitUntil(runRenewals(env));
+    }
+
+    if (controller.cron === "*/5 * * * *") {
+      ctx.waitUntil(runReconciliation(env));
+    }
   },
 
   async fetch(
