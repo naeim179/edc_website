@@ -130,6 +130,11 @@ export default function Sidebar({
           icon: <AnnouncementIcon />,
         },
         {
+          href: "/admin/messages",
+          label: text.messages,
+          icon: <MessageIcon />,
+        },
+        {
           href: "/admin/assignments",
           label: t.assignments.navLabel,
           icon: <AssignmentIcon />,
@@ -325,6 +330,7 @@ export default function Sidebar({
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   onClick={onClose}
                   aria-current={active ? "page" : undefined}
                   className="yw-sidebar-link"
