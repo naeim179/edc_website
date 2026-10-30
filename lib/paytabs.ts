@@ -115,6 +115,7 @@ export async function createPaymentPage(
         cart_id: params.cartId ?? params.orderId,
         cart_currency: params.currency,
         cart_amount: params.amount,
+        ...(params.currency.toUpperCase() === "USD" ? { alt_currency: "SAR" } : {}),
         cart_description: params.description,
 
         paypage_lang: "ar",

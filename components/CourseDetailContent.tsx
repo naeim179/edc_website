@@ -434,11 +434,11 @@ export default function CourseDetailContent({
                   ) : hasDiscount ? (
                     <div className="mt-1 flex flex-wrap items-baseline gap-2">
                       <p className="text-2xl font-bold text-emerald-700">
-                        {finalPrice.toFixed(2)} USD
+                        {(finalPrice * 3.75).toFixed(2)} SAR
                       </p>
 
                       <span className="text-sm text-[#A69C8C] line-through">
-                        {originalPrice.toFixed(2)}
+                        {(originalPrice * 3.75).toFixed(2)} SAR
                       </span>
 
                       <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-bold text-red-600">
@@ -447,8 +447,23 @@ export default function CourseDetailContent({
                     </div>
                   ) : (
                     <p className="mt-1 text-2xl font-bold text-[#2A2420]">
-                      {finalPrice.toFixed(2)} USD
+                      {(finalPrice * 3.75).toFixed(2)} SAR
                     </p>
+                  )}
+                  {!course.is_free && (
+                    <>
+                      <p className="mt-2 text-sm font-semibold text-[#2A2420]">
+                        {isArabic ? "المبلغ الفعلي للدفع" : "Actual payment amount"}:{" "}
+                        <span dir="ltr" className="inline-block">
+                          {finalPrice.toFixed(2)} USD
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-[#A69C8C]">
+                        {isArabic
+                          ? "سعر الريال تقريبي، وقد تختلف رسوم وسعر صرف البنك."
+                          : "SAR is approximate; bank rates and fees may vary."}
+                      </p>
+                    </>
                   )}
                 </>
               )}

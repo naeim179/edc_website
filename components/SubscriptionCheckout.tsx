@@ -900,17 +900,31 @@ export default function SubscriptionCheckout({
 
           <div className="mt-5 border-t border-[#F0EBE1] pt-5">
             <p className="text-sm text-[#A69C8C]">
-              {isArabic ? "الإجمالي المستحق" : "Total Due"}
+              {isFreeCoupon || totalUsd === 0
+                ? (isArabic ? "الإجمالي المستحق" : "Total Due")
+                : (isArabic ? "السعر التقريبي بالريال" : "Approximate price in SAR")}
             </p>
 
             <p className="mt-1 text-3xl font-bold text-[#2A2420]">
-              {isFreeCoupon ||
-              totalUsd === 0
+              {isFreeCoupon || totalUsd === 0
                 ? "FREE"
-                : `${payableTotalUsd.toFixed(
-                    2
-                  )} USD`}
+                : `${(payableTotalUsd * 3.75).toFixed(2)} SAR`}
             </p>
+            {!isFreeCoupon && totalUsd !== 0 && (
+              <>
+                <p className="mt-2 text-sm font-semibold text-[#2A2420]">
+                  {isArabic ? "المبلغ الفعلي للدفع" : "Actual amount to pay"}:{" "}
+                  <span dir="ltr" className="inline-block">
+                    {payableTotalUsd.toFixed(2)} USD
+                  </span>
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[#A69C8C]">
+                  {isArabic
+                    ? "السعر بالريال تقريبي على أساس 3.75 ريال لكل دولار. الدفع بالدولار، وقد تختلف قيمة التحويل ورسوم البنك."
+                    : "SAR is estimated at 3.75 per USD. Payment is in USD; bank exchange rates and fees may vary."}
+                </p>
+              </>
+            )}
           </div>
 
           <div className="mt-6">

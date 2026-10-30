@@ -294,20 +294,23 @@ export default function CourseCatalogCard({
 
               <>
 
+
                 {pricing.hasDiscount && (
-
                   <div className="text-xs line-through">
-                    {pricing.original}
+                    ≈ {(pricing.original * 3.75).toFixed(2)} SAR
                   </div>
-
                 )}
 
-                <span className="
-                  text-lg
-                  font-bold
-                ">
-                  {pricing.final.toFixed(2)} USD
-                </span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-lg font-bold">
+                    ≈ {(pricing.final * 3.75).toFixed(2)} SAR
+                  </span>
+
+                  <span className="text-xs text-[var(--brand-text-muted)]">
+                    {isArabic ? "الدفع الفعلي:" : "Charged:"}{" "}
+                    {pricing.final.toFixed(2)} USD
+                  </span>
+                </div>
 
               </>
 
