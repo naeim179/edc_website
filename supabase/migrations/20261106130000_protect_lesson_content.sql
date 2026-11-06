@@ -25,7 +25,7 @@ grant execute on function public.get_course_lesson_catalog(uuid)
   to anon, authenticated, service_role;
 
 -- Cards need total curriculum counts even though lesson content is now hidden.
-create function public.get_course_lesson_counts(p_course_ids uuid[])
+create or replace function public.get_course_lesson_counts(p_course_ids uuid[])
 returns table (course_id uuid, lesson_count bigint)
 language sql stable security definer set search_path = public
 as $$

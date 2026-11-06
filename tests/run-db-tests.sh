@@ -6,7 +6,7 @@ docker_local() {
   env -u DOCKER_HOST -u DOCKER_CONTEXT -u DOCKER_TLS -u DOCKER_TLS_VERIFY -u DOCKER_CERT_PATH \
     docker --host=unix:///var/run/docker.sock "$@"
 }
-trap 'docker_local rm -f "$db_container" >/dev/null 2>&1 || true' EXIT
+trap 'docker_local rm -f -v "$db_container" >/dev/null 2>&1 || true' EXIT
 docker_local run -d --name "$db_container" -e POSTGRES_PASSWORD=disposable-test-only postgres:17 >/dev/null
 ready=false
 for ((attempt=0; attempt<60; attempt++)); do
