@@ -155,12 +155,13 @@ export default function Topbar({
         </div>
       </form>
 
-      <div className="ms-auto flex shrink-0 items-center gap-2 sm:gap-3">
+      <div className="yw-topbar-tools ms-auto flex shrink-0 items-center gap-2 sm:gap-3">
         {isAuthenticated ? (
           <>
             <Link
               href="/profile"
               className="
+                yw-account-link
                 flex
                 items-center
                 gap-3
@@ -210,7 +211,7 @@ export default function Topbar({
               </span>
             </Link>
 
-            <form action={signOut}>
+            <form action={signOut} className="yw-logout-form">
               <LogoutConfirmation
                 isArabic={isArabic}
                 label={t.topbar.logout}

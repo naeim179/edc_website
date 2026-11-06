@@ -174,7 +174,7 @@ export default function AppShellClient({
   return (
     <div
       dir={isArabic ? "rtl":"ltr"}
-      className={`yw-shell ${role !== "admin" && role !== "teacher" ? "yw-student-shell" : ""}`}
+      className={`yw-shell yw-personal-ui ${role !== "admin" && role !== "teacher" ? "yw-student-shell" : ""}`}
     >
 
       <Sidebar

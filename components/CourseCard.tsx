@@ -99,16 +99,18 @@ export default function CourseCard({
     <Card
       className="
         group
+        yw-personal-course
         overflow-hidden
       "
     >
       <Link
         href={`/courses/${id}`}
-        className="relative block aspect-[16/9] overflow-hidden"
+        className="relative block aspect-[4/3] overflow-hidden"
       >
         <CourseCover
           image={image}
           title={title}
+          showTitle={false}
         />
 
         {category && (
@@ -157,7 +159,7 @@ export default function CourseCard({
         <h3 className="line-clamp-2 text-lg font-semibold leading-7 text-slate-900">
           <Link
             href={`/courses/${id}`}
-            className="transition-colors hover:text-[#124b8a]"
+            className="transition-colors hover:text-[var(--brand-ink)]"
           >
             {title}
           </Link>
@@ -172,7 +174,7 @@ export default function CourseCard({
                   : `${completedLessons} of ${totalLessons} lessons completed`}
               </span>
 
-              <span className="font-semibold text-[#124b8a]">
+              <span className="font-semibold text-[var(--brand-ink)]">
                 {progress}%
               </span>
             </div>
@@ -191,7 +193,7 @@ export default function CourseCard({
               ${
                 expired
                   ? "bg-red-50 text-red-700"
-                  : "bg-blue-50 text-[#124b8a]"
+                  : "bg-[var(--brand-ink-soft)] text-[var(--brand-ink)]"
               }
             `}
           >
@@ -230,6 +232,7 @@ export default function CourseCard({
         <Link
           href={href}
           className={`
+            yw-personal-course-action
             mt-auto
             inline-flex
             items-center
@@ -240,12 +243,12 @@ export default function CourseCard({
             py-3
             text-sm
             font-semibold
-            text-white
+            text-[var(--brand-on-ink)]
             transition-colors
             ${
               expired
                 ? "bg-amber-600 hover:bg-amber-700"
-                : "bg-[#124b8a] hover:bg-[#0d3b6e]"
+                : "bg-[var(--brand-ink)] hover:bg-[var(--brand-ink-hover)]"
             }
           `}
         >

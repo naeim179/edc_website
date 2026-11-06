@@ -51,15 +51,17 @@ export default function HomeContent({ isAuthenticated, displayName, stats, conti
         <div className="yw-dashboard-main">
           {isAuthenticated && continueCourse ? (
             <section className="yw-continue">
-              <div className="yw-continue-copy">
-                <p className="yw-eyebrow"><span className="yw-live-dot" />{ar ? "أكمل من حيث توقفت" : "Pick up where you left off"}</p>
-                <h2>{continueCourse.title}</h2>
-                <p className="yw-muted">{continueCourse.accessActive ? (ar ? "كل درس خطوة. خذ خطوتك التالية اليوم." : "Every lesson is a step. Take your next one today.") : (ar ? "اشتراك هذه الدورة غير نشط. افتح الدورة للاطلاع على خيارات التجديد." : "Your access is inactive. Open the course to see renewal options.")}</p>
-                <div className="yw-continue-progress"><span>{ar ? "تقدّمك في الدورة" : "Course progress"}</span><strong>{continueCourse.progress}%</strong></div>
-                <ProgressBar value={continueCourse.progress} />
-                <Link href={courseHref(continueCourse)} className="yw-primary-link"><PlayIcon width={17} height={17} />{continueCourse.accessActive ? (ar ? "متابعة التعلّم" : "Continue learning") : (ar ? "عرض الدورة" : "View course")}</Link>
+              <h2 className="yw-continue-heading"><span className="yw-live-dot" />{ar ? "أكمل من حيث توقفت" : "Pick up where you left off"}</h2>
+              <div className="yw-continue-body">
+                <div className="yw-continue-cover"><CourseCover image={continueCourse.image} title={continueCourse.title} showTitle={false} /></div>
+                <div className="yw-continue-copy">
+                  <h2>{continueCourse.title}</h2>
+                  <p className="yw-muted">{continueCourse.accessActive ? (ar ? "كل درس خطوة. خذ خطوتك التالية اليوم." : "Every lesson is a step. Take your next one today.") : (ar ? "اشتراك هذه الدورة غير نشط. افتح الدورة للاطلاع على خيارات التجديد." : "Your access is inactive. Open the course to see renewal options.")}</p>
+                  <div className="yw-continue-progress"><span>{ar ? "تقدّمك في الدورة" : "Course progress"}</span><strong>{continueCourse.progress}%</strong></div>
+                  <ProgressBar value={continueCourse.progress} />
+                  <Link href={courseHref(continueCourse)} className="yw-primary-link"><PlayIcon width={17} height={17} />{continueCourse.accessActive ? (ar ? "متابعة التعلّم" : "Continue learning") : (ar ? "عرض الدورة" : "View course")}</Link>
+                </div>
               </div>
-              <div className="yw-continue-cover"><CourseCover image={continueCourse.image} title={continueCourse.title} showTitle={false} /></div>
             </section>
           ) : (
             <section className="yw-welcome-panel">
@@ -74,7 +76,7 @@ export default function HomeContent({ isAuthenticated, displayName, stats, conti
           )}
 
           {isAuthenticated && learning.length > 0 && (
-            <section className="yw-course-section">
+            <section className="yw-course-section yw-learning-panel">
               <div className="yw-section-heading"><h2>{ar ? "على مسار تعلّمك" : "Your learning path"}</h2><Link className="yw-text-link" href="/my-courses">{ar ? "عرض الكل" : "View all"}<ArrowIcon width={16} height={16} className="rtl:rotate-180" /></Link></div>
               <div className="yw-learning-grid">
                 {learning.map(course => (
@@ -100,7 +102,7 @@ export default function HomeContent({ isAuthenticated, displayName, stats, conti
         </div>
 
         {isAuthenticated && <aside className="yw-dashboard-rail" aria-label={ar ? "تقدّمك وروابطك" : "Your progress and links"}>
-          <section className="yw-rail-panel"><p className="yw-eyebrow">{ar ? "خطوات تُحسب" : "Every step counts"}</p><h2>{ar ? "نظرة على تقدّمك" : "Your progress"}</h2><div className="yw-progress-summary"><span>{progress}<small>%</small></span><p>{ar ? "من دروس دوراتك المسجّلة" : "of your enrolled course lessons"}</p></div><ProgressBar value={progress} /><div className="yw-stat-list">{statItems.map(item => <div key={item.label}><span className="yw-stat-icon">{item.icon}</span><span>{item.label}</span><strong>{item.value}</strong></div>)}</div></section>
+          <section className="yw-rail-panel"><p className="yw-eyebrow">{ar ? "خطوات تُحسب" : "Every step counts"}</p><h2>{ar ? "نظرة على تقدّمك" : "Your progress"}</h2><div className="yw-progress-summary"><div className="yw-progress-ring"><span>{progress}<small>%</small></span></div><p>{ar ? "من دروس دوراتك المسجّلة" : "of your enrolled course lessons"}</p></div><div className="yw-stat-list">{statItems.map(item => <div key={item.label}><span className="yw-stat-icon">{item.icon}</span><span>{item.label}</span><strong>{item.value}</strong></div>)}</div></section>
           <section className="yw-rail-panel"><h2>{ar ? "مساحتك الدراسية" : "Your study space"}</h2><Link className="yw-resource-link" href="/assignments"><BookIcon width={20} height={20} /><span><strong>{ar ? "واجباتي" : "My assignments"}</strong><small>{ar ? "تابع المهام والتسليمات" : "Follow tasks and submissions"}</small></span><ArrowIcon width={16} height={16} className="rtl:rotate-180" /></Link><Link className="yw-resource-link" href="/messages"><MessageIcon width={20} height={20} /><span><strong>{ar ? "الرسائل" : "Messages"}</strong><small>{ar ? "تواصل مع مدرّسيك" : "Connect with your instructors"}</small></span><ArrowIcon width={16} height={16} className="rtl:rotate-180" /></Link></section>
           <div className="yw-study-note"><span className="yw-eyebrow">YOUR WAY</span><p>{ar ? "القليل المستمر يصنع فرقًا. خصّص وقتًا لدرسك القادم." : "A little, consistently, goes a long way. Make time for your next lesson."}</p></div>
         </aside>}
