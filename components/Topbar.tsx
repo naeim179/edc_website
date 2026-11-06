@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent, useEffect, useId, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -103,13 +104,7 @@ export default function Topbar({
           className="rounded-lg border p-1.5"
           style={{ borderColor: "var(--brand-border)" }}
         >
-          <Image
-            src="/logo/logo-transparent.png"
-            alt="Your Way"
-            width={160}
-            height={160}
-            className="h-6 w-auto object-contain"
-          />
+          <BrandLogo variant="compact" />
         </Link>
       </div>
 

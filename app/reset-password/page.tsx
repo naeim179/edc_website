@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import BrandLogo from "@/components/BrandLogo";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -84,14 +84,7 @@ export default function ResetPasswordPage() {
 
           <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm shadow-[0_15px_40px_rgba(0,0,0,0.18)] sm:mb-8 sm:h-44 sm:w-44">
 
-            <Image
-              src="/logo/logo.png"
-              alt="Your Way"
-              width={150}
-              height={150}
-              priority
-              className="object-contain rounded-full"
-            />
+            <BrandLogo variant="auth" priority />
 
           </div>
 
