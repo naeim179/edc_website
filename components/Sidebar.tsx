@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BrandLogo from "@/components/BrandLogo";
 import {
 usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
@@ -281,7 +282,7 @@ export default function Sidebar({
         >
           <div className="flex flex-col items-center justify-center gap-3 px-1 pb-6">
             <Link href="/" onClick={onClose} className="yw-sidebar-brand" aria-label="Your Way">
-              <span className="yw-sidebar-wordmark" dir="ltr">YOUR WAY</span>
+              <BrandLogo />
               <span className="yw-sidebar-tagline">{isArabic ? "مساحتك للتعلّم والتقدّم" : "Your space to learn and grow"}</span>
             </Link>
 

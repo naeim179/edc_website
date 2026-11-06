@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import BrandLogo from "@/components/BrandLogo";
 import { loginWithIdentifier } from "@/app/actions/login";
 import {
   LockIcon,
@@ -88,20 +88,13 @@ export default function LoginPage() {
 
   return (
     <div
-      className="yw-auth-page min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4"
+      className="yw-login-original min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4"
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div className="w-full max-w-md p-4 sm:p-8">
         <div className="mb-10 text-center">
           <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-white/90 shadow-[0_15px_40px_rgba(0,0,0,0.18)] sm:mb-8 sm:h-44 sm:w-44">
-            <Image
-              src="/logo/logo.png"
-              alt="Your Way"
-              width={150}
-              height={150}
-              priority
-              className="object-contain rounded-full"
-            />
+            <BrandLogo variant="auth" priority />
           </div>
 
           <h1 className="text-2xl font-bold text-white">

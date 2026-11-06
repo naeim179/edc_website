@@ -17,6 +17,7 @@ function dashboard(props) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   const mocks = {
+    "@/components/BrandLogo": { default: () => element("span", {}, "Your Way Academy") },
     "next/image": { default: () => element("span") },
     "@/components/DisplaySettings": { default: () => element("button", {}, "Display settings") },
     "next/link": { default: ({ children, href, ...rest }) => element("a", { href, ...rest }, children) },

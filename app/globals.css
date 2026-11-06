@@ -2007,3 +2007,20 @@ body.yw-design-system { font-size: 15px; line-height: 1.8; }
   .yw-design-system .yw-content :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea), .yw-design-system .yw-auth-page input { font-size: 16px; }
   .yw-design-system .yw-public-how { padding-inline: 24px; }
 }
+
+/* One academy artwork at every brand entry point. */
+.yw-brand-logo { display: inline-flex; width: 80px; height: 80px; flex-shrink: 0; overflow: hidden; border-radius: 50%; background: #fff; }
+.yw-brand-logo-compact { width: 44px; height: 44px; }
+.yw-brand-logo-auth { width: 150px; height: 150px; max-width: 100%; max-height: 100%; }
+.yw-public-brand .yw-brand-logo { width: 84px; height: 84px; }
+.yw-public-header { min-height: 112px; }
+.yw-sidebar-brand .yw-brand-logo { width: 96px; height: 96px; }
+.yw-design-system .yw-sidebar-brand { border-bottom: 0; padding-bottom: 0; }
+.yw-personal-ui .yw-sidebar-panel > div:first-child { padding-block: 20px; }
+.yw-topbar a:has(> .yw-brand-logo) { padding: 0; border: 0; }
+.yw-login-original { background: linear-gradient(135deg, #0b1f3a, #124b8a, #d6b56c); }
+.yw-login-original h1 { font-size: 24px; line-height: 1.4; }
+@media (max-width: 767px) {
+  .yw-public-brand .yw-brand-logo { width: 64px; height: 64px; }
+  .yw-public-header { min-height: 100px; }
+}

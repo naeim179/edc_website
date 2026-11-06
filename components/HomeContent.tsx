@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import BrandLogo from "@/components/BrandLogo";
 import DisplaySettings from "@/components/DisplaySettings";
 import CourseCatalogCard from "@/components/CourseCatalogCard";
 import CourseCover from "@/components/CourseCover";
@@ -125,7 +126,7 @@ function GuestLanding({ courses, ar }: { courses: CatalogCourse[]; ar: boolean }
   return (
     <div className="yw-guest-landing" dir={ar ? "rtl" : "ltr"}>
       <header className="yw-public-header">
-        <Link className="yw-public-brand" href="/" aria-label="Your Way"><span className="yw-brand-mark" aria-hidden="true">Y<span><ArrowIcon width={12} height={12} /></span></span><span><strong dir="ltr">YOUR WAY</strong><small>{ar ? "تعلّم. طبّق. تقدّم." : "Learn. Practice. Grow."}</small></span></Link>
+        <Link className="yw-public-brand" href="/" aria-label="Your Way"><BrandLogo priority /></Link>
         <nav aria-label={ar ? "القائمة الرئيسية" : "Main navigation"}><Link href="#discover">{ar ? "الدورات" : "Courses"}</Link><Link href="#how-it-works">{ar ? "كيف تبدأ؟" : "How it works"}</Link></nav>
         <div className="yw-public-actions"><DisplaySettings /><Link href="/login" className="yw-public-login">{ar ? "تسجيل الدخول" : "Sign in"}</Link><Link href="/register" className="yw-public-button">{ar ? "ابدأ رحلتك" : "Get started"}<ArrowIcon width={16} height={16} className="rtl:rotate-180" /></Link></div>
       </header>
@@ -158,7 +159,7 @@ function GuestLanding({ courses, ar }: { courses: CatalogCourse[]; ar: boolean }
         <section id="how-it-works" className="yw-public-how"><div className="yw-public-section-heading"><div><p className="yw-public-kicker">{ar ? "البداية أبسط مما تتخيّل" : "Starting is simpler than you think"}</p><h2>{ar ? "ثلاث خطوات. وطريقك يبدأ." : "Three steps. A new beginning."}</h2></div></div><div className="yw-public-steps">{steps.map((step, index) => <article key={step.title}><span>0{index + 1}</span><h3>{step.title}</h3><p>{step.text}</p></article>)}</div></section>
         <section className="yw-public-join"><div><p>{ar ? "استثمر في خطوتك القادمة" : "Invest in your next step"}</p><h2>{ar ? "عندك هدف؟ خلّينا نبدأ الطريق." : "Have a goal? Start your journey."}</h2></div><Link href="/register" className="yw-public-button">{ar ? "أنشئ حسابك" : "Create your account"}<ArrowIcon width={18} height={18} className="rtl:rotate-180" /></Link></section>
       </div>
-      <footer className="yw-public-footer"><span dir="ltr">YOUR WAY</span><p>{ar ? "تعلّم على طريقتك، وتقدّم بخطواتك." : "Learn your way. Progress at your pace."}</p><Link href="/courses">{ar ? "الدورات" : "Courses"}</Link><Link href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link></footer>
+      <footer className="yw-public-footer"><Link href="/" aria-label="Your Way Academy"><BrandLogo variant="compact" /></Link><p>{ar ? "تعلّم على طريقتك، وتقدّم بخطواتك." : "Learn your way. Progress at your pace."}</p><Link href="/courses">{ar ? "الدورات" : "Courses"}</Link><Link href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link></footer>
     </div>
   );
 }
