@@ -71,10 +71,10 @@ export default async function LessonPage({
     throw new Error(`Failed to load lesson: ${error.message}`);
   }
 
-  const lesson = lessonData as unknown as RawLesson | null;
+  const lessonMetadata = lessonData as unknown as RawLesson | null;
 
   // الدرس لازم يتبع نفس الدورة اللي بالرابط
-  if (!lesson || lesson.course_id !== id) {
+  if (!lessonMetadata || lessonMetadata.course_id !== id) {
     return notFound();
   }
 
@@ -133,9 +133,20 @@ export default async function LessonPage({
     }
   }
 
-  if (!hasCourseAccess && !lesson.is_free_preview) {
+  if (!hasCourseAccess && !lessonMetadata.is_free_preview) {
     redirect(user ? `/courses/${id}` : "/login");
   }
+
+  // The public catalog contains metadata only. Read actual content through
+  // the caller's RLS policy, never through the service-role client.
+  const { data: lesson, error: contentError } = await supabase
+    .from("lessons")
+    .select("id,title,duration,is_free_preview,section_id,video_provider,youtube_video_id,mux_asset_id,mux_playback_id,bunny_library_id,bunny_video_id,lesson_type,live_platform,live_schedule,content_url")
+    .eq("id", lessonId)
+    .eq("section_id", lessonMetadata.section_id)
+    .maybeSingle();
+  if (contentError) throw new Error(contentError.message);
+  if (!lesson) redirect(user ? `/courses/${id}` : "/login");
 
   const [
     courseResult,

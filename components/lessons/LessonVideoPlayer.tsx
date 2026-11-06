@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import MuxPlayer from "@mux/mux-player-react";
 
 type Props = {
+  lessonId: string;
   provider: string | null;
   youtubeVideoId?: string | null;
   muxPlaybackId?: string | null;
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export default function LessonVideoPlayer({
+  lessonId,
   provider,
   youtubeVideoId,
   muxPlaybackId,
@@ -20,8 +22,11 @@ export default function LessonVideoPlayer({
   bunnyVideoId,
   title,
 }: Props) {
-  const [muxToken, setMuxToken] =
-    useState<string | null>(null);
+  const [muxAccess, setMuxAccess] = useState<{
+    lessonId: string;
+    token?: string;
+    error?: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (
@@ -31,28 +36,30 @@ export default function LessonVideoPlayer({
       return;
     }
 
+    const controller = new AbortController();
     fetch("/api/mux/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        playbackId: muxPlaybackId,
+        lessonId,
       }),
+      signal: controller.signal,
     })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.token) {
-          setMuxToken(data.token);
-        }
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Video access unavailable");
+        return res.json();
       })
-      .catch((error) => {
-        console.error(
-          "MUX TOKEN ERROR",
-          error
-        );
+      .then((data) => {
+        if (typeof data.token !== "string") throw new Error("Missing video token");
+        if (!controller.signal.aborted) setMuxAccess({ lessonId, token: data.token });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setMuxAccess({ lessonId, error: true });
       });
-  }, [provider, muxPlaybackId]);
+    return () => controller.abort();
+  }, [provider, muxPlaybackId, lessonId]);
 
   if (!provider) {
     return (
@@ -82,6 +89,15 @@ export default function LessonVideoPlayer({
     provider === "mux" &&
     muxPlaybackId
   ) {
+    const currentAccess = muxAccess?.lessonId === lessonId ? muxAccess : null;
+    const muxToken = currentAccess?.token;
+    if (currentAccess?.error) {
+      return (
+        <div className="aspect-video flex items-center justify-center rounded-xl bg-black p-6 text-center text-white" role="alert">
+          تعذر تشغيل الفيديو. تحقق من صلاحية الوصول وأعد تحميل الصفحة.
+        </div>
+      );
+    }
     if (!muxToken) {
       return (
         <div className="aspect-video flex items-center justify-center rounded-xl bg-black text-white">
