@@ -99,9 +99,7 @@ export default function CourseCatalogCard({
         flex-col
         overflow-hidden
         transition
-        hover:-translate-y-1
-        hover:shadow-2xl
-        hover:border-[var(--brand-ink)]
+        yw-catalog-card
       "
       dir={isArabic ? "rtl" : "ltr"}
     >
@@ -323,13 +321,13 @@ export default function CourseCatalogCard({
           <Link
             href={`/courses/${id}`}
             className={`
-              rounded-xl
+              rounded-md
               bg-[var(--brand-ink)]
               px-5
               py-2.5
               text-sm
               font-bold
-              text-white
+              text-[var(--brand-on-ink)]
               flex
               items-center
               gap-2

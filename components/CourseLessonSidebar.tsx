@@ -57,29 +57,29 @@ export default function CourseLessonSidebar({
   return (
     <aside
       dir={isArabic ? "rtl" : "ltr"}
-      className="h-fit lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
+      className="yw-curriculum h-fit xl:sticky xl:top-4 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto"
     >
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-lg font-bold text-[#2A2420]">
+          <h2 className="text-lg font-bold text-[var(--brand-text)]">
             {isArabic ? "محتوى الدورة" : "Course content"}
           </h2>
 
           {isEnrolled && (
-            <div className="mt-4 rounded-2xl border border-[#E8E1D4] bg-[#F7F3EC] p-4">
+            <div className="mt-4 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-4">
               <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="text-[#6B6155]">
+                <span className="text-[var(--brand-text-muted)]">
                   {isArabic ? "تقدمك" : "Your progress"}
                 </span>
 
-                <span className="font-bold text-[#1B4B43]">
+                <span className="font-bold text-[var(--brand-ink)]">
                   {progress}%
                 </span>
               </div>
 
               <ProgressBar value={progress} />
 
-              <p className="mt-3 text-xs text-[#A69C8C]">
+              <p className="mt-3 text-xs text-[var(--brand-text-faint)]">
                 {isArabic
                   ? `${completedCount} من ${totalLessons} درس مكتمل`
                   : `${completedCount} of ${totalLessons} lessons completed`}
@@ -91,11 +91,11 @@ export default function CourseLessonSidebar({
             {sections.map((section) => (
               <div key={section.id}>
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <h3 className="text-sm font-bold text-[#2A2420]">
+                  <h3 className="text-sm font-bold text-[var(--brand-text)]">
                     {section.title}
                   </h3>
 
-                  <span className="shrink-0 text-xs text-[#A69C8C]">
+                  <span className="shrink-0 text-xs text-[var(--brand-text-faint)]">
                     {formatLessons(section.lessons.length, isArabic)}
                   </span>
                 </div>
@@ -107,12 +107,12 @@ export default function CourseLessonSidebar({
                     const locked =
                       !isEnrolled && !lesson.isFreePreview;
 
-                    const rowClass = `flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-colors ${
+                    const rowClass = `flex items-center gap-3 rounded-md px-3 py-3 text-sm transition-colors ${
                       isCurrent
-                        ? "border border-[#1B4B43]/20 bg-[#F7F3EC] font-bold text-[#1B4B43]"
+                        ? "border border-[var(--brand-ink)]/20 bg-[var(--brand-bg)] font-bold text-[var(--brand-ink)]"
                         : locked
-                        ? "bg-[#F7F3EC]/60 text-[#A69C8C]"
-                        : "bg-[#F7F3EC]/60 text-[#6B6155] hover:bg-[#F0EBE1]"
+                        ? "bg-[var(--brand-bg)]/60 text-[var(--brand-text-faint)]"
+                        : "bg-[var(--brand-bg)]/60 text-[var(--brand-text-muted)] hover:bg-[var(--brand-border-soft)]"
                     }`;
 
                     const icon = isDone ? (
@@ -122,19 +122,19 @@ export default function CourseLessonSidebar({
                         className="text-emerald-600"
                       />
                     ) : isCurrent ? (
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1B4B43] text-white">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--brand-ink)] text-[var(--brand-on-ink)]">
                         <PlayIcon width={9} height={9} />
                       </span>
                     ) : locked ? (
                       <LockIcon
                         width={18}
                         height={18}
-                        className="text-[#A69C8C]"
+                        className="text-[var(--brand-text-faint)]"
                       />
                     ) : (
                       <span
                         aria-hidden="true"
-                        className="h-5 w-5 rounded-full border-2 border-[#D9CDB6]"
+                        className="h-5 w-5 rounded-full border-2 border-[var(--brand-border)]"
                       />
                     );
 

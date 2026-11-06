@@ -18,6 +18,11 @@ export default function ProgressBar({
 
   return (
     <div
+      role="progressbar"
+      aria-label="Progress"
+      aria-valuenow={progress}
+      aria-valuemin={0}
+      aria-valuemax={100}
       className={`
         h-2
         w-full

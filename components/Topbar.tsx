@@ -84,10 +84,10 @@ export default function Topbar({
             w-11
             items-center
             justify-center
-            rounded-2xl
+            rounded-lg
             border
             transition-all
-            hover:shadow-md
+
           "
           style={{
             borderColor: "var(--brand-border)",
@@ -100,7 +100,7 @@ export default function Topbar({
         <Link
           href="/"
           aria-label="Your Way"
-          className="rounded-xl border p-1.5"
+          className="rounded-lg border p-1.5"
           style={{ borderColor: "var(--brand-border)" }}
         >
           <Image
@@ -126,9 +126,9 @@ export default function Topbar({
             placeholder={t.topbar.search}
             aria-label={t.topbar.search}
             className="
-              h-12
+              h-11
               w-full
-              rounded-2xl
+              rounded-lg
               border
               pe-4
               ps-11
@@ -164,19 +164,19 @@ export default function Topbar({
                 flex
                 items-center
                 gap-3
-                rounded-2xl
+                rounded-lg
                 border
                 py-1.5
                 pe-1.5
                 ps-1.5
                 transition-all
-                hover:shadow-md
+
                 sm:pe-4
               "
               style={{ borderColor: "var(--brand-border)" }}
             >
               <span
-                className="flex h-9 w-9 overflow-hidden items-center justify-center rounded-lg text-sm font-bold text-white"
+                className="flex h-9 w-9 overflow-hidden items-center justify-center rounded-lg text-sm font-bold text-[var(--brand-on-ink)]"
                 style={{ backgroundColor: "var(--brand-ink)" }}
               >
                 {avatarUrl ? (
@@ -220,7 +220,7 @@ export default function Topbar({
         ) : (
           <Link
             href="/login"
-            className="flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white transition-colors"
+            className="flex h-11 items-center rounded-lg px-5 text-sm font-bold text-[var(--brand-on-ink)] transition-colors"
             style={{ backgroundColor: "var(--brand-ink)" }}
           >
             {t.topbar.login}
@@ -273,7 +273,7 @@ function LogoutConfirmation({
         disabled={pending}
         aria-label={label}
         aria-haspopup="dialog"
-        className="flex h-11 items-center gap-2 rounded-2xl border px-3 text-sm font-semibold transition-all hover:shadow-md disabled:cursor-wait disabled:opacity-60 sm:px-4"
+        className="flex h-11 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-all  disabled:cursor-wait disabled:opacity-60 sm:px-4"
         style={{
           borderColor: "var(--brand-border)",
           color: "var(--brand-text-muted)",
@@ -315,7 +315,7 @@ function LogoutConfirmation({
         }}
       >
         <div
-          className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
+          className="mb-5 flex h-14 w-14 items-center justify-center rounded-lg"
           style={{
             backgroundColor: "var(--brand-ink-soft)",
             color: "var(--brand-ink)",
@@ -344,7 +344,7 @@ function LogoutConfirmation({
             type="button"
             disabled={pending}
             onClick={() => setOpen(false)}
-            className="flex min-h-11 flex-1 items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-50"
+            className="flex min-h-11 flex-1 items-center justify-center rounded-lg border px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-50"
             style={{
               backgroundColor: "var(--brand-bg)",
               borderColor: "var(--brand-border)",
@@ -357,7 +357,7 @@ function LogoutConfirmation({
           <button
             type="submit"
             disabled={pending}
-            className="flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+            className="flex min-h-11 flex-1 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-[var(--brand-on-ink)] transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
             style={{ backgroundColor: "var(--hero-start)" }}
           >
             <span aria-live="polite">

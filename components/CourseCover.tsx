@@ -1,123 +1,22 @@
 import Image from "next/image";
 import { BookIcon } from "@/components/icons";
 
-const GRADIENTS = [
-  "from-[#1B4B43] to-[#0F332D]",
-  "from-[#8A3F2A] to-[#5C2A1C]",
-  "from-[#2F5233] to-[#1B3820]",
-  "from-[#3F5B6B] to-[#213443]",
+const PALETTES = [
+  { background: "#e2ece4", color: "#315e4c" },
+  { background: "#f0e5d5", color: "#82603b" },
+  { background: "#e0e8ec", color: "#3f6072" },
+  { background: "#eae4ed", color: "#6d5779" },
 ];
 
-function pickGradient(seed: string) {
+type Props = { image?: string | null; title: string; compact?: boolean; showTitle?: boolean };
+
+export default function CourseCover({ image, title, compact = false, showTitle = true }: Props) {
+  if (image) return <div className="relative h-full w-full overflow-hidden"><Image src={image} alt="" fill sizes={compact ? "80px" : "(max-width: 768px) 100vw, 400px"} className="object-cover" /></div>;
   let hash = 0;
-
-  for (const char of seed) {
-    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  }
-
-  return GRADIENTS[hash % GRADIENTS.length];
-}
-
-type Props = {
-  image?: string | null;
-  title: string;
-  /** نسخة صغيرة للمصغّرات (٦٤–٨٠px): حرف واحد بدل العنوان كامل حتى ما ينقص */
-  compact?: boolean;
-  /** false = أيقونة كتاب بالوسط بدل تكرار العنوان (لما العنوان ظاهر تحت الغلاف) */
-  showTitle?: boolean;
-};
-
-/** صورة الدورة، أو غلاف مصمم بعنوان بارز إذا ما في صورة */
-export default function CourseCover({
-  image,
-  title,
-  compact = false,
-  showTitle = true,
-}: Props) {
-  if (image) {
-    return (
-      <div className="relative h-full w-full overflow-hidden">
-        <Image
-          src={image}
-          alt=""
-          fill
-          sizes={compact ? "80px" : "(max-width: 768px) 100vw, 400px"}
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
-        />
-      </div>
-    );
-  }
-
-  if (compact) {
-    const initial = Array.from(title.trim())[0] ?? "";
-
-    return (
-      <div
-        className={`relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br ${pickGradient(
-          title
-        )}`}
-      >
-        <div
-          aria-hidden="true"
-          className="absolute -bottom-4 -end-4 h-12 w-12 rotate-45 bg-white/[0.08]"
-        />
-
-        {initial ? (
-          <span
-            aria-hidden="true"
-            className="relative text-2xl font-bold uppercase text-white"
-          >
-            {initial}
-          </span>
-        ) : (
-          <BookIcon
-            width={24}
-            height={24}
-            strokeWidth={1.6}
-            className="relative text-white/70"
-          />
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`relative flex h-full w-full items-center overflow-hidden bg-gradient-to-br ${pickGradient(
-        title
-      )} px-6`}
-    >
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-10 -end-10 h-40 w-40 rotate-45 bg-white/[0.06]"
-      />
-
-      <div
-        aria-hidden="true"
-        className="absolute -top-12 -start-8 h-28 w-28 rotate-45 bg-white/[0.05]"
-      />
-
-      {showTitle ? (
-        <>
-          <BookIcon
-            width={20}
-            height={20}
-            strokeWidth={1.6}
-            className="absolute end-4 top-4 text-white/40"
-          />
-
-          <p className="relative line-clamp-3 text-xl font-bold leading-snug text-white">
-            {title}
-          </p>
-        </>
-      ) : (
-        <BookIcon
-          width={44}
-          height={44}
-          strokeWidth={1.4}
-          className="relative mx-auto text-white/60"
-        />
-      )}
-    </div>
-  );
+  for (const char of title) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  const palette = PALETTES[hash % PALETTES.length];
+  return <div className={`yw-course-cover ${compact ? "yw-course-cover-compact" : ""}`} style={{ backgroundColor: palette.background, color: palette.color }}>
+    <div className="yw-cover-lines" aria-hidden="true" />
+    {compact ? <span aria-hidden="true" className="text-2xl font-bold">{Array.from(title.trim())[0] || <BookIcon width={24} height={24} />}</span> : <><BookIcon width={60} height={60} strokeWidth={1.2} className="relative shrink-0" />{showTitle && <p className="relative line-clamp-3 text-xl font-bold leading-snug">{title}</p>}<span className="yw-cover-brand" aria-hidden="true">YOUR WAY · LEARNING</span></>}
+  </div>;
 }

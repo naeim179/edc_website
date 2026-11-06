@@ -75,6 +75,7 @@ export default async function Home() {
         displayName={displayName}
         stats={stats}
         continueCourse={continueCourse}
+        studentCourses={studentCourses}
         courses={courses}
       />
     </AppShell>
