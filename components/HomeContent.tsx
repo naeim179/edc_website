@@ -1,418 +1,141 @@
-"use client";
+import React from 'react';
+import Link from 'next/link';
+import { PlayCircle, BookOpen, CheckCircle, GraduationCap, ArrowLeft } from 'lucide-react'; 
 
-import Link from "next/link";
-import CourseCatalogCard from "@/components/CourseCatalogCard";
-import CourseCover from "@/components/CourseCover";
-import { useLanguage } from "@/components/LanguageProvider";
-import { ArrowIcon, PlayIcon } from "@/components/icons";
-import type { CatalogCourse } from "@/lib/course-catalog";
-import type { StudentCourse } from "@/lib/student-courses";
-
-type Props = {
-  isAuthenticated: boolean;
-  displayName: string;
-  stats: {
-    enrolled: number;
-    completedLessons: number;
-    completedCourses: number;
-  };
-  continueCourse: StudentCourse | null;
-  courses: CatalogCourse[];
-};
-
-export default function HomeContent({
-  isAuthenticated,
-  displayName,
-  stats,
-  continueCourse,
-  courses,
-}: Props) {
-  const { language, t } = useLanguage();
-  const isArabic = language === "ar";
-
-  const pluralAr = (
-    n: number,
-    f: { one: string; two: string; few: string; many: string }
-  ) => (n === 1 ? f.one : n === 2 ? f.two : n >= 11 ? f.many : f.few);
-
-  const statItems = [
-    {
-      value: stats.enrolled,
-      label: isArabic
-        ? pluralAr(stats.enrolled, {
-            one: "دورة مسجلة",
-            two: "دورتان مسجلتان",
-            few: "دورات مسجلة",
-            many: "دورة مسجلة",
-          })
-        : t.home.enrolledCourses,
-    },
-    {
-      value: stats.completedLessons,
-      label: isArabic
-        ? pluralAr(stats.completedLessons, {
-            one: "درس مكتمل",
-            two: "درسان مكتملان",
-            few: "دروس مكتملة",
-            many: "درس مكتمل",
-          })
-        : t.home.completedLessons,
-    },
-    {
-      value: stats.completedCourses,
-      label: isArabic
-        ? pluralAr(stats.completedCourses, {
-            one: "دورة مكتملة",
-            two: "دورتان مكتملتان",
-            few: "دورات مكتملة",
-            many: "دورة مكتملة",
-          })
-        : t.home.completedCourses,
-    },
-  ];
-
-  const continueHref = continueCourse
-    ? continueCourse.nextLessonId
-      ? `/courses/${continueCourse.id}/lessons/${continueCourse.nextLessonId}`
-      : `/courses/${continueCourse.id}`
-    : "/courses";
-
-  const heroShapes = (
-    <>
-      <div
-        aria-hidden="true"
-        className="absolute -end-16 -bottom-20 h-64 w-64 rotate-45 bg-white/[0.05]"
-      />
-
-      <div
-        aria-hidden="true"
-        className="absolute -start-12 -top-20 h-44 w-44 rotate-45 bg-white/[0.04]"
-      />
-    </>
-  );
+export default function HomeContent() {
+  const user = { name: 'naim' };
+  const progress = 0; 
+  const enrolledCourses = 1;
 
   return (
-    <div
-      className="mx-auto w-full max-w-6xl space-y-10"
-      dir={isArabic ? "rtl" : "ltr"}
-    >
-      {isAuthenticated ? (
-        <section
-          className="overflow-hidden rounded-3xl border"
-          style={{
-            borderColor: "var(--brand-border)",
-            backgroundColor: "var(--brand-surface)",
-          }}
-        >
-          {/* HERO */}
-          <div
-            className="relative overflow-hidden px-6 py-8 text-white sm:px-10 sm:py-10"
-            style={{
-              backgroundImage:
-                "linear-gradient(135deg, var(--hero-start), var(--hero-end))",
-            }}
-          >
-            {heroShapes}
+    <div className="min-h-screen bg-slate-50 p-6 lg:p-10 font-sans">
+      
+      {/* 1. قسم الترحيب (Header) */}
+      <div className="mb-10">
+        <p className="text-sm font-medium text-gray-500 mb-2">أهلاً {user.name}</p>
+        <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
+          خطوة جديدة، أقرب لهدفك.
+        </h1>
+        <p className="text-gray-500 text-lg">
+          مساحتك للتعلّم، والمتابعة، وصناعة التقدّم.
+        </p>
+      </div>
 
-            <div className="relative">
-              <p className="text-sm text-white/70">
-                {t.home.welcomeBack}
-              </p>
-
-              <h1 className="mt-1 text-3xl font-bold leading-tight sm:text-4xl">
-                {t.home.hello} {displayName}
-              </h1>
-
-              <p className="mt-3 max-w-md leading-7 text-white/75">
-                {isArabic
-                  ? "أكمل رحلتك التعليمية من حيث توقفت."
-                  : "Pick up your learning journey where you left off."}
-              </p>
-
-              <div className="mt-7 flex flex-wrap items-center gap-x-10 gap-y-4 border-t border-white/15 pt-6">
-                {statItems.map((item, index) => (
-                  <div key={item.label} className="flex items-center gap-10">
-                    {index > 0 && (
-                      <span className="hidden h-9 w-px bg-white/15 sm:block" />
-                    )}
-
-                    <div>
-                      <p className="text-2xl font-bold text-white sm:text-3xl">
-                        {item.value}
-                      </p>
-
-                      <p className="mt-1 text-xs leading-5 text-white/65">
-                        {item.label}
-                      </p>
+      {/* 2. شبكة المحتوى (Grid Layout) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* العمود الأيمن الرئيسي (يأخذ 8 أعمدة من 12) */}
+        <div className="lg:col-span-8 space-y-8">
+          
+          {/* بطاقة: أكمل من حيث توقفت */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                أكمل من حيث توقفت
+              </h2>
+            </div>
+            
+            <div className="flex flex-col md:flex-row gap-6 items-center">
+              <div className="w-full md:w-1/3 aspect-video bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100">
+                <BookOpen className="w-12 h-12 text-amber-600/30" />
+              </div>
+              
+              <div className="w-full md:w-2/3 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">for test</h3>
+                  <p className="text-gray-500 text-sm mb-6">كل درس خطوة. خذ خطوتك التالية اليوم.</p>
+                </div>
+                
+                <div className="mb-5">
+                  <div className="flex justify-between text-sm font-medium mb-2">
+                    <span className="text-gray-500">تقدّمك في الدورة</span>
+                    <span className="text-emerald-600 font-bold">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div 
+                      className="bg-emerald-600 h-2.5 rounded-full transition-all duration-500" 
+                      style={{ width: `${progress}%` }}>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* CONTINUE LEARNING */}
-
-          {continueCourse ? (
-            <Link
-              href={continueHref}
-              className="m-6 flex flex-col gap-5 rounded-2xl border p-5 transition sm:flex-row sm:items-center sm:p-6"
-              style={{
-                borderColor: "var(--brand-border)",
-                backgroundColor: "var(--brand-bg)",
-              }}
-            >
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl sm:h-20 sm:w-20">
-                <CourseCover
-                  compact
-                  image={continueCourse.image}
-                  title={continueCourse.title}
-                />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p
-                  className="text-xs font-bold"
-                  style={{ color: "var(--brand-clay)" }}
-                >
-                  {isArabic
-                    ? "تابع من حيث توقفت"
-                    : "Continue where you left off"}
-                </p>
-
-                <h2
-                  className="mt-0.5 truncate text-lg font-bold"
-                  style={{ color: "var(--brand-text)" }}
-                >
-                  {continueCourse.title}
-                </h2>
-
-                {continueCourse.totalLessons > 0 ? (
-                <div className="mt-3 flex items-center gap-3">
-                  <div
-                    className="h-2 flex-1 overflow-hidden rounded-full sm:max-w-xs"
-                    style={{ backgroundColor: "var(--brand-border-soft)" }}
-                    role="progressbar"
-                    aria-valuenow={continueCourse.progress}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  >
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${continueCourse.progress}%`,
-                        backgroundColor: "var(--brand-ink)",
-                      }}
-                    />
-                  </div>
-
-                  <span
-                    className="shrink-0 text-xs font-bold"
-                    style={{ color: "var(--brand-ink)" }}
-                  >
-                    {continueCourse.progress}%
-                  </span>
-
-                  <span
-                    className="shrink-0 text-xs"
-                    style={{ color: "var(--brand-text-faint)" }}
-                  >
-                    {isArabic
-                      ? `${continueCourse.completedLessons}/${continueCourse.totalLessons} درس`
-                      : `${continueCourse.completedLessons}/${continueCourse.totalLessons}`}
-                  </span>
                 </div>
-                ) : (
-                  <p
-                    className="mt-3 text-xs"
-                    style={{ color: "var(--brand-text-muted)" }}
-                  >
-                    {isArabic ? "لا توجد دروس بعد" : "No lessons yet"}
-                  </p>
-                )}
+                
+                <div className="flex justify-end">
+                  <button className="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white px-6 py-2.5 rounded-xl font-medium transition-transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0">
+                    متابعة التعلّم
+                    <PlayCircle className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
-
-              <span
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition"
-                style={{ backgroundColor: "var(--brand-ink)" }}
-              >
-                {continueCourse.totalLessons > 0 ? (
-                  <PlayIcon width={14} height={14} />
-                ) : (
-                  <ArrowIcon
-                    width={14}
-                    height={14}
-                    className="rtl:rotate-180"
-                  />
-                )}
-                {continueCourse.totalLessons === 0
-                  ? isArabic
-                    ? "عرض الدورة"
-                    : "View course"
-                  : continueCourse.progress > 0
-                  ? isArabic
-                    ? "متابعة"
-                    : "Continue"
-                  : isArabic
-                  ? "ابدأ"
-                  : "Start"}
-              </span>
-            </Link>
-          ) : (
-            <div className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-              <div>
-                <h2
-                  className="text-lg font-bold"
-                  style={{ color: "var(--brand-text)" }}
-                >
-                  {stats.enrolled > 0
-                    ? isArabic
-                      ? "أنجزت كل دوراتك 🎉"
-                      : "You finished all your courses 🎉"
-                    : isArabic
-                    ? "ابدأ رحلتك الأولى"
-                    : "Start your first course"}
-                </h2>
-
-                <p
-                  className="mt-1 text-sm leading-6"
-                  style={{ color: "var(--brand-text-muted)" }}
-                >
-                  {isArabic
-                    ? "تصفّح الدورات المتاحة واختر ما يناسب هدفك."
-                    : "Browse the available courses and pick what fits your goal."}
-                </p>
-              </div>
-
-              <Link
-                href="/courses"
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white transition-colors"
-                style={{ backgroundColor: "var(--brand-ink)" }}
-              >
-                {t.home.browseCourses}
-                <ArrowIcon
-                  width={16}
-                  height={16}
-                  className="rtl:rotate-180"
-                />
-              </Link>
-            </div>
-          )}
-        </section>
-      ) : (
-        <section
-          className="relative overflow-hidden rounded-3xl p-8 text-white sm:p-12"
-          style={{
-            backgroundImage:
-              "linear-gradient(135deg, var(--brand-ink), var(--brand-ink-hover))",
-          }}
-        >
-          {heroShapes}
-
-          <div className="relative max-w-2xl">
-            <p className="text-sm text-white/70">
-              {isArabic
-                ? "منصتك للتعلم والتطور"
-                : "Your platform for learning and growth"}
-            </p>
-
-            <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-5xl">
-              {isArabic
-                ? "ابدأ رحلتك التعليمية اليوم"
-                : "Start your learning journey today"}
-            </h1>
-
-            <p className="mt-4 leading-8 text-white/75">
-              {isArabic
-                ? "استعرض الدورات المتاحة، أنشئ حسابك، وتابع تقدمك من مكان واحد."
-                : "Browse available courses, create your account, and track your progress in one place."}
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/register"
-                className="rounded-xl px-6 py-3 text-sm font-bold text-white transition-colors"
-                style={{ backgroundColor: "var(--brand-terracotta)" }}
-              >
-                {t.home.createAccount}
-              </Link>
-
-              <Link
-                href="/courses"
-                className="rounded-xl border border-white/30 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10"
-              >
-                {isArabic ? "استعراض الدورات" : "Browse courses"}
-              </Link>
             </div>
           </div>
-        </section>
-      )}
 
-      <section className="space-y-6">
-        <div
-          className="flex items-center justify-between gap-4 rounded-2xl border px-5 py-4"
-          style={{
-            borderColor: "var(--brand-border)",
-            backgroundColor: "var(--brand-surface)",
-          }}
-        >
-          <h2
-            className="text-xl font-bold sm:text-2xl"
-            style={{ color: "var(--brand-text)" }}
-          >
-            {t.home.latestCourses}
-          </h2>
-
-          <Link
-            href="/courses"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
-            style={{ color: "var(--brand-ink)" }}
-          >
-            {t.home.viewAllCourses}
-            <ArrowIcon
-              width={16}
-              height={16}
-              className="rtl:rotate-180"
-            />
-          </Link>
+          {/* بطاقة: على مسار تعلّمك (مسار الدورات) */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900">على مسار تعلّمك</h2>
+              <Link href="/courses" className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                عرض الكل <ArrowLeft className="w-4 h-4" />
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="aspect-[4/3] bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-gray-400 p-4 transition-colors hover:bg-gray-100 cursor-pointer">
+                 <BookOpen className="w-8 h-8 mb-2 opacity-50" />
+                 <span className="text-sm font-medium">لا توجد دورات أخرى حالياً</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {courses.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course) => (
-              <CourseCatalogCard
-                key={course.id}
-                id={course.id}
-                title={course.title}
-                category={course.category}
-                instructor={course.instructor}
-                lessons={course.lessons}
-                progress={course.progress}
-                image={course.image}
-                enrolled={course.enrolled}
-                price={course.price}
-                currency={course.currency}
-                isFree={course.isFree}
-                discountType={course.discountType}
-                discountValue={course.discountValue}
-                deliveryType={course.deliveryType}
-              />
-            ))}
+        {/* العمود الأيسر (الشريط الجانبي للإحصائيات - 4 أعمدة) */}
+        <div className="lg:col-span-4 space-y-6">
+          
+          {/* بطاقة: نظرة على تقدمك */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
+            <h3 className="text-gray-500 text-sm font-medium mb-1">خطوات تُحسب</h3>
+            <h2 className="text-xl font-bold text-gray-900 mb-8">نظرة على تقدّمك</h2>
+            
+            <div className="relative w-36 h-36 mx-auto mb-6 flex items-center justify-center bg-emerald-50 rounded-full border-[6px] border-emerald-100 shadow-inner">
+              <span className="text-5xl font-extrabold text-emerald-700">{progress}<span className="text-2xl text-emerald-500">%</span></span>
+            </div>
+            <p className="text-sm text-gray-500 pb-6 border-b border-gray-100">من دروس دوراتك المسجلة</p>
+
+            <div className="pt-6 space-y-5 text-right">
+              <div className="flex justify-between items-center group">
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="p-2 bg-slate-50 rounded-lg text-slate-500 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <span className="font-medium">دورات مسجلة</span>
+                </div>
+                <span className="text-xl font-bold text-gray-900">{enrolledCourses}</span>
+              </div>
+              
+              <div className="flex justify-between items-center group">
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="p-2 bg-slate-50 rounded-lg text-slate-500 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                    <CheckCircle className="w-5 h-5" />
+                  </div>
+                  <span className="font-medium">دروس مكتملة</span>
+                </div>
+                <span className="text-xl font-bold text-gray-900">0</span>
+              </div>
+
+              <div className="flex justify-between items-center group">
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="p-2 bg-slate-50 rounded-lg text-slate-500 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <span className="font-medium">دورات مكتملة</span>
+                </div>
+                <span className="text-xl font-bold text-gray-900">0</span>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div
-            className="border-t pt-8 text-center"
-            style={{
-              borderColor: "var(--brand-border-soft)",
-              color: "var(--brand-text-faint)",
-            }}
-          >
-            {isArabic
-              ? "لا توجد دورات منشورة حاليًا."
-              : "No published courses yet."}
-          </div>
-        )}
-      </section>
+          
+        </div>
+      </div>
     </div>
   );
 }

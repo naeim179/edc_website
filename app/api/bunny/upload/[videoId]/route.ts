@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function PUT(
   request: NextRequest,
@@ -13,6 +14,9 @@ export async function PUT(
 ) {
   try {
     const { videoId } = await params;
+    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(videoId)) {
+      return NextResponse.json({ error: "Invalid videoId" }, { status: 400 });
+    }
 
     const courseId =
       request.headers.get("x-course-id");
@@ -50,9 +54,21 @@ export async function PUT(
       );
     }
 
+    const { data: ownership, error: ownershipError } = await createAdminClient()
+      .from("bunny_video_uploads")
+      .select("video_id")
+      .eq("video_id", videoId)
+      .eq("course_id", courseId)
+      .eq("library_id", libraryId)
+      .maybeSingle();
+    if (ownershipError) throw new Error("Could not verify Bunny video ownership");
+    if (!ownership) {
+      return NextResponse.json({ error: "Unauthorized video" }, { status: 403 });
+    }
+
     const bunnyResponse =
       await fetch(
-        `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`,
+        `https://video.bunnycdn.com/library/${encodeURIComponent(libraryId)}/videos/${encodeURIComponent(videoId)}`,
         {
           method: "PUT",
           headers: {

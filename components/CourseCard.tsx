@@ -1,263 +1,78 @@
-"use client";
+import React from 'react';
+import Link from 'next/link';
+import { BookOpen, Clock, PlayCircle } from 'lucide-react';
 
-import Link from "next/link";
+// يمكنك تعديل الـ Props حسب ما تستخدمه في مشروعك
+interface CourseCardProps {
+  id?: string;
+  title?: string;
+  instructor?: string;
+  progress?: number;
+  image?: string;
+}
 
-import CourseCover from "@/components/CourseCover";
-import { useLanguage } from "@/components/LanguageProvider";
-
-import Card from "@/components/ui/Card";
-import CardContent from "@/components/ui/CardContent";
-import Badge from "@/components/ui/Badge";
-import ProgressBar from "@/components/ui/ProgressBar";
-
-import {
-  ArrowIcon,
-  CheckCircleIcon,
-} from "@/components/icons";
-
-type CourseCardProps = {
-  id: string;
-  title: string;
-  category?: string | null;
-
-  progress: number;
-  completedLessons: number;
-  totalLessons: number;
-
-  image?: string | null;
-
-  nextLessonId?: string | null;
-
-  enrolled?: boolean;
-
-  isFree?: boolean;
-
-  accessActive?: boolean;
-
-  expiresAt?: string | null;
-
-  daysRemaining?: number | null;
-
-  autoRenew?: boolean;
-};
-
-export default function CourseCard({
-  id,
-  title,
-  category,
-  progress,
-  completedLessons,
-  totalLessons,
-  image,
-  enrolled = true,
-  isFree = false,
-  accessActive = true,
-  expiresAt = null,
-  daysRemaining = null,
-  autoRenew = false,
+export default function CourseCard({ 
+  id = '1', 
+  title = 'عنوان الدورة الافتراضي', 
+  instructor = 'أحمد محمد', 
+  progress = 0 
 }: CourseCardProps) {
-  const { language } = useLanguage();
-
-  const isArabic = language === "ar";
-
-  const expired =
-    enrolled &&
-    !isFree &&
-    !accessActive;
-
-  const done =
-    enrolled &&
-    accessActive &&
-    progress >= 100;
-
-  const href = expired
-    ? `/checkout/${id}`
-    : `/courses/${id}`;
-
-  const label =
-    !enrolled
-      ? isArabic
-        ? "عرض الدورة"
-        : "View course"
-      : expired
-        ? isArabic
-          ? "تجديد الاشتراك"
-          : "Renew subscription"
-        : done
-          ? isArabic
-            ? "مراجعة الدورة"
-            : "Review course"
-          : progress > 0
-            ? isArabic
-              ? "متابعة التعلم"
-              : "Continue learning"
-            : isArabic
-              ? "ابدأ الدورة"
-              : "Start course";
-
   return (
-    <Card
-      className="
-        group
-        overflow-hidden
-      "
-    >
-      <Link
-        href={`/courses/${id}`}
-        className="relative block aspect-[16/9] overflow-hidden"
-      >
-        <CourseCover
-          image={image}
-          title={title}
-        />
+    // استخدام group للتحكم بتأثيرات العناصر الداخلية عند تمرير الماوس
+    <Link href={`/courses/${id}`} className="group block h-full">
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col hover:-translate-y-1">
+        
+        {/* الجزء العلوي: صورة الكورس */}
+        <div className="aspect-[4/3] bg-slate-50 relative overflow-hidden flex items-center justify-center border-b border-gray-50">
+          {/* هنا يتم وضع صورة الكورس، حالياً وضعنا أيقونة كعنصر نائب */}
+          <BookOpen className="w-12 h-12 text-emerald-600/20 group-hover:scale-110 transition-transform duration-500" />
+          
+          {/* شارة (Badge) للحالة */}
+          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-emerald-700 shadow-sm">
+            متاح
+          </div>
+        </div>
 
-        {category && (
-          <Badge
-            variant="info"
-            className="absolute start-3 top-3 bg-white/90 backdrop-blur"
-          >
-            {category}
-          </Badge>
-        )}
-
-        {done && (
-          <span className="absolute end-3 top-3">
-            <Badge variant="success">
-              <span className="flex items-center gap-1">
-                <CheckCircleIcon
-                  width={14}
-                  height={14}
-                />
-                {isArabic
-                  ? "مكتملة"
-                  : "Completed"}
-              </span>
-            </Badge>
-          </span>
-        )}
-
-        {expired && (
-          <span className="absolute end-3 top-3">
-            <Badge variant="danger">
-              {isArabic
-                ? "الاشتراك منتهي"
-                : "Expired"}
-            </Badge>
-          </span>
-        )}
-      </Link>
-
-      <CardContent
-        className="
-          flex
-          flex-col
-          gap-4
-        "
-      >
-        <h3 className="line-clamp-2 text-lg font-semibold leading-7 text-slate-900">
-          <Link
-            href={`/courses/${id}`}
-            className="transition-colors hover:text-[#124b8a]"
-          >
+        {/* الجزء السفلي: تفاصيل الكورس */}
+        <div className="p-5 flex flex-col flex-grow">
+          <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2">
             {title}
-          </Link>
-        </h3>
+          </h3>
+          
+          <div className="text-sm text-gray-500 font-medium mb-4 flex items-center gap-2">
+            {/* أيقونة/صورة المعلم */}
+            <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+              {instructor.charAt(0)}
+            </span>
+            {instructor}
+          </div>
 
-        {enrolled && (
-          <div>
-            <div className="mb-2 flex justify-between text-xs">
-              <span className="text-slate-500">
-                {isArabic
-                  ? `${completedLessons} من ${totalLessons} درس مكتمل`
-                  : `${completedLessons} of ${totalLessons} lessons completed`}
+          {/* الإحصائيات والأزرار في أسفل البطاقة */}
+          <div className="mt-auto">
+            <div className="flex justify-between text-[11px] font-medium mb-2">
+              <span className="text-gray-500">نسبة الإنجاز</span>
+              <span className="text-emerald-600 font-bold">{progress}%</span>
+            </div>
+            
+            {/* شريط التقدم */}
+            <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden mb-4">
+              <div 
+                className="bg-emerald-500 h-full rounded-full transition-all duration-700 ease-out"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            
+            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+              <span className="text-xs text-gray-400 font-medium flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" /> مرن
               </span>
-
-              <span className="font-semibold text-[#124b8a]">
-                {progress}%
+              <span className="flex items-center gap-1 text-sm font-bold text-emerald-600 group-hover:-translate-x-1 transition-transform">
+                متابعة <PlayCircle className="w-4 h-4" />
               </span>
             </div>
-
-            <ProgressBar value={progress} />
           </div>
-        )}
-
-        {enrolled && !isFree && (
-          <div
-            className={`
-              rounded-xl
-              px-3
-              py-2
-              text-xs
-              ${
-                expired
-                  ? "bg-red-50 text-red-700"
-                  : "bg-blue-50 text-[#124b8a]"
-              }
-            `}
-          >
-            {expiresAt ? (
-              expired ? (
-                <span className="font-semibold">
-                  {isArabic
-                    ? "انتهت صلاحية الاشتراك. تقدمك محفوظ."
-                    : "Subscription expired. Your progress is saved."}
-                </span>
-              ) : (
-                <>
-                  {isArabic
-                    ? `متبقي تقريبًا ${daysRemaining ?? 0} يوم`
-                    : `About ${daysRemaining ?? 0} days remaining`}
-
-                  {autoRenew && (
-                    <span className="ms-2 font-semibold">
-                      · {isArabic
-                        ? "تجديد تلقائي"
-                        : "Auto renew"}
-                    </span>
-                  )}
-                </>
-              )
-            ) : (
-              <span>
-                {isArabic
-                  ? "الوصول الحالي بدون تاريخ انتهاء"
-                  : "Current access has no expiration date"}
-              </span>
-            )}
-          </div>
-        )}
-
-        <Link
-          href={href}
-          className={`
-            mt-auto
-            inline-flex
-            items-center
-            justify-center
-            gap-2
-            rounded-xl
-            px-4
-            py-3
-            text-sm
-            font-semibold
-            text-white
-            transition-colors
-            ${
-              expired
-                ? "bg-amber-600 hover:bg-amber-700"
-                : "bg-[#124b8a] hover:bg-[#0d3b6e]"
-            }
-          `}
-        >
-          {label}
-
-          <ArrowIcon
-            width={16}
-            height={16}
-            className="rtl:rotate-180"
-          />
-        </Link>
-      </CardContent>
-    </Card>
+        </div>
+      </div>
+    </Link>
   );
 }

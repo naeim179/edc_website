@@ -75,16 +75,16 @@ export default function LessonContent({
 
   return (
     <div
-      className="mx-auto w-full max-w-7xl space-y-5"
+      className="mx-auto w-full max-w-7xl space-y-5 yw-lesson-page"
       dir={isArabic ? "rtl" : "ltr"}
     >
       <nav
         aria-label={isArabic ? "مسار التنقل" : "Breadcrumb"}
-        className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[#A69C8C]"
+        className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--brand-text-faint)]"
       >
         <Link
           href={`/courses/${courseId}`}
-          className="font-bold text-[#1B4B43] hover:underline"
+          className="font-bold text-[var(--brand-ink)] hover:underline"
         >
           {courseTitle ||
             (isArabic ? "العودة إلى الدورة" : "Back to course")}
@@ -98,16 +98,17 @@ export default function LessonContent({
         )}
       </nav>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <header className="yw-lesson-heading"><p className="yw-eyebrow">{isArabic ? `الدرس ${position.current} من ${position.total}` : `Lesson ${position.current} of ${position.total}`}</p><h1>{lesson.title}</h1></header>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
         <div className="min-w-0 space-y-5">
           <Card className="overflow-hidden">
             {lesson.lesson_type === "live" ? (
-              <div className="m-6 rounded-2xl border border-[#E8E1D4] bg-[#F7F3EC] p-6">
-                <h2 className="text-xl font-bold text-[#1B4B43]">
+              <div className="m-6 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-6">
+                <h2 className="text-xl font-bold text-[var(--brand-ink)]">
                   {isArabic ? "درس مباشر" : "Live Lesson"}
                 </h2>
 
-                <div className="mt-4 space-y-2 text-[#6B6155]">
+                <div className="mt-4 space-y-2 text-[var(--brand-text-muted)]">
                   <p>
                     <strong>
                       {isArabic ? "المنصة:" : "Platform:"}
@@ -135,6 +136,7 @@ export default function LessonContent({
               </div>
             ) : (
               <LessonVideoPlayer
+                lessonId={lesson.id}
                 provider={lesson.video_provider}
                 youtubeVideoId={lesson.youtube_video_id}
                 muxPlaybackId={lesson.mux_playback_id}
@@ -144,7 +146,7 @@ export default function LessonContent({
               />
             )}
 
-            <CardContent className="space-y-4 p-6 sm:p-8">
+            <CardContent className="space-y-4 p-5 sm:p-6">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="info">
                   {isArabic
@@ -153,7 +155,7 @@ export default function LessonContent({
                 </Badge>
 
                 {lesson.duration && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E8E1D4] bg-[#F7F3EC] px-3 py-1 text-xs font-semibold text-[#6B6155]">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--brand-border)] bg-[var(--brand-bg)] px-3 py-1 text-xs font-semibold text-[var(--brand-text-muted)]">
                     <ClockIcon width={13} height={13} />
                     {lesson.duration}
                   </span>
@@ -166,12 +168,10 @@ export default function LessonContent({
                 )}
               </div>
 
-              <h1 className="text-2xl font-bold leading-9 text-[#2A2420] sm:text-3xl">
-                {lesson.title}
-              </h1>
+
 
               {isEnrolled && enrollmentId ? (
-                <div className="flex flex-wrap items-center gap-3 border-t border-[#F0EBE1] pt-5">
+                <div className="flex flex-wrap items-center gap-3 border-t border-[var(--brand-border-soft)] pt-5">
                   <Badge variant={completed ? "success" : "default"}>
                     <span className="flex items-center gap-1.5">
                       {completed && (
@@ -195,8 +195,8 @@ export default function LessonContent({
                   />
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 rounded-2xl bg-[#F7F3EC] p-5 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm leading-7 text-[#6B6155]">
+                <div className="flex flex-col gap-4 rounded-lg bg-[var(--brand-bg)] p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm leading-7 text-[var(--brand-text-muted)]">
                     {isArabic
                       ? "هذا درس مجاني للمعاينة. سجّل بالدورة لتفتح باقي الدروس وتتابع تقدمك."
                       : "This is a free preview lesson. Enroll in the course to unlock the rest and track your progress."}

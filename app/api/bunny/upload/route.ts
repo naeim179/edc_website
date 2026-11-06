@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,7 +8,7 @@ export async function POST(request: NextRequest) {
       courseId?: string;
     };
 
-    const courseId = body.courseId?.trim();
+    const courseId = typeof body.courseId === "string" ? body.courseId.trim() : "";
 
     if (!courseId) {
       return NextResponse.json(
@@ -63,6 +64,18 @@ export async function POST(request: NextRequest) {
         },
         { status: 502 }
       );
+    }
+
+    if (typeof data.guid !== "string" || !/^[a-f0-9-]{36}$/i.test(data.guid)) {
+      throw new Error("Invalid Bunny video identifier");
+    }
+    const { error: ownershipError } = await createAdminClient()
+      .from("bunny_video_uploads")
+      .insert({ video_id: data.guid, library_id: libraryId, course_id: courseId });
+    if (ownershipError) {
+      // Do not issue an upload target unless its ownership was persisted.
+      // The unused remote video can be removed from Bunny by an operator.
+      throw new Error("Could not register Bunny video ownership");
     }
 
     return NextResponse.json({

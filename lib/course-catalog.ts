@@ -38,7 +38,6 @@ type RawCatalogCourse = {
     | { teacher?: RawTeacher | RawTeacher[] | null }
     | { teacher?: RawTeacher | RawTeacher[] | null }[]
     | null;
-  sections?: { lessons?: { id: string }[] | null }[] | null;
 };
 
 const BASE_COLUMNS = `
@@ -51,12 +50,7 @@ const BASE_COLUMNS = `
   is_free,
   discount_type,
   discount_value,
-  delivery_type,
-  sections (
-    lessons (
-      id
-    )
-  )
+  delivery_type
 `;
 
 const INSTRUCTOR_COLUMNS = `
@@ -105,12 +99,17 @@ export async function fetchCatalogCourses(
 
   const rows = (data ?? []) as unknown as RawCatalogCourse[];
 
+  const { data: counts, error: countsError } = rows.length
+    ? await supabase.rpc("get_course_lesson_counts", { p_course_ids: rows.map(course => course.id) })
+    : { data: [], error: null };
+  if (countsError) throw new Error(`Failed to load lesson counts: ${countsError.message}`);
+  const lessonCounts = new Map(
+    ((counts ?? []) as { course_id: string; lesson_count: number }[])
+      .map(row => [row.course_id, Number(row.lesson_count)])
+  );
+
   return rows.map((course) => {
-    const lessons =
-      course.sections?.reduce(
-        (total, section) => total + (section.lessons?.length ?? 0),
-        0
-      ) ?? 0;
+    const lessons = lessonCounts.get(course.id) ?? 0;
 
     const instructorData =
       course.course_instructors ??
