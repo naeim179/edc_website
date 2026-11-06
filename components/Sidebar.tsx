@@ -1,73 +1,425 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  Home, 
-  BookOpen, 
-  GraduationCap, 
-  ClipboardList, 
-  MessageSquare, 
-  User,
-  Settings
-} from 'lucide-react';
+import Link from "next/link";
+import Image from "next/image";
+import {
+usePathname } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
+import {
+  BookIcon,
+  CapIcon,
+  CloseIcon,
+  DashboardIcon,
+  HomeIcon,
+  ReceiptIcon,
+  UserIcon,
+  UsersIcon,
+  MessageIcon,
+} from "@/components/icons";
 
-export default function Sidebar() {
-  const pathname = usePathname();
+type SidebarProps = {
+  role?: string | null;
+  isAuthenticated?: boolean;
+  /** للأدمن: هل هو سوبر أدمن؟ */
+  isSuperAdmin?: boolean;
+  /** صلاحيات الأدمن المقيّد. null = غير محددة، فتظهر كل الأقسام */
+  permissions?: string[] | null;
+  /** يستخدم فقط على الجوال (القائمة المنزلقة) */
+  open?: boolean;
+  onClose?: () => void;
+};
 
-  // روابط القائمة الجانبية
-  const navItems = [
-    { name: 'الرئيسية', href: '/', icon: Home },
-    { name: 'جميع الدورات', href: '/courses', icon: BookOpen },
-    { name: 'دوراتي', href: '/my-courses', icon: GraduationCap },
-    { name: 'الواجبات', href: '/assignments', icon: ClipboardList },
-    { name: 'الرسائل', href: '/messages', icon: MessageSquare },
-    { name: 'الملف الشخصي', href: '/profile', icon: User },
-  ];
+type NavItem = {
+  href: string;
+  label: string;
+  icon: ReactNode;
+  exact?: boolean;
+};
+
+function isActive(pathname: string, item: NavItem) {
+  if (item.exact) {
+    return pathname === item.href;
+  }
 
   return (
-    // استخدام خلفية بيضاء مع ظل خفيف لبروز القائمة
-    <aside className="w-64 bg-white border-l border-gray-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)] h-screen sticky top-0 flex flex-col transition-all font-sans hidden lg:flex">
-      
-      {/* 1. قسم اللوجو */}
-      <div className="p-8 text-center border-b border-gray-50 mb-4">
-        <h2 className="text-2xl font-black text-gray-900 tracking-wider">YOUR WAY</h2>
-        <p className="text-xs text-gray-400 mt-2 font-medium">مساحتك للتعلّم والتقدّم</p>
-      </div>
+    pathname === item.href || pathname.startsWith(`${item.href}/`)
+  );
+}
 
-      {/* 2. روابط التصفح */}
-      <div className="flex-1 px-4 space-y-1.5 overflow-y-auto">
-        {navItems.map((item) => {
-          // التحقق إذا كان الرابط هو الصفحة الحالية
-          const isActive = pathname === item.href || (pathname?.startsWith(item.href) && item.href !== '/');
-          const Icon = item.icon;
-          
-          return (
-            <Link 
-              key={item.name} 
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all ${
-                isActive 
-                  ? 'bg-emerald-50 text-emerald-800 font-bold' 
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-emerald-600 font-medium'
-              }`}
+export default function Sidebar({
+  role = null,
+  isAuthenticated = false,
+  isSuperAdmin = false,
+  permissions = null,
+  open = false,
+  onClose,
+}: SidebarProps) {
+  const pathname = usePathname();
+  const { language, t } = useLanguage();
+
+  const isAdmin = role === "admin";
+  const isTeacher = role === "teacher";
+  const isArabic = language === "ar";
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose?.();
+      }
+    };
+
+    const media = window.matchMedia("(min-width: 1024px)");
+
+    const onMediaChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        onClose?.();
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    document.addEventListener("keydown", onKey);
+    media.addEventListener("change", onMediaChange);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+      media.removeEventListener("change", onMediaChange);
+    };
+  }, [open, onClose]);
+
+  const text = t.sidebar;
+
+  const items: NavItem[] = isAdmin
+    ? [
+        {
+          href: "/admin",
+          label: text.dashboard,
+          icon: <DashboardIcon />,
+          exact: true,
+        },
+        {
+          href: "/admin/courses",
+          label: text.manageCourses,
+          icon: <BookIcon />,
+        },
+        {
+          href: "/admin/teachers",
+          label: text.teachers,
+          icon: <CapIcon />,
+        },
+        {
+          href: "/admin/orders",
+          label: text.payments,
+          icon: <ReceiptIcon />,
+        },
+        {
+          href: "/admin/coupons",
+          label: text.coupons,
+          icon: <ReceiptIcon />,
+        },
+        {
+          href: "/admin/announcements",
+          label: t.announcements.navLabel,
+          icon: <AnnouncementIcon />,
+        },
+        {
+          href: "/admin/messages",
+          label: text.messages,
+          icon: <MessageIcon />,
+        },
+        {
+          href: "/admin/assignments",
+          label: t.assignments.navLabel,
+          icon: <AssignmentIcon />,
+        },
+        {
+          href: "/admin/students",
+          label: text.students,
+          icon: <UsersIcon />,
+        },
+        {
+          href: "/profile",
+          label: text.profile,
+          icon: <UserIcon />,
+        },
+      ]
+    : isTeacher
+    ? [
+        {
+          href: "/teacher/courses",
+          label: text.teacherDashboard,
+          icon: <DashboardIcon />,
+        },
+        {
+          href: "/teacher/assignments",
+          label: t.assignments.navLabel,
+          icon: <AssignmentIcon />,
+        },
+        {
+          href: "/teacher/assignment-submissions",
+          label: t.assignmentGrading.navLabel,
+          icon: <AssignmentIcon />,
+        },
+        {
+          href: "/teacher/profile",
+          label: text.teacherProfile,
+          icon: <CapIcon />,
+        },
+              {
+                href: "/messages",
+                label: text.messages,
+                icon: <MessageIcon />,
+              },
+        {
+          href: "/profile",
+          label: text.profile,
+          icon: <UserIcon />,
+        },
+      ]
+    : [
+        {
+          href: "/",
+          label: text.home,
+          icon: <HomeIcon />,
+          exact: true,
+        },
+        {
+          href: "/courses",
+          label: text.courses,
+          icon: <BookIcon />,
+        },
+        ...(isAuthenticated
+          ? [
+              {
+                href: "/my-courses",
+                label: text.myCourses,
+                icon: <CapIcon />,
+              },
+              {
+                href: "/assignments",
+                label: t.assignments.navLabel,
+                icon: <AssignmentIcon />,
+              },
+              {
+                href: "/messages",
+                label: text.messages,
+                icon: <MessageIcon />,
+              },
+              {
+                href: "/profile",
+                label: text.profile,
+                icon: <UserIcon />,
+              },
+            ]
+          : []),
+      ];
+
+  const permissionByHref: Record<string, string> = {
+    "/admin/courses": "manage_courses",
+    "/admin/teachers": "manage_teachers",
+    "/admin/orders": "view_orders",
+    "/admin/coupons": "manage_coupons",
+    "/admin/announcements": "manage_announcements",
+    "/admin/assignments": "manage_assignments",
+    "/admin/students": "manage_students",
+  };
+
+  const visibleItems: NavItem[] = isAdmin
+    ? items.filter((item) => {
+        const needed = permissionByHref[item.href];
+        if (!needed || isSuperAdmin || permissions === null) return true;
+        return permissions.includes(needed);
+      })
+    : items;
+
+  if (isAdmin && isSuperAdmin) {
+    const at = visibleItems.findIndex((item) => item.href === "/profile");
+    visibleItems.splice(at === -1 ? visibleItems.length : at, 0, {
+      href: "/admin/staff",
+      label: t.staff.navLabel,
+      icon: <ShieldIcon />,
+    });
+  }
+
+  const hiddenTransform = isArabic
+    ? "translate-x-full"
+    : "-translate-x-full";
+
+  return (
+    <>
+      <div
+        onClick={onClose}
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 motion-reduce:transition-none lg:hidden ${
+          open
+            ? "opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}
+      />
+
+      <aside
+        id="app-sidebar"
+        dir={isArabic ? "rtl" : "ltr"}
+        className={`yw-sidebar fixed inset-y-0 start-0 z-50 w-72 max-w-[85vw] transition-[transform,visibility] duration-300 motion-reduce:transition-none lg:sticky lg:inset-auto lg:top-5 lg:z-auto lg:h-[calc(100vh-2rem)] lg:w-72 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:self-start lg:visible ${
+          open
+            ? "visible translate-x-0"
+            : `invisible ${hiddenTransform}`
+        }`}
+      >
+        <div
+          className="yw-sidebar-panel"
+          style={{
+            backgroundColor: "var(--brand-surface)",
+            borderColor: "var(--brand-border)",
+          }}
+        >
+          <div className="flex flex-col items-center justify-center gap-3 px-1 pb-6">
+            <div className="yw-sidebar-brand flex items-center gap-3">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                style={{ backgroundColor: "var(--brand-ink-soft)" }}
+              >
+                <Image
+                  src="/logo/logo-transparent.png"
+                  alt="Your Way"
+                  width={80}
+                  height={80}
+                  className="h-8 w-8 object-contain"
+                />
+              </div>
+
+              <span
+                className="text-lg font-bold tracking-tight"
+                style={{ color: "var(--brand-text)" }}
+              >
+                <span className="block text-base tracking-wider" dir="ltr">YOUR WAY</span><span className="block mt-1 text-[10px] font-normal text-[var(--brand-text-muted)]">{isArabic ? "مساحتك للتعلّم والتقدّم" : "Your space to learn and grow"}</span>
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={text.close}
+              className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors lg:hidden"
+              style={{ color: "var(--brand-text-faint)" }}
             >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-gray-400'}`} />
-              <span>{item.name}</span>
-            </Link>
-          );
-        })}
-      </div>
+              <CloseIcon />
+            </button>
+          </div>
 
-      {/* 3. الفوتر (الإعدادات أو تلميح بسيط) */}
-      <div className="p-6 mt-auto border-t border-gray-50 bg-gray-50/50">
-        <div className="flex items-center justify-between text-gray-400 hover:text-emerald-600 cursor-pointer transition-colors">
-          <span className="text-xs font-medium">خطوتك القادمة تبدأ من هنا.</span>
-          <Settings className="w-4 h-4 hover:animate-spin" />
+          <div
+            className="mb-2 h-px"
+            style={{ backgroundColor: "var(--brand-border-soft)" }}
+          />
+
+          <nav
+            aria-label={text.menu}
+            className="yw-sidebar-nav"
+          >
+            {visibleItems.map((item) => {
+              const active = isActive(pathname, item);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  prefetch={false}
+                  onClick={onClose}
+                  aria-current={active ? "page" : undefined}
+                  className="yw-sidebar-link"
+                  style={{
+                    backgroundColor: active
+                      ? "var(--brand-ink-soft)"
+                      : "transparent",
+                    color: active
+                      ? "var(--brand-ink)"
+                      : "var(--brand-text-muted)",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: active
+                        ? "var(--brand-ink)"
+                        : "var(--brand-text-faint)",
+                    }}
+                  >
+                    {item.icon}
+                  </span>
+
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="yw-sidebar-footer"><span>YOUR WAY</span><p>{isArabic ? "خطوتك القادمة تبدأ من هنا." : "Your next step starts here."}</p></div>
         </div>
-      </div>
+      </aside>
+    </>
+  );
+}
 
-    </aside>
+function ShieldIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M12 3l8 3v6c0 4.5-3.2 8.3-8 9-4.8-.7-8-4.5-8-9V6l8-3z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  );
+}
+
+
+function AnnouncementIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M4 13V9a2 2 0 0 1 2-2h3l7-3v14l-7-3H6a2 2 0 0 1-2-2z" />
+      <path d="M9 15l1.5 5H7l-1.2-5" />
+      <path d="M19 8a4 4 0 0 1 0 6" />
+    </svg>
+  );
+}
+
+
+function AssignmentIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2z" />
+      <path d="M9 2h6v4H9z" />
+      <path d="M8 10h8M8 14h5" />
+      <path d="M15 17l1.5 1.5L20 15" />
+    </svg>
   );
 }

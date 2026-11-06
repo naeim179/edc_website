@@ -1,56 +1,375 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Search, LogOut, SlidersHorizontal } from 'lucide-react';
+import Link from "next/link";
+import Image from "next/image";
+import { useState, type FormEvent, useEffect, useId, useRef } from "react";
+import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
+import { signOut } from "@/app/actions/auth";
+import DisplaySettings from "@/components/DisplaySettings";
+import { useLanguage } from "@/components/LanguageProvider";
+import {
+  LogoutIcon,
+  MenuIcon,
+  SearchIcon,
+} from "@/components/icons";
 
-export default function Topbar() {
-  // افتراض بيانات المستخدم بناءً على الصورة
-  const user = { name: 'naim', role: 'طالب', initial: 'N' };
+type TopbarProps = {
+  isAuthenticated: boolean;
+  userName: string;
+  role: string | null;
+  avatarUrl: string | null;
+  /** يفتح القائمة الجانبية على الجوال */
+  onMenuClick?: () => void;
+};
+
+export default function Topbar({
+  isAuthenticated,
+  userName,
+  role,
+  avatarUrl,
+  onMenuClick,
+}: TopbarProps) {
+  const router = useRouter();
+  const { language, t } = useLanguage();
+
+  const [query, setQuery] = useState("");
+
+  const isArabic = language === "ar";
+
+  const roleLabel =
+    role === "admin"
+      ? t.topbar.admin
+      : role === "student"
+      ? t.topbar.student
+      : role === "teacher"
+      ? isArabic
+        ? "مدرس"
+        : "Teacher"
+      : t.topbar.user;
+
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
+      router.push("/courses");
+      return;
+    }
+
+    router.push(
+      `/courses?q=${encodeURIComponent(trimmedQuery)}`
+    );
+  }
 
   return (
-    // الشريط العلوي بخلفية بيضاء وخط سفلي ناعم
-    <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-10 font-sans shadow-[0_4px_24px_rgba(0,0,0,0.01)]">
-      
-      {/* 1. شريط البحث (على اليمين في واجهة RTL) */}
-      <div className="flex-1 max-w-xl">
-        <div className="relative group">
-          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400 group-focus-within:text-emerald-600 transition-colors">
-            <Search className="w-5 h-5" />
-          </div>
-          <input 
-            type="text" 
-            placeholder="ابحث عن دورة أو تصنيف أو مدرب..." 
-            className="w-full bg-slate-50 border border-gray-100 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded-xl pr-12 pl-4 py-2.5 text-sm text-gray-700 outline-none transition-all placeholder-gray-400"
+    <header
+      className="yw-topbar flex w-full flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3"
+      style={{
+        backgroundColor: "var(--brand-surface)",
+        borderColor: "var(--brand-border)",
+      }}
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      <div className="flex shrink-0 items-center gap-3 lg:hidden">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label={isArabic ? "فتح القائمة" : "Open menu"}
+          aria-controls="app-sidebar"
+          className="
+            flex
+            h-11
+            w-11
+            items-center
+            justify-center
+            rounded-lg
+            border
+            transition-all
+
+          "
+          style={{
+            borderColor: "var(--brand-border)",
+            color: "var(--brand-text-muted)",
+          }}
+        >
+          <MenuIcon />
+        </button>
+
+        <Link
+          href="/"
+          aria-label="Your Way"
+          className="rounded-lg border p-1.5"
+          style={{ borderColor: "var(--brand-border)" }}
+        >
+          <Image
+            src="/logo/logo-transparent.png"
+            alt="Your Way"
+            width={160}
+            height={160}
+            className="h-6 w-auto object-contain"
           />
-        </div>
+        </Link>
       </div>
 
-      {/* 2. أدوات المستخدم (على اليسار في واجهة RTL) */}
-      <div className="flex items-center gap-4">
-        
-        {/* زر الفلاتر / الإعدادات */}
-        <button className="p-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-all shadow-sm">
-          <SlidersHorizontal className="w-5 h-5" />
-        </button>
+      <form
+        onSubmit={handleSearch}
+        role="search"
+        className="order-last w-full sm:order-none sm:w-auto sm:max-w-md sm:flex-1"
+      >
+        <div className="relative">
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t.topbar.search}
+            aria-label={t.topbar.search}
+            className="
+              h-11
+              w-full
+              rounded-lg
+              border
+              pe-4
+              ps-11
+              text-sm
+              outline-none
+              transition
+              focus:ring-4
+            "
+            style={{
+              borderColor: "var(--brand-border)",
+              backgroundColor: "var(--brand-bg)",
+              color: "var(--brand-text)",
+            }}
+          />
 
-        {/* بطاقة معلومات المستخدم (الملف الشخصي) */}
-        <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-1 pr-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-          <div className="text-left">
-            <p className="text-sm font-bold text-gray-800 leading-none">{user.name}</p>
-            <p className="text-[11px] text-gray-500 mt-1 font-medium">{user.role}</p>
-          </div>
-          <div className="w-9 h-9 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-            {user.initial}
-          </div>
+          <button
+            type="submit"
+            aria-label={isArabic ? "بحث" : "Search"}
+            className="absolute start-3.5 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: "var(--brand-text-faint)" }}
+          >
+            <SearchIcon width={18} height={18} />
+          </button>
         </div>
+      </form>
 
-        {/* زر تسجيل الخروج */}
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all text-sm font-bold shadow-sm group">
-          <span className="group-hover:-translate-x-0.5 transition-transform">تسجيل الخروج</span>
-          <LogOut className="w-4 h-4" />
-        </button>
-        
+      <div className="ms-auto flex shrink-0 items-center gap-2 sm:gap-3">
+        {isAuthenticated ? (
+          <>
+            <Link
+              href="/profile"
+              className="
+                flex
+                items-center
+                gap-3
+                rounded-lg
+                border
+                py-1.5
+                pe-1.5
+                ps-1.5
+                transition-all
+
+                sm:pe-4
+              "
+              style={{ borderColor: "var(--brand-border)" }}
+            >
+              <span
+                className="flex h-9 w-9 overflow-hidden items-center justify-center rounded-lg text-sm font-bold text-[var(--brand-on-ink)]"
+                style={{ backgroundColor: "var(--brand-ink)" }}
+              >
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    unoptimized
+                    alt=""
+                    width={36}
+                    height={36}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  userName.charAt(0).toUpperCase()
+                )}
+              </span>
+
+              <span className="hidden min-w-0 flex-col text-start leading-tight sm:flex">
+                <span
+                  className="max-w-[9rem] truncate text-sm font-bold"
+                  style={{ color: "var(--brand-text)" }}
+                >
+                  {userName}
+                </span>
+
+                <span
+                  className="text-xs"
+                  style={{ color: "var(--brand-text-faint)" }}
+                >
+                  {roleLabel}
+                </span>
+              </span>
+            </Link>
+
+            <form action={signOut}>
+              <LogoutConfirmation
+                isArabic={isArabic}
+                label={t.topbar.logout}
+              />
+            </form>
+          </>
+        ) : (
+          <Link
+            href="/login"
+            className="flex h-11 items-center rounded-lg px-5 text-sm font-bold text-[var(--brand-on-ink)] transition-colors"
+            style={{ backgroundColor: "var(--brand-ink)" }}
+          >
+            {t.topbar.login}
+          </Link>
+        )}
+
+        <DisplaySettings />
       </div>
     </header>
+  );
+}
+
+function LogoutConfirmation({
+  isArabic,
+  label,
+}: {
+  isArabic: boolean;
+  label: string;
+}) {
+  const { pending } = useFormStatus();
+  const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const previousOverflow = document.body.style.overflow;
+
+    if (!dialog.open) dialog.showModal();
+    document.body.style.overflow = "hidden";
+    cancelRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (dialog.open) dialog.close();
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        disabled={pending}
+        aria-label={label}
+        aria-haspopup="dialog"
+        className="flex h-11 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-all  disabled:cursor-wait disabled:opacity-60 sm:px-4"
+        style={{
+          borderColor: "var(--brand-border)",
+          color: "var(--brand-text-muted)",
+        }}
+      >
+        <LogoutIcon width={18} height={18} />
+        <span className="hidden sm:inline">{label}</span>
+      </button>
+
+      <dialog
+        ref={dialogRef}
+        dir={isArabic ? "rtl" : "ltr"}
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        aria-busy={pending}
+        onClose={(event) => {
+          if (!event.currentTarget.open) setOpen(false);
+        }}
+        onCancel={(event) => {
+          if (pending) event.preventDefault();
+        }}
+        onClick={(event) => {
+          if (pending || event.target !== event.currentTarget) return;
+
+          const rect = event.currentTarget.getBoundingClientRect();
+          const outside =
+            event.clientX < rect.left ||
+            event.clientX > rect.right ||
+            event.clientY < rect.top ||
+            event.clientY > rect.bottom;
+
+          if (outside) setOpen(false);
+        }}
+        className="m-auto w-[calc(100%_-_2rem)] max-w-sm rounded-3xl border p-6 text-start shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+        style={{
+          backgroundColor: "var(--brand-surface)",
+          borderColor: "var(--brand-border)",
+          color: "var(--brand-text)",
+        }}
+      >
+        <div
+          className="mb-5 flex h-14 w-14 items-center justify-center rounded-lg"
+          style={{
+            backgroundColor: "var(--brand-ink-soft)",
+            color: "var(--brand-ink)",
+          }}
+        >
+          <LogoutIcon width={26} height={26} />
+        </div>
+
+        <h2 id={titleId} className="text-xl font-bold">
+          {isArabic ? "تسجيل الخروج؟" : "Sign out?"}
+        </h2>
+
+        <p
+          id={descriptionId}
+          className="mt-3 text-sm leading-7"
+          style={{ color: "var(--brand-text-muted)" }}
+        >
+          {isArabic
+            ? "هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟"
+            : "Are you sure you want to sign out of your account?"}
+        </p>
+
+        <div className="mt-7 flex gap-3">
+          <button
+            ref={cancelRef}
+            type="button"
+            disabled={pending}
+            onClick={() => setOpen(false)}
+            className="flex min-h-11 flex-1 items-center justify-center rounded-lg border px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-50"
+            style={{
+              backgroundColor: "var(--brand-bg)",
+              borderColor: "var(--brand-border)",
+              color: "var(--brand-text)",
+            }}
+          >
+            {isArabic ? "إلغاء" : "Cancel"}
+          </button>
+
+          <button
+            type="submit"
+            disabled={pending}
+            className="flex min-h-11 flex-1 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-[var(--brand-on-ink)] transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+            style={{ backgroundColor: "var(--hero-start)" }}
+          >
+            <span aria-live="polite">
+              {pending
+                ? isArabic
+                  ? "جارٍ تسجيل الخروج..."
+                  : "Signing out..."
+                : label}
+            </span>
+          </button>
+        </div>
+      </dialog>
+    </>
   );
 }
