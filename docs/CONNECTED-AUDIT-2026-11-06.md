@@ -34,6 +34,14 @@ customer records, payments, secrets or deployed code were modified in this audit
 
 ## Outstanding operational and performance items
 
+- Dependency audit initially found 8 production findings, including critical/high
+  advisories. The lockfile was updated, direct package versions were pinned, and
+  scoped overrides select patched fflate 0.7.5 and the lint parser's minimatch
+  11.0.1. Full `npm audit` then returned zero findings, including development
+  dependencies. Next.js is 16.4.5, vinext 1.4.4, React 19.3.1 and Vite 8.3.6.
+  These upgrades are validated with both build paths; future advisories can change
+  the audit result. CI now checks for high/critical dependency advisories.
+
 - Supabase reports leaked-password protection disabled. Enable it in the project's
   Auth password/security settings if supported by the account plan, then test
   signup and password changes. No connector configuration tool was available to
