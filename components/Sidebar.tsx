@@ -281,9 +281,9 @@ export default function Sidebar({
           }}
         >
           <div className="flex flex-col items-center justify-center gap-3 px-1 pb-6">
-            <div className="flex flex-col items-center gap-3">
+            <div className="yw-sidebar-brand flex items-center gap-3">
               <div
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
                 style={{ backgroundColor: "var(--brand-ink-soft)" }}
               >
                 <Image
@@ -291,7 +291,7 @@ export default function Sidebar({
                   alt="Your Way"
                   width={80}
                   height={80}
-                  className="h-10 w-10 object-contain"
+                  className="h-8 w-8 object-contain"
                 />
               </div>
 
@@ -299,7 +299,7 @@ export default function Sidebar({
                 className="text-lg font-bold tracking-tight"
                 style={{ color: "var(--brand-text)" }}
               >
-                {text.platform}
+                <span className="block text-base tracking-wider" dir="ltr">YOUR WAY</span><span className="block mt-1 text-[10px] font-normal text-[var(--brand-text-muted)]">{isArabic ? "مساحتك للتعلّم والتقدّم" : "Your space to learn and grow"}</span>
               </span>
             </div>
 
@@ -358,6 +358,7 @@ export default function Sidebar({
               );
             })}
           </nav>
+          <div className="yw-sidebar-footer"><span>YOUR WAY</span><p>{isArabic ? "خطوتك القادمة تبدأ من هنا." : "Your next step starts here."}</p></div>
         </div>
       </aside>
     </>

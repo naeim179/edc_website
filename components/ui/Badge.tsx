@@ -40,7 +40,7 @@ export default function Badge({
       className={`
         inline-flex
         items-center
-        rounded-full
+        rounded-md
         px-3
         py-1
         text-xs

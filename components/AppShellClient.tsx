@@ -9,6 +9,7 @@ import {
 
 import { useLanguage } from "@/components/LanguageProvider";
 import Sidebar from "@/components/Sidebar";
+import MobileNavigation from "@/components/MobileNavigation";
 import Topbar from "@/components/Topbar";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { createClient } from "@/lib/supabase/client";
@@ -173,7 +174,7 @@ export default function AppShellClient({
   return (
     <div
       dir={isArabic ? "rtl":"ltr"}
-      className="yw-shell"
+      className={`yw-shell ${role !== "admin" && role !== "teacher" ? "yw-student-shell" : ""}`}
     >
 
       <Sidebar
@@ -216,6 +217,7 @@ export default function AppShellClient({
 
 
       </main>
+      {role !== "admin" && role !== "teacher" && <MobileNavigation isAuthenticated={isAuthenticated} />}
 
     </div>
   );

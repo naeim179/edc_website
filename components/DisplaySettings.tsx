@@ -118,7 +118,7 @@ export default function DisplaySettings() {
 
   const segment = (active: boolean) =>
     `flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-      active ? "text-white" : "hover:opacity-80"
+      active ? "text-[var(--brand-on-ink)]" : "hover:opacity-80"
     }`;
 
   return (
