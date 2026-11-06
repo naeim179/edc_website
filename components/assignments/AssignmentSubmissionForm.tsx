@@ -622,6 +622,8 @@ export default function AssignmentSubmissionForm({
           }
         };
 
+      const recordingStartedAt = Date.now();
+
       recorder.onstop =
         () => {
           const mime =
@@ -672,7 +674,7 @@ export default function AssignmentSubmissionForm({
           );
 
           setAudioDuration(
-            recordingSeconds
+            Math.max(1, Math.round((Date.now() - recordingStartedAt) / 1000))
           );
         };
 
@@ -1131,6 +1133,11 @@ export default function AssignmentSubmissionForm({
       uploaded =
         built.uploadedPaths;
 
+      // Resolve previews before committing; keep uploaded attachments in local
+      // state so a following resubmission preserves them without a page reload.
+      const nextFiles = await Promise.all(built.content.files.map(addSignedUrl));
+      const nextAudio = await Promise.all(built.content.audio.map(addSignedUrl));
+
       const result =
         await submitAssignment(
           assignment.id,
@@ -1146,6 +1153,10 @@ export default function AssignmentSubmissionForm({
       setRecordedAudio(
         null
       );
+
+      setStoredFiles(nextFiles);
+      setStoredAudio(nextAudio);
+      setAudioDuration(0);
 
       setCurrentStatus(
         result.status
