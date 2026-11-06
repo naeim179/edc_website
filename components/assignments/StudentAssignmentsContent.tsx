@@ -92,7 +92,7 @@ export default function StudentAssignmentsContent({
       }
       className="mx-auto w-full max-w-6xl space-y-6"
     >
-      <section className="rounded-[30px] bg-gradient-to-l from-[#123F39] via-[#1B4B43] to-[#28665B] p-7 text-white">
+      <section className="yw-page-banner yw-banner-clay rounded-[30px] bg-gradient-to-l from-[#123F39] via-[#1B4B43] to-[#28665B] p-7 text-white">
         <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold">
           {
             copy.studentCenter

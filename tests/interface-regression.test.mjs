@@ -17,6 +17,8 @@ function dashboard(props) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   const mocks = {
+    "next/image": { default: () => element("span") },
+    "@/components/DisplaySettings": { default: () => element("button", {}, "Display settings") },
     "next/link": { default: ({ children, href, ...rest }) => element("a", { href, ...rest }, children) },
     "@/components/LanguageProvider": { useLanguage: () => ({ language: "ar", t: { home: {} } }) },
     "@/components/icons": icons,

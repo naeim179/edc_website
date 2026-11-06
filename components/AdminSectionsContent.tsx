@@ -37,7 +37,7 @@ export default function AdminSectionsContent({
       dir={isArabic ? "rtl" : "ltr"}
     >
 
-      <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8 shadow-sm">
+      <section className="yw-page-banner yw-banner-blue bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8 shadow-sm">
 
         <Link
           href={`/admin/courses/${courseId}/edit`}

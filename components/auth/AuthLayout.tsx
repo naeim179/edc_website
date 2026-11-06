@@ -15,7 +15,7 @@ export default function AuthLayout({
 }: AuthLayoutProps) {
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4"
+      className="yw-auth-page min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4"
       dir="rtl"
     >
       <div className="w-full max-w-md p-4 sm:p-8">
