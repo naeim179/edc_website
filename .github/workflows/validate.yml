@@ -1,0 +1,29 @@
+name: Validate platform
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, 'fix/**']
+permissions:
+  contents: read
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm test
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build -- --webpack
+      - run: npm run build:vinext
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tests/run-db-tests.sh

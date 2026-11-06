@@ -1,5 +1,7 @@
 "use server";
 
+import { getImageObjectPath } from "@/lib/storage-images";
+
 import {
   revalidatePath,
 } from "next/cache";
@@ -228,17 +230,18 @@ export async function deleteTeacherAvatar(
       ?.image_url;
 
   if (imageUrl) {
-    const path =
-      imageUrl.split(
-        "/images/"
-      )[1];
+    const path = getImageObjectPath(imageUrl, process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
 
     if (path) {
-      await admin.storage
+      // Use the caller's storage RLS: a teacher may delete only their own
+      // uploads. The service role would bypass that ownership check.
+      const caller = await createClient();
+      const { error: deleteError } = await caller.storage
         .from("images")
         .remove([
           path,
         ]);
+      if (deleteError) throw new Error("تعذر حذف الصورة");
     }
   }
 

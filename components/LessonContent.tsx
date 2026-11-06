@@ -135,6 +135,7 @@ export default function LessonContent({
               </div>
             ) : (
               <LessonVideoPlayer
+                lessonId={lesson.id}
                 provider={lesson.video_provider}
                 youtubeVideoId={lesson.youtube_video_id}
                 muxPlaybackId={lesson.mux_playback_id}
