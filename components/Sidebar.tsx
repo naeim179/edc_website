@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import {
 usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
@@ -281,27 +280,10 @@ export default function Sidebar({
           }}
         >
           <div className="flex flex-col items-center justify-center gap-3 px-1 pb-6">
-            <div className="yw-sidebar-brand flex items-center gap-3">
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
-                style={{ backgroundColor: "var(--brand-ink-soft)" }}
-              >
-                <Image
-                  src="/logo/logo-transparent.png"
-                  alt="Your Way"
-                  width={80}
-                  height={80}
-                  className="h-8 w-8 object-contain"
-                />
-              </div>
-
-              <span
-                className="text-lg font-bold tracking-tight"
-                style={{ color: "var(--brand-text)" }}
-              >
-                <span className="block text-base tracking-wider" dir="ltr">YOUR WAY</span><span className="block mt-1 text-[10px] font-normal text-[var(--brand-text-muted)]">{isArabic ? "مساحتك للتعلّم والتقدّم" : "Your space to learn and grow"}</span>
-              </span>
-            </div>
+            <Link href="/" onClick={onClose} className="yw-sidebar-brand" aria-label="Your Way">
+              <span className="yw-sidebar-wordmark" dir="ltr">YOUR WAY</span>
+              <span className="yw-sidebar-tagline">{isArabic ? "مساحتك للتعلّم والتقدّم" : "Your space to learn and grow"}</span>
+            </Link>
 
             <button
               type="button"
@@ -358,7 +340,7 @@ export default function Sidebar({
               );
             })}
           </nav>
-          <div className="yw-sidebar-footer"><span>YOUR WAY</span><p>{isArabic ? "خطوتك القادمة تبدأ من هنا." : "Your next step starts here."}</p></div>
+          <div className="yw-sidebar-footer"><p>{isArabic ? "خطوتك القادمة تبدأ من هنا." : "Your next step starts here."}</p></div>
         </div>
       </aside>
     </>

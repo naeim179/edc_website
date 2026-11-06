@@ -1283,3 +1283,484 @@ input:focus, textarea:focus, select:focus {
     max-width: 100%;
   }
 }
+
+/* The owner's interface, connected to the existing account and course data. */
+html:not([data-theme="dark"]):not([data-theme="eye"]) .yw-personal-ui {
+  --brand-bg: #f8fafc;
+  --brand-border: #e5e7eb;
+  --brand-border-soft: #f3f4f6;
+  --brand-text: #111827;
+  --brand-text-muted: #6b7280;
+  --brand-text-faint: #6b7280;
+  --brand-ink: #065f46;
+  --brand-ink-hover: #064e3b;
+  --brand-ink-soft: #ecfdf5;
+}
+
+.yw-personal-ui .yw-content {
+  padding: 40px;
+  background: var(--brand-bg);
+}
+
+.yw-personal-ui .yw-home {
+  max-width: 1400px;
+}
+
+.yw-personal-ui .yw-page-heading {
+  margin-bottom: 40px;
+}
+
+.yw-personal-ui .yw-page-heading > .yw-text-link {
+  display: none;
+}
+
+.yw-personal-ui .yw-page-heading .yw-eyebrow {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.yw-personal-ui .yw-page-heading h1 {
+  margin-block: 0 12px;
+  font-size: clamp(28px, 2.7vw, 36px);
+  line-height: 1.5;
+  font-weight: 800;
+}
+
+.yw-personal-ui .yw-page-heading .yw-muted {
+  font-size: 17px;
+}
+
+.yw-personal-ui .yw-dashboard-grid {
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 32px;
+}
+
+.yw-personal-ui .yw-guest-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.yw-personal-ui .yw-dashboard-main {
+  gap: 32px;
+}
+
+.yw-personal-ui .yw-continue,
+.yw-personal-ui .yw-learning-panel,
+.yw-personal-ui .yw-rail-panel,
+.yw-personal-ui .yw-welcome-panel {
+  display: block;
+  padding: 24px;
+  border: 1px solid var(--brand-border-soft);
+  border-radius: 16px;
+  background: var(--brand-surface);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.04);
+}
+
+.yw-personal-ui .yw-continue-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 24px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.yw-personal-ui .yw-live-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+}
+
+.yw-personal-ui .yw-continue-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: 24px;
+}
+
+.yw-personal-ui .yw-continue-copy {
+  padding: 0;
+}
+
+.yw-personal-ui .yw-continue-copy h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.yw-personal-ui .yw-continue-copy > .yw-muted {
+  font-size: 14px;
+}
+
+.yw-personal-ui .yw-continue-cover {
+  min-height: 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--brand-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.yw-personal-ui .yw-continue-progress {
+  margin-top: 24px;
+  font-size: 13px;
+}
+
+.yw-personal-ui .yw-primary-link {
+  display: flex;
+  width: fit-content;
+  margin-inline-start: auto;
+  padding: 10px 24px;
+  min-height: 44px;
+  margin-top: 20px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.yw-personal-ui .yw-section-heading {
+  margin-bottom: 24px;
+}
+
+.yw-personal-ui .yw-section-heading h2,
+.yw-personal-ui .yw-rail-panel h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.yw-personal-ui .yw-text-link {
+  font-size: 13px;
+}
+
+.yw-personal-ui .yw-enrolled-card,
+.yw-personal-ui .yw-catalog-card,
+.yw-personal-ui .yw-personal-course {
+  border-radius: 16px;
+  border-color: var(--brand-border-soft);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.04);
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+.yw-personal-ui .yw-enrolled-card:hover,
+.yw-personal-ui .yw-catalog-card:hover,
+.yw-personal-ui .yw-personal-course:hover {
+  border-color: var(--brand-border);
+  box-shadow: 0 10px 25px rgb(0 0 0 / 0.06);
+}
+
+.yw-personal-ui .yw-enrolled-cover {
+  height: auto;
+  aspect-ratio: 4 / 3;
+  border-bottom: 1px solid var(--brand-border-soft);
+}
+
+.yw-personal-ui .yw-course-cover {
+  background-color: var(--brand-bg) !important;
+  color: var(--brand-ink) !important;
+}
+
+.yw-personal-ui .yw-course-cover > svg {
+  opacity: .3;
+  width: 48px;
+  height: 48px;
+}
+
+.yw-personal-ui .yw-cover-lines,
+.yw-personal-ui .yw-cover-brand {
+  display: none;
+}
+
+.yw-personal-ui .yw-continue-cover .yw-course-cover {
+  background-color: var(--brand-warning-bg) !important;
+  color: var(--brand-warning) !important;
+}
+
+.yw-personal-ui .yw-enrolled-body {
+  padding: 20px 20px 0;
+}
+
+.yw-personal-ui .yw-enrolled-body h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.yw-personal-ui .yw-card-action {
+  font-size: 14px;
+  margin-top: 18px;
+  padding-block: 16px;
+}
+
+.yw-personal-ui .yw-catalog-card > a {
+  aspect-ratio: 4 / 3;
+}
+
+.yw-personal-ui .yw-catalog-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.yw-personal-ui .yw-dashboard-rail {
+  gap: 24px;
+}
+
+.yw-personal-ui .yw-rail-panel:first-child {
+  text-align: center;
+}
+
+.yw-personal-ui .yw-rail-panel:first-child > .yw-eyebrow {
+  display: block;
+  font-size: 13px;
+}
+
+.yw-personal-ui .yw-progress-summary {
+  margin-block: 28px 0;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--brand-border-soft);
+}
+
+.yw-personal-ui .yw-progress-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 144px;
+  height: 144px;
+  margin: 0 auto 24px;
+  border: 6px solid color-mix(in srgb, var(--brand-ink) 15%, var(--brand-surface));
+  border-radius: 50%;
+  background: var(--brand-ink-soft);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.04);
+}
+
+.yw-personal-ui .yw-progress-ring > span {
+  font-size: 48px;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--brand-ink);
+}
+
+.yw-personal-ui .yw-progress-ring small {
+  font-size: 24px;
+}
+
+.yw-personal-ui .yw-progress-summary p {
+  font-size: 13px;
+}
+
+.yw-personal-ui .yw-stat-list {
+  margin-top: 4px;
+  text-align: start;
+}
+
+.yw-personal-ui .yw-stat-list > div {
+  border: 0;
+  gap: 12px;
+  padding-block: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--brand-text);
+}
+
+.yw-personal-ui .yw-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--brand-bg);
+  color: var(--brand-text-muted);
+}
+
+.yw-personal-ui .yw-stat-list strong {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.yw-personal-ui .yw-study-note {
+  display: none;
+}
+
+.yw-personal-ui .yw-welcome-panel .yw-learning-art {
+  display: none;
+}
+
+.yw-personal-ui .yw-topbar {
+  min-height: 80px;
+  padding: 16px 24px;
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.01);
+}
+
+.yw-personal-ui .yw-topbar form[role="search"] {
+  max-width: 576px;
+}
+
+.yw-personal-ui .yw-topbar input,
+.yw-personal-ui .yw-topbar-tools > a,
+.yw-personal-ui .yw-topbar-tools button {
+  border-radius: 12px;
+}
+
+.yw-personal-ui .yw-topbar-tools {
+  gap: 16px;
+}
+
+.yw-personal-ui .yw-topbar-tools > div:last-child {
+  order: -1;
+}
+
+.yw-personal-ui .yw-topbar-tools > .yw-account-link {
+  flex-direction: row-reverse;
+  padding-inline: 12px 4px;
+}
+
+.yw-personal-ui .yw-topbar-tools > div:last-child > button {
+  color: var(--brand-text-muted) !important;
+  background: var(--brand-surface) !important;
+}
+
+.yw-personal-ui .yw-sidebar {
+  width: 256px;
+}
+
+.yw-personal-ui .yw-sidebar-panel {
+  padding: 0;
+  box-shadow: 4px 0 24px rgb(0 0 0 / 0.02);
+}
+
+.yw-personal-ui .yw-sidebar-panel > div:first-child {
+  padding: 32px 24px;
+  min-height: 130px;
+  border-bottom: 1px solid var(--brand-border-soft);
+  align-items: center;
+}
+
+.yw-personal-ui .yw-sidebar-panel > div:first-child > button {
+  top: 6px;
+  inset-inline-end: 6px;
+}
+
+.yw-personal-ui .yw-sidebar-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.yw-personal-ui .yw-sidebar-wordmark {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.4;
+  letter-spacing: 1px;
+}
+
+.yw-personal-ui .yw-sidebar-tagline {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--brand-text-muted);
+}
+
+.yw-personal-ui .yw-sidebar-panel > .h-px {
+  display: none;
+}
+
+.yw-personal-ui .yw-sidebar-nav {
+  padding: 0 16px;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.yw-personal-ui .yw-sidebar-link {
+  min-height: 52px;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.yw-personal-ui .yw-sidebar-link[aria-current="page"] {
+  box-shadow: none;
+  font-weight: 700;
+}
+
+.yw-personal-ui .yw-sidebar-footer {
+  border-top: 1px solid var(--brand-border-soft);
+  padding: 24px;
+  background: var(--brand-bg);
+}
+
+@media (max-width: 1279px) {
+  .yw-personal-ui .yw-content {
+    padding: 32px 24px;
+  }
+
+  .yw-personal-ui .yw-dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .yw-personal-ui .yw-continue-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+}
+
+@media (max-width: 1023px) {
+  .yw-personal-ui.yw-student-shell .yw-content {
+    padding-bottom: 100px;
+  }
+}
+
+@media (max-width: 639px) {
+  .yw-personal-ui .yw-content {
+    padding: 24px;
+  }
+
+  .yw-personal-ui .yw-page-heading {
+    margin-bottom: 32px;
+  }
+
+  .yw-personal-ui .yw-page-heading .yw-muted {
+    font-size: 14px;
+  }
+
+  .yw-personal-ui .yw-continue-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .yw-personal-ui .yw-continue-cover {
+    height: auto;
+    grid-row: auto;
+  }
+
+  .yw-personal-ui .yw-topbar {
+    padding: 12px 16px;
+  }
+
+  .yw-personal-ui .yw-topbar-tools {
+    gap: 8px;
+  }
+
+  .yw-personal-ui .yw-topbar-tools > .yw-account-link {
+    padding: 4px;
+  }
+}
+
+.yw-personal-ui .yw-personal-course-action {
+  justify-content: space-between;
+  border-radius: 0;
+  border-top: 1px solid var(--brand-border-soft);
+  background: transparent;
+  color: var(--brand-ink);
+  padding-inline: 0;
+}
+
+.yw-personal-ui .yw-personal-course-action:hover {
+  color: var(--brand-ink-hover);
+  background: transparent;
+}
+
+@media (max-width: 1023px) {
+  .yw-personal-ui .yw-topbar-tools > div [role="dialog"] {
+    position: fixed;
+    inset-inline: 16px auto;
+    top: 64px;
+    width: min(288px, calc(100vw - 32px));
+    max-height: calc(100dvh - 160px);
+  }
+}
