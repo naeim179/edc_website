@@ -18,7 +18,7 @@
 3. ملفات هذه الحزمة الجديدة:
    - `20260921165900_restore_lesson_metadata_view.sql`: متطلبات تاريخية ناقصة؛
      لا يعيد تعريف view موجود.
-   - `20261106130000_protect_lesson_content.sql`: كتالوج آمن وعداد وحماية قراءة المحتوى.
+   - `20261106153555_protect_lesson_content.sql`: كتالوج آمن وعداد وحماية قراءة المحتوى.
    - `20261106152644_track_bunny_video_ownership.sql`: ملكية أهداف رفع Bunny.
    - `20261106152652_complete_username_schema.sql`: أسماء المستخدمين ودوالها.
 4. إذا كان عمود `profiles.username` موجودًا، افحص التعارضات قبل التطبيق:
@@ -137,9 +137,9 @@
 
 The compatible lesson-count RPC, Bunny ownership table and username repair were
 applied before the application rollout. Their filenames match the actual MCP
-migration-history versions. The content-catalog/RLS migration is finalized after
-the new application is serving, so the previous lesson page keeps working during
-the Cloudflare build.
+migration-history versions. The content-catalog/RLS migration was finalized as version 20261106153555 after
+the new application was serving, so the previous lesson page remained compatible
+during the Cloudflare build.
 
 Original source and pre-rollout function/policy definitions are retained on
 `backup/before-security-2026-11-06` at commit
