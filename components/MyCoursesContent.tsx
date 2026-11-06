@@ -204,7 +204,7 @@ export default function MyCoursesContent({
           : "ltr"
       }
     >
-      <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-6 text-white shadow-lg sm:p-8">
+      <section className="yw-page-banner yw-banner-forest relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#1B4B43] to-[#0F332D] p-6 text-white shadow-lg sm:p-8">
         <div className="relative">
           <h1 className="text-2xl font-bold sm:text-3xl">
             {isArabic

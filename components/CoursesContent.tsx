@@ -82,7 +82,7 @@ export default function CoursesContent({
       className="mx-auto w-full max-w-6xl space-y-6"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      <section className="
+      <section className="yw-page-banner yw-banner-forest
         rounded-3xl
         bg-gradient-to-l
         from-[#1B4B43]

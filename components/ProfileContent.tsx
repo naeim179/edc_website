@@ -93,7 +93,7 @@ export default function ProfileContent({
       dir={isArabic ? "rtl" : "ltr"}
     >
       {/* User Header */}
-      <section className="border-b border-slate-100 p-5 sm:p-8 md:p-10">
+      <section className="yw-profile-banner border-b border-slate-100 p-5 sm:p-8 md:p-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-5">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#124b8a]/10 text-3xl font-bold text-[#124b8a] md:h-24 md:w-24 md:text-4xl">

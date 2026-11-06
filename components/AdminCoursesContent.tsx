@@ -243,7 +243,7 @@ export default function AdminCoursesContent({
       </div>
 
 
-      <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8 shadow-sm">
+      <section className="yw-page-banner yw-banner-blue bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8 shadow-sm">
 
         <div className="flex items-center justify-between gap-4">
 

@@ -48,7 +48,7 @@ export default async function RootLayout({
         />
       </head>
 
-      <body>
+      <body className="yw-design-system">
         <LanguageProvider initialLanguage={language}>
           {children}
         </LanguageProvider>

@@ -1240,7 +1240,7 @@ export default function AssignmentSubmissionForm({
       </Link>
 
 
-      <section className="overflow-hidden rounded-[30px] bg-gradient-to-l from-[#123F39] via-[#1B4B43] to-[#28665B] p-6 text-white sm:p-8">
+      <section className="yw-page-banner yw-banner-clay overflow-hidden rounded-[30px] bg-gradient-to-l from-[#123F39] via-[#1B4B43] to-[#28665B] p-6 text-white sm:p-8">
         <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold">
           {
             assignment.courseTitle

@@ -38,7 +38,7 @@ export default function AdminLessonsContent({
       dir={isArabic ? "rtl" : "ltr"}
     >
 
-      <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">
+      <section className="yw-page-banner yw-banner-blue bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">
 
         <h1 className="text-3xl font-bold">
           {t.admin.manageLessons}

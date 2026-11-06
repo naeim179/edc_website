@@ -88,7 +88,7 @@ export default function TeacherAssignmentSubmissionList({
         }
       </Link>
 
-      <div className="rounded-[28px] bg-gradient-to-l from-[#123F39] via-[#1B4B43] to-[#28665B] p-6 text-white sm:p-8">
+      <div className="yw-page-banner yw-banner-clay rounded-[28px] bg-gradient-to-l from-[#123F39] via-[#1B4B43] to-[#28665B] p-6 text-white sm:p-8">
         <p className="text-sm font-bold text-white/75">
           {
             assignment.courseTitle

@@ -211,7 +211,7 @@ export default function AssignmentsManager({
       }
       className="mx-auto w-full max-w-6xl space-y-7"
     >
-      <section className="relative overflow-hidden rounded-[30px] bg-gradient-to-l from-[#123F39] via-[#1B4B43] to-[#28665B] p-7 text-white shadow-[0_20px_55px_rgba(27,75,67,0.16)]">
+      <section className="yw-page-banner yw-banner-clay relative overflow-hidden rounded-[30px] bg-gradient-to-l from-[#123F39] via-[#1B4B43] to-[#28665B] p-7 text-white shadow-[0_20px_55px_rgba(27,75,67,0.16)]">
         <div className="absolute -start-16 -top-24 h-56 w-56 rounded-full bg-white/[0.05]" />
 
         <div className="relative">

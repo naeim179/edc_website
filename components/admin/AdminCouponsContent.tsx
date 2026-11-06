@@ -292,7 +292,7 @@ export default function AdminCouponsContent({
           : "ltr"
       }
     >
-      <div className="flex flex-col items-stretch justify-between gap-4 rounded-[28px] bg-gradient-to-l from-[var(--hero-start)] to-[var(--hero-end)] p-5 text-white sm:flex-row sm:items-center sm:p-8">
+      <div className="yw-page-banner yw-banner-blue flex flex-col items-stretch justify-between gap-4 rounded-[28px] bg-gradient-to-l from-[var(--hero-start)] to-[var(--hero-end)] p-5 text-white sm:flex-row sm:items-center sm:p-8">
         <div>
           <h1 className="text-3xl font-bold">
             {isArabic
