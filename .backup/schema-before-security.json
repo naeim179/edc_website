@@ -1,0 +1,131 @@
+{
+  "functions": [
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "sql": "CREATE OR REPLACE FUNCTION public.can_read_lesson(p_section_id uuid, p_is_free_preview boolean)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  select\r\n    coalesce(p_is_free_preview, false)\r\n\r\n    or exists (\r\n      select 1\r\n      from public.sections s\r\n      join public.courses c\r\n        on c.id = s.course_id\r\n      where s.id = p_section_id\r\n        and (\r\n          -- Admin\r\n          exists (\r\n            select 1\r\n            from public.profiles p\r\n            where p.id = auth.uid()\r\n              and p.role = 'admin'\r\n          )\r\n\r\n          -- Assigned instructor\r\n          or exists (\r\n            select 1\r\n            from public.course_instructors ci\r\n            where ci.course_id = c.id\r\n              and ci.teacher_id = auth.uid()\r\n          )\r\n\r\n          -- Legacy/direct instructor column\r\n          or c.instructor_id = auth.uid()\r\n\r\n          -- Free course enrollment\r\n          or (\r\n            coalesce(c.is_free, false) = true\r\n            and exists (\r\n              select 1\r\n              from public.enrollments e\r\n              where e.student_id = auth.uid()\r\n                and e.course_id = c.id\r\n            )\r\n          )\r\n\r\n          -- Active paid subscription\r\n          or (\r\n            coalesce(c.is_free, false) = false\r\n            and exists (\r\n              select 1\r\n              from public.subscriptions sub\r\n              where sub.student_id = auth.uid()\r\n                and sub.course_id = c.id\r\n                and sub.status = 'active'\r\n                and (\r\n                  sub.expires_at is null\r\n                  or sub.expires_at > now()\r\n                )\r\n            )\r\n          )\r\n        )\r\n    );\r\n$function$\n",
+      "name": "can_read_lesson"
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "sql": "CREATE OR REPLACE FUNCTION public.get_course_lesson_catalog(p_course_id uuid)\n RETURNS TABLE(id uuid, section_id uuid, course_id uuid, title text, duration text, is_free_preview boolean, order_index integer, section_order_index integer, video_provider text, youtube_video_id text, mux_asset_id text, mux_playback_id text, bunny_library_id text, bunny_video_id text, lesson_type text, live_platform text, live_schedule text, content_url text)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select\n    l.id,\n    l.section_id,\n    s.course_id,\n    l.title,\n    l.duration::text,\n    coalesce(l.is_free_preview, false),\n    l.order_index,\n    s.order_index,\n    l.video_provider,\n    l.youtube_video_id,\n    l.mux_asset_id,\n    l.mux_playback_id,\n    l.bunny_library_id,\n    l.bunny_video_id,\n    l.lesson_type,\n    l.live_platform,\n    l.live_schedule,\n    l.content_url\n  from public.lessons l\n  join public.sections s\n    on s.id = l.section_id\n  join public.courses c\n    on c.id = s.course_id\n  where s.course_id = p_course_id\n    and c.is_published = true\n  order by\n    s.order_index,\n    l.order_index;\n$function$\n",
+      "name": "get_course_lesson_catalog"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "sql": "CREATE OR REPLACE FUNCTION public.get_email_by_username(p_username text)\n RETURNS text\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public', 'auth'\nAS $function$\r\n  select u.email::text\r\n  from auth.users u\r\n  join public.profiles p on p.id = u.id\r\n  where lower(p.username) = lower(p_username)\r\n  limit 1;\r\n$function$\n",
+      "name": "get_email_by_username"
+    },
+    {
+      "acl": null,
+      "sql": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\nbegin\r\n  insert into public.profiles (id, full_name, username)\r\n  values (\r\n    new.id,\r\n    nullif(trim(new.raw_user_meta_data ->> 'full_name'), ''),\r\n    nullif(trim(new.raw_user_meta_data ->> 'username'), '')\r\n  );\r\n  return new;\r\nend;\r\n$function$\n",
+      "name": "handle_new_user"
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "sql": "CREATE OR REPLACE FUNCTION public.is_username_available(p_username text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  select not exists (\r\n    select 1 from public.profiles where lower(username) = lower(p_username)\r\n  );\r\n$function$\n",
+      "name": "is_username_available"
+    }
+  ],
+  "policies": [
+    {
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::app_role))))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "lessons",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can manage lessons",
+      "schemaname": "public",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::app_role))))"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "can_read_lesson(section_id, is_free_preview)",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "tablename": "lessons",
+      "permissive": "PERMISSIVE",
+      "policyname": "Read lessons: preview, enrolled or course staff",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(is_admin() OR (id = auth.uid()))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Admins can view all profiles",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "is_public_instructor(id)",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Anyone can view public instructor profiles",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "can_view_chat_profile(id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Chat participants can view each other profiles",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(( SELECT auth.uid() AS uid) = id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update their own profile",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = id)"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(( SELECT auth.uid() AS uid) = id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view their own profile",
+      "schemaname": "public",
+      "with_check": null
+    }
+  ],
+  "constraints": [
+    {
+      "name": "profiles_id_fkey",
+      "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "name": "profiles_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "profiles_username_format",
+      "definition": "CHECK (((username IS NULL) OR (username ~ '^[A-Za-z0-9_.]{3,30}$'::text)))"
+    }
+  ]
+}
