@@ -294,6 +294,7 @@ export default function MessageThread({
   useEffect(() => () => { if (filePreview) URL.revokeObjectURL(filePreview); }, [filePreview]);
   useEffect(() => { messageIdsRef.current = new Set(messages.map(message => message.id)); }, [messages]);
 
+  const threadRef = useRef<HTMLElement>(null);
   const messageScrollRef = useRef<HTMLDivElement>(null);
   const shouldAutoScroll = useRef(true);
 
@@ -506,6 +507,46 @@ export default function MessageThread({
       )
     ).toFixed(1)} MB`;
   }
+
+  // Keep the composer above navigation and the on-screen keyboard, even when
+  // translated toolbar text wraps onto another line.
+  useEffect(() => {
+    const thread = threadRef.current;
+    const wrapper = thread?.parentElement;
+    if (!wrapper) return;
+    const topbar = document.querySelector(".yw-topbar-wrap");
+    const navigation = document.querySelector(".yw-mobile-nav");
+    const viewport = window.visualViewport;
+    let frame = 0;
+    const fit = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const viewportTop = viewport?.offsetTop ?? 0;
+        const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
+        const navRect = navigation?.getBoundingClientRect();
+        const boundary = navRect && navRect.height > 0 ? Math.min(viewportBottom, navRect.top) : viewportBottom;
+        const top = Math.max(viewportTop, wrapper.getBoundingClientRect().top);
+        const height = Math.max(0, boundary - top - 12);
+        wrapper.style.setProperty("--chat-height", `${height}px`);
+        thread?.toggleAttribute("data-compact-chat", height < 220);
+      });
+    };
+    const observer = new ResizeObserver(fit);
+    if (topbar) observer.observe(topbar);
+    if (navigation) observer.observe(navigation);
+    window.addEventListener("resize", fit);
+    viewport?.addEventListener("resize", fit);
+    viewport?.addEventListener("scroll", fit);
+    fit();
+    return () => {
+      cancelAnimationFrame(frame); observer.disconnect();
+      window.removeEventListener("resize", fit);
+      viewport?.removeEventListener("resize", fit);
+      viewport?.removeEventListener("scroll", fit);
+      wrapper.style.removeProperty("--chat-height");
+      thread?.removeAttribute("data-compact-chat");
+    };
+  }, [isArabic]);
 
   useEffect(() => {
     const container = messageScrollRef.current;
@@ -870,6 +911,7 @@ export default function MessageThread({
   return (
     <>
       <section
+        ref={threadRef}
         className="yw-chat-thread flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border bg-[var(--brand-surface)] shadow-sm"
         dir={
           isArabic
