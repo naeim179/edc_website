@@ -517,6 +517,10 @@ export default function MessageThread({
     const topbar = document.querySelector(".yw-topbar-wrap");
     const navigation = document.querySelector(".yw-mobile-nav");
     const viewport = window.visualViewport;
+    const composer = thread?.querySelector(":scope > form");
+    const chatHeader = thread?.querySelector(":scope > header");
+    let headerHeight = chatHeader?.getBoundingClientRect().height || 80;
+    let composerHeight = composer?.getBoundingClientRect().height ?? 0;
     let frame = 0;
     const fit = () => {
       cancelAnimationFrame(frame);
@@ -528,12 +532,16 @@ export default function MessageThread({
         const top = Math.max(viewportTop, wrapper.getBoundingClientRect().top);
         const height = Math.max(0, boundary - top - 12);
         wrapper.style.setProperty("--chat-height", `${height}px`);
-        thread?.toggleAttribute("data-compact-chat", height < 220);
+        const visibleHeaderHeight = chatHeader?.getBoundingClientRect().height ?? 0;
+        if (visibleHeaderHeight > 0) headerHeight = visibleHeaderHeight;
+        if (!thread?.hasAttribute("data-compact-chat")) composerHeight = composer?.getBoundingClientRect().height ?? 0;
+        thread?.toggleAttribute("data-compact-chat", height < headerHeight + composerHeight + 60);
       });
     };
     const observer = new ResizeObserver(fit);
     if (topbar) observer.observe(topbar);
     if (navigation) observer.observe(navigation);
+    if (composer) observer.observe(composer);
     window.addEventListener("resize", fit);
     viewport?.addEventListener("resize", fit);
     viewport?.addEventListener("scroll", fit);
@@ -546,7 +554,7 @@ export default function MessageThread({
       wrapper.style.removeProperty("--chat-height");
       thread?.removeAttribute("data-compact-chat");
     };
-  }, [isArabic]);
+  }, [isArabic, selectedFile]);
 
   useEffect(() => {
     const container = messageScrollRef.current;
@@ -1403,7 +1411,7 @@ export default function MessageThread({
             className="shrink-0 border-t bg-[var(--brand-surface)] p-3 sm:p-4"
           >
             {selectedFile && (
-              <div className="mb-3 flex items-center gap-3 rounded-2xl border bg-[var(--brand-bg)] p-3">
+              <div className="yw-chat-attachment-preview mb-3 flex items-center gap-3 rounded-2xl border bg-[var(--brand-bg)] p-3">
                 {selectedFile.type.startsWith(
                   "image/"
                 ) ? (
@@ -1527,11 +1535,15 @@ export default function MessageThread({
               </button>
             </div>
 
-            <p className="mt-2 px-1 text-[10px] text-[var(--brand-text-muted)]">
+            <p className="yw-chat-compose-hint mt-2 px-1 text-[10px] text-[var(--brand-text-muted)]">
               {isArabic
                 ? "Enter للإرسال • Shift + Enter لسطر جديد"
                 : "Enter to send • Shift + Enter for a new line"}
             </p>
+            {selectedFile && <div className="yw-chat-compact-file mt-2 hidden min-w-0 items-center gap-2 text-xs text-[var(--brand-text-muted)]">
+              <span className="min-w-0 flex-1 truncate">{selectedFile.name}</span>
+              <button type="button" disabled={isPending} onClick={() => chooseFile(null)} aria-label={isArabic ? "إزالة المرفق" : "Remove attachment"} className="h-6 w-6 shrink-0 rounded text-red-500">×</button>
+            </div>}
           </form>
         )}
       </section>

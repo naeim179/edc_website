@@ -281,3 +281,8 @@ html[data-theme] body.yw-design-system .yw-auth-language > button[aria-pressed="
 .yw-design-system .yw-chat-thread[data-compact-chat] > header { display: none; }
 .yw-design-system .yw-chat-page { padding-block: 0; }
 .yw-design-system .yw-chat-thread[data-compact-chat] > div { padding-block: 0; }
+
+.yw-design-system .yw-chat-thread[data-compact-chat] .yw-chat-attachment-preview,
+.yw-design-system .yw-chat-thread[data-compact-chat] .yw-chat-compose-hint:has(+ .yw-chat-compact-file) { display: none; }
+.yw-design-system .yw-chat-thread[data-compact-chat] .yw-chat-compact-file { display: flex; }
+.yw-design-system .yw-chat-thread[data-compact-chat] > form { padding-block: 8px; }
