@@ -98,11 +98,6 @@ html[data-theme] body.yw-design-system :is(input,textarea)::placeholder { color:
 .yw-design-system :is(.yw-enrolled-card,.yw-catalog-card,.yw-personal-course) { border: 1px solid var(--calm-border); box-shadow: none; border-radius: 16px; }
 .yw-design-system :is(.yw-enrolled-card,.yw-catalog-card,.yw-personal-course):hover { box-shadow: none; border-color: var(--calm-accent); }
 .yw-design-system .yw-course-cover, .yw-design-system .yw-personal-ui .yw-continue-cover .yw-course-cover { background-color: var(--calm-soft) !important; color: var(--calm-accent) !important; border: 0; }
-.yw-design-system .yw-auth-page, .yw-design-system .yw-login-original { background: var(--calm-bg); color: var(--calm-text); }
-.yw-design-system :is(.yw-auth-page,.yw-login-original) :is(h1,p,label) { color: var(--calm-text); }
-.yw-design-system :is(.yw-auth-page,.yw-login-original) p { color: var(--calm-muted); }
-.yw-design-system :is(.yw-auth-page,.yw-login-original) a { color: var(--calm-accent); }
-.yw-design-system :is(.yw-auth-page,.yw-login-original) button[type="submit"] { background: var(--calm-accent); color: var(--calm-on-accent); box-shadow: none; }
 /* Reconcile older fixed-colour utility classes with the same semantic tokens. */
 .yw-design-system [class~="bg-[#087a54]"] { background-color: var(--calm-accent); color: var(--calm-on-accent); }
 .yw-design-system [class~="bg-[#124b8a]"] { background-color: var(--calm-accent); color: var(--calm-on-accent); }
@@ -173,3 +168,71 @@ html[data-theme] body.yw-design-system :is(.border-gray-100,.border-gray-200,.bo
 .yw-design-system [class~="hover:bg-slate-200"]:hover,
 .yw-design-system [class~="hover:bg-gray-50"]:hover,
 .yw-design-system [class~="hover:bg-gray-100"]:hover { background-color: var(--calm-soft) !important; }
+
+/* Account pages retain their original green/navy atmosphere in every display mode. */
+html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) {
+  --calm-surface: #f8fafc;
+  --calm-text: #1e293b;
+  --calm-muted: #64748b;
+  --calm-border: #e2e8f0;
+  --calm-accent: #d6b56c;
+  --calm-hover: #e8ce95;
+  background: radial-gradient(ellipse at top right, #28634e 0, transparent 60%),
+    radial-gradient(ellipse at bottom left, #315879 0, transparent 55%), #153e39;
+  color: #fff;
+  color-scheme: light;
+}
+html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) :is(h1,label) { color: #fff; }
+html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) [class*="text-white/"] { color: #d9e7e5; }
+html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) a { color: #e7c47c; }
+html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) button[type="submit"] {
+  background: #124b8a; color: #fff; border-radius: 12px; box-shadow: none;
+}
+html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) button[type="submit"]:hover { background: #0d3b6e; }
+html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) input:focus-visible {
+  outline: 2px solid #e7c47c; outline-offset: 3px;
+}
+/* Transparent artwork belongs to the page, without a white disc or frame. */
+.yw-design-system .yw-brand-logo { background: transparent; border-radius: 0; overflow: visible; }
+html[data-theme="dark"] .yw-brand-logo img,
+html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) .yw-brand-logo img {
+  filter: brightness(0) invert(1);
+}
+.yw-design-system .yw-auth-brand { width: 176px; height: 176px; }
+.yw-design-system .yw-brand-logo-auth { width: 176px; height: 176px; }
+.yw-design-system .yw-public-brand .yw-brand-logo { width: 104px; height: 104px; }
+.yw-design-system .yw-public-footer .yw-brand-logo { width: 64px; height: 64px; }
+/* Keep the outer edges aligned; links have visible, generous interaction areas. */
+.yw-design-system :is(.yw-public-header,.yw-public-footer) { background: transparent; }
+.yw-design-system .yw-public-header { padding-block: 10px; gap: 20px; }
+.yw-design-system .yw-public-header nav { gap: 10px; font-size: 14px; font-weight: 600; }
+.yw-design-system .yw-public-header nav a,
+.yw-design-system .yw-public-login,
+.yw-design-system .yw-public-footer a {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 10px 16px; border: 1px solid var(--calm-border);
+  border-radius: 10px; color: var(--calm-text); text-decoration: none;
+  transition: background-color .15s, border-color .15s;
+}
+.yw-design-system .yw-public-header nav a { background: var(--calm-surface); }
+.yw-design-system :is(.yw-public-header nav a,.yw-public-login,.yw-public-footer a):hover {
+  background: var(--calm-soft); border-color: var(--calm-accent);
+  text-decoration: underline; text-underline-offset: 5px;
+}
+.yw-design-system .yw-guest-landing :is(a,button):focus-visible {
+  outline: 2px solid var(--calm-accent); outline-offset: 4px;
+}
+.yw-design-system .yw-public-header .yw-public-actions > div > button { width: 44px; height: 44px; }
+.yw-design-system .yw-public-visual { padding-inline-end: 0; padding-bottom: 0; }
+.yw-design-system .yw-public-photo-label { position: relative; inset: auto; margin-top: 14px; border-radius: 14px; }
+.yw-design-system .yw-public-photo-caption { bottom: 28px; }
+.yw-design-system .yw-public-footer { gap: 16px; padding-block: 24px; }
+.yw-design-system .yw-public-footer a { font-size: 13px; }
+@media (max-width: 767px) {
+  .yw-design-system .yw-public-brand .yw-brand-logo { width: 76px; height: 76px; }
+  .yw-design-system .yw-public-header { gap: 12px; padding-block: 12px; }
+  .yw-design-system .yw-public-actions { gap: 8px; }
+  .yw-design-system .yw-public-login { padding-inline: 10px; font-size: 12px; }
+  .yw-design-system .yw-public-header nav { gap: 12px; padding-top: 12px; }
+  .yw-design-system .yw-public-header nav a { flex: 1; }
+}
