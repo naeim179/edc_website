@@ -19,9 +19,14 @@ export async function fulfillPaymentByTranRef(
   callbackToken?: string | null,
   expectedUserId?: string | null
 ) {
-  if (!tranRef || tranRef.length > 256) return unpaidResult();
+  if (typeof tranRef !== "string" || !tranRef.trim() || tranRef.length > 256) return unpaidResult();
 
   const result = await queryTransaction(tranRef);
+  // A query response must identify the exact transaction requested. A missing
+  // or different reference is ambiguous and must never fulfill an order.
+  if (result?.tran_ref !== tranRef) {
+    throw new Error("PayTabs transaction reference mismatch");
+  }
   const responseStatus = result?.payment_result?.response_status;
   const cartId = typeof result?.cart_id === "string" ? result.cart_id : "";
 

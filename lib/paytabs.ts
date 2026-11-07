@@ -34,6 +34,7 @@ export async function verifyPayTabsCallbackSignature(
   signature: string | null
 ) {
   if (
+    !SERVER_KEY ||
     !signature ||
     !/^[a-f0-9]{64}$/i.test(signature)
   ) {
@@ -103,6 +104,7 @@ export async function createPaymentPage(
     `${PAYTABS_BASE_URL}/payment/request`,
     {
       method: "POST",
+      signal: AbortSignal.timeout(15_000),
       headers: {
         "Content-Type": "application/json",
         Authorization: SERVER_KEY,
@@ -159,6 +161,7 @@ export async function queryTransaction(
     `${PAYTABS_BASE_URL}/payment/query`,
     {
       method: "POST",
+      signal: AbortSignal.timeout(15_000),
       headers: {
         "Content-Type": "application/json",
         Authorization: SERVER_KEY,
@@ -189,6 +192,7 @@ export async function createRecurringPayment(
     `${PAYTABS_BASE_URL}/payment/request`,
     {
       method: "POST",
+      signal: AbortSignal.timeout(15_000),
       headers: {
         "Content-Type": "application/json",
         Authorization: SERVER_KEY,

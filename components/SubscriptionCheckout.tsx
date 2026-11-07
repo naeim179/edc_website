@@ -404,8 +404,8 @@ export default function SubscriptionCheckout({
         {isArabic ? "العودة إلى الدورة" : "Back to Course"}
       </Link>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_350px] lg:items-start">
-        <section className="rounded-[26px] border border-[#E8E1D4] bg-white p-5 sm:p-7">
+      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_350px] lg:items-start">
+        <section className="min-w-0 rounded-[26px] border border-[#E8E1D4] bg-white p-5 sm:p-7">
           <div className="border-b border-[#F0EBE1] pb-6">
             <p className="text-xs font-bold text-[#C9704A]">
               {courseType ===
@@ -856,7 +856,7 @@ export default function SubscriptionCheckout({
           )}
         </section>
 
-        <aside className="rounded-[26px] border border-[#E8E1D4] bg-white p-5 sm:p-6 lg:sticky lg:top-4">
+        <aside className="min-w-0 rounded-[26px] border border-[#E8E1D4] bg-white p-5 sm:p-6 lg:sticky lg:top-4">
           <h2 className="text-lg font-bold text-[#2A2420]">
             {isArabic ? "ملخص الطلب" : "Order Summary"}
           </h2>

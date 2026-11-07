@@ -5,7 +5,8 @@ const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 
 function redirectToCheckout(
   tranRef?: string | null,
-  cancelledCourse?: string | null
+  cancelledCourse?: string | null,
+  cancelledOrder?: string | null
 ) {
   const url = new URL(
     "/checkout/success",
@@ -15,6 +16,7 @@ function redirectToCheckout(
   if (cancelledCourse) {
     url.searchParams.set("cancelled", "1");
     url.searchParams.set("course", cancelledCourse);
+    if (cancelledOrder) url.searchParams.set("order", cancelledOrder);
   } else if (tranRef) {
     url.searchParams.set("tranRef", tranRef);
   }
@@ -103,7 +105,7 @@ async function validReturnSignature(
 async function reconcileSignedCancellation(
   cartId: string,
   tranRef: string
-): Promise<string | null> {
+): Promise<{ courseId: string; orderId: string } | null> {
   if (!UUID.test(cartId) || tranRef.length > 256) {
     return null;
   }
@@ -221,7 +223,7 @@ async function reconcileSignedCancellation(
   }
 
   return typeof order.course_id === "string"
-    ? order.course_id
+    ? { courseId: order.course_id, orderId: order.id }
     : null;
 }
 
@@ -268,14 +270,14 @@ export async function POST(req: NextRequest) {
   ) {
     try {
       if (await validReturnSignature(fields)) {
-        const courseId =
+        const cancelledOrder =
           await reconcileSignedCancellation(
             cartId,
             tranRef
           );
 
-        if (courseId) {
-          return redirectToCheckout(null, courseId);
+        if (cancelledOrder) {
+          return redirectToCheckout(null, cancelledOrder.courseId, cancelledOrder.orderId);
         }
       }
     } catch {
