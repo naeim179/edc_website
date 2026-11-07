@@ -221,7 +221,6 @@ html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) .yw
 .yw-design-system .yw-guest-landing :is(a,button):focus-visible {
   outline: 2px solid var(--calm-accent); outline-offset: 4px;
 }
-.yw-design-system .yw-public-header .yw-public-actions > div > button { width: 44px; height: 44px; }
 .yw-design-system .yw-public-visual { padding-inline-end: 0; padding-bottom: 0; }
 .yw-design-system .yw-public-photo-label { position: relative; inset: auto; margin-top: 14px; border-radius: 14px; }
 .yw-design-system .yw-public-photo-caption { bottom: 28px; }
@@ -241,3 +240,30 @@ html[data-theme] body.yw-design-system .yw-brand-logo-original {
   background: #fff; border-radius: 50%; overflow: hidden;
 }
 html[data-theme] body.yw-design-system .yw-brand-logo-original img { filter: none; }
+
+/* A labelled control makes language and colour settings discoverable. */
+html[data-theme] body.yw-design-system .yw-display-trigger {
+  width: auto; min-height: 44px; gap: 8px; padding-inline: 12px;
+  border: 1px solid var(--calm-accent); background: var(--calm-soft) !important;
+  color: var(--calm-text) !important; font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+html[data-theme] body.yw-design-system .yw-display-trigger:hover { border-color: var(--calm-text); }
+html[data-theme] body.yw-design-system .yw-display-trigger:focus-visible {
+  outline: 2px solid var(--calm-accent); outline-offset: 3px;
+}
+.yw-display-trigger > svg { width: 18px; height: 18px; flex-shrink: 0; }
+.yw-display-settings [role="dialog"] { color: var(--brand-text); }
+html[data-theme] body.yw-design-system .yw-auth-language {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 8px; width: fit-content; max-width: 100%; margin: 0 auto 24px;
+  padding: 6px 10px; border: 1px solid rgb(255 255 255 / .35);
+  border-radius: 12px; background: rgb(255 255 255 / .08); color: #fff;
+  font-size: 13px;
+}
+.yw-auth-language > button { min-height: 40px; padding: 8px 12px; border-radius: 8px; font-weight: 600; }
+html[data-theme] body.yw-design-system .yw-auth-language > button[aria-pressed="true"] { background: #f8fafc; color: #0b1f3a; }
+.yw-auth-language > button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.yw-auth-language > button:focus-visible { outline: 2px solid #e7c47c; outline-offset: 2px; }
+@media (max-width: 767px) {
+  html[data-theme] body.yw-design-system .yw-display-trigger { font-size: 12px; padding-inline: 10px; }
+}

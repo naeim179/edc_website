@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/components/LanguageProvider";
 import { useEffect, useState } from "react";
 
 interface PasswordToggleProps {
@@ -11,8 +12,10 @@ interface PasswordToggleProps {
 export function PasswordToggle({
   visible,
   onToggle,
-  label = "كلمة المرور",
+  label,
 }: PasswordToggleProps) {
+  const { t } = useLanguage();
+  const passwordLabel = label ?? t.auth.password;
   const [blinking, setBlinking] = useState(false);
   const [flash, setFlash] = useState(false);
   const [iris, setIris] = useState({
@@ -88,8 +91,8 @@ export function PasswordToggle({
       onClick={handleClick}
       aria-label={
         visible
-          ? `إخفاء ${label}`
-          : `إظهار ${label}`
+          ? `${t.auth.hide} ${passwordLabel}`
+          : `${t.auth.show} ${passwordLabel}`
       }
       className={`eye-toggle ${
         blinking ? "sleep" : ""

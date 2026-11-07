@@ -1784,7 +1784,6 @@ html:not([data-theme="dark"]):not([data-theme="eye"]) .yw-personal-ui {
 .yw-public-login { font-size: 13px; white-space: nowrap; font-weight: 500; }
 .yw-public-button { display: inline-flex; align-items: center; justify-content: center; gap: 13px; min-height: 46px; padding: 12px 22px; border: 1px solid #075b45; border-radius: 7px; background: #075b45; color: #fff; font-size: 13px; font-weight: 600; transition: background-color .2s; }
 .yw-public-button:hover { background: #064735; }
-.yw-public-header .yw-public-actions > div > button { width: 36px; height: 36px; background: transparent !important; color: var(--brand-text-muted) !important; border: 0; }
 .yw-public-hero { display: grid; grid-template-columns: 1.05fr 1fr; align-items: center; gap: 72px; padding-block: 65px 78px; }
 .yw-public-kicker { display: flex; align-items: center; gap: 9px; color: var(--brand-ink); font-size: 12px; font-weight: 500; margin-bottom: 18px; }
 .yw-public-kicker > span { height: 6px; width: 6px; background: #ba9560; border-radius: 50%; }

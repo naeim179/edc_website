@@ -35,7 +35,7 @@ function isTheme(value: string | null | undefined): value is AppTheme {
 function readCurrentTheme(): AppTheme {
   const current = document.documentElement.dataset.theme;
 
-  return isTheme(current) ? current : "light";
+  return isTheme(current) ? current : "dark";
 }
 
 function saveTheme(theme: AppTheme) {
@@ -54,7 +54,7 @@ export default function DisplaySettings() {
   const { language, changeLanguage } = useLanguage();
 
   const [open, setOpen] = useState(false);
-  const [theme, setTheme] = useState<AppTheme>("light");
+  const [theme, setTheme] = useState<AppTheme>("dark");
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -122,7 +122,7 @@ export default function DisplaySettings() {
     }`;
 
   return (
-    <div className="relative z-[100]" ref={containerRef}>
+    <div className="yw-display-settings relative z-[100]" ref={containerRef}>
       <button
         type="button"
         onClick={togglePanel}
@@ -131,7 +131,7 @@ export default function DisplaySettings() {
         }
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="flex h-11 w-11 items-center justify-center rounded-xl border transition-colors"
+        className="yw-display-trigger flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 transition-colors"
         style={{
           borderColor: "var(--brand-border)",
           backgroundColor: "var(--brand-ink)",
@@ -139,6 +139,7 @@ export default function DisplaySettings() {
         }}
       >
         <SlidersIcon />
+        <span>{isArabic ? "اللغة والألوان" : "Language & theme"}</span>
       </button>
 
       {open && (
