@@ -273,3 +273,16 @@ html[data-theme] body.yw-design-system .yw-auth-language > button[aria-pressed="
 .yw-design-system .yw-chat-thread > header,
 .yw-design-system .yw-chat-thread > form,
 .yw-design-system .yw-chat-thread [class~="border"] { border-color: var(--brand-border); }
+
+.yw-design-system .yw-chat-page { height: var(--chat-height, calc(100dvh - 180px)); min-height: 0; }
+@media (max-width: 1023px) {
+  .yw-design-system .yw-chat-page { height: var(--chat-height, calc(100dvh - 280px)); }
+}
+.yw-design-system .yw-chat-thread[data-compact-chat] > header { display: none; }
+.yw-design-system .yw-chat-page { padding-block: 0; }
+.yw-design-system .yw-chat-thread[data-compact-chat] > div { padding-block: 0; }
+
+.yw-design-system .yw-chat-thread[data-compact-chat] .yw-chat-attachment-preview,
+.yw-design-system .yw-chat-thread[data-compact-chat] .yw-chat-compose-hint:has(+ .yw-chat-compact-file) { display: none; }
+.yw-design-system .yw-chat-thread[data-compact-chat] .yw-chat-compact-file { display: flex; }
+.yw-design-system .yw-chat-thread[data-compact-chat] > form { padding-block: 8px; }

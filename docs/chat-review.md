@@ -18,7 +18,7 @@ The chat inbox kept the original text after a message was edited or deleted. The
 - Full migration chain and chat/security SQL regressions on disposable PostgreSQL 17.
 - Application tests for attachment origin/path/type/size checks, signing/redaction, failed mutation handling, cache invalidation and authenticated/cancelled Realtime joins.
 - Isolated live accounts: student, teacher, admin and an unenrolled outsider. No existing conversation was used for message tests.
-- Browser coverage: participant/admin inbox updates; editing, cancellation, deletion and navigating out; delivery/read receipts; duplicate submit; multiline composition; failed-send draft retention; image upload/remove/reselect; file limits; legacy expired attachments; reconnect; long content; mobile light/dark/eye modes and English layout.
+- Browser coverage: participant/admin inbox updates; editing, cancellation, deletion and navigating out; delivery/read receipts; duplicate submit; multiline composition; failed-send draft retention; image upload/remove/reselect; file limits; legacy expired attachments; reconnect; long content; mobile light/dark/eye modes and English layout. A follow-up sizing check verifies that the composer stays above bottom navigation across normal and short viewports; the thread also responds to visual viewport changes when the on-screen keyboard opens.
 
 ## Deployment and data preservation
 
