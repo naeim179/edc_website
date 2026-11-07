@@ -88,13 +88,31 @@ export default async function CheckoutSuccessPage({
   }
 
 
+  // The return URL is user editable: only show confirmed cancellation for
+  // this signed-in student's order after a verified database closure.
+  let cancelled = false;
+  if (!paid && params.cancelled === "1" && orderId && user) {
+    const { data: cancelledOrder } = await supabase
+      .from("orders")
+      .select("course_id,paytabs_closed_cancelled_at")
+      .eq("id", orderId)
+      .eq("user_id", user.id)
+      .eq("payment_method", "paytabs")
+      .eq("status", "failed")
+      .maybeSingle();
+    if (cancelledOrder?.paytabs_closed_cancelled_at) {
+      cancelled = true;
+      courseId = cancelledOrder.course_id;
+    }
+  }
+
   // Group courses can retry checkout directly.
   // Private courses must select their schedule again.
   let retryHref = courseId
     ? "/courses/" + courseId
     : "/courses";
 
-  if (params.cancelled === "1" && courseId) {
+  if (cancelled && courseId) {
     const { data: cancelledCourse } = await supabase
       .from("courses")
       .select("course_type")
@@ -143,7 +161,7 @@ export default async function CheckoutSuccessPage({
             />
           )}
         </>
-      ) : params.cancelled === "1" ? (
+      ) : cancelled ? (
         <div className="py-3">
 
           <div className="mx-auto mb-7 flex h-20 w-20 items-center justify-center rounded-full bg-[#E9F4ED] ring-8 ring-[#F5F9F5]">

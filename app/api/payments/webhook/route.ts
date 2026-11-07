@@ -75,13 +75,13 @@ export async function POST(
 
     const tranRef =
       (
-        body.tran_ref ??
-        body.tranRef
+        body?.tran_ref ??
+        body?.tranRef
       ) as
         | string
         | undefined;
 
-    if (!tranRef) {
+    if (typeof tranRef !== "string" || !tranRef.trim() || tranRef.length > 256) {
       return NextResponse.json(
         {
           ok: false,

@@ -203,6 +203,12 @@ export async function GET(
         // Only PayTabs's verified transaction query can prove rejection.
         // Pending / ambiguous / approved-but-unfulfilled require review.
         const verified = await queryTransaction(tranRef);
+        if (verified?.tran_ref !== tranRef || verified?.cart_id !== order.id ||
+            Number(verified?.cart_amount) !== Number(claim.amount) ||
+            typeof verified?.cart_currency !== "string" ||
+            verified.cart_currency.toUpperCase() !== claim.currency.toUpperCase()) {
+          throw new Error("Recurring payment query does not match renewal order");
+        }
         const status = verified?.payment_result?.response_status;
         if (typeof status === "string" && status !== "A" &&
             status !== "P" && status !== "H") {
