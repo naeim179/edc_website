@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { subscribeChat } from "@/lib/chat-realtime";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import { CHAT_FILE_ACCEPT, validChatFile } from "@/lib/chat-attachments";
 
 import {
   useCallback,
@@ -16,6 +19,7 @@ import {
 
 import {
   deleteMessage,
+  getConversationMessages,
   editMessage,
   markConversationRead,
   sendMessage,
@@ -275,6 +279,24 @@ export default function MessageThread({
   ] =
     useTransition();
 
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingRef = useRef(0);
+  const refreshSequence = useRef(0);
+  const sendLock = useRef(false);
+  const editLock = useRef(false);
+  const deleteLock = useRef(false);
+  const messageIdsRef = useRef(new Set(initialMessages.map(message => message.id)));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [liveConnected, setLiveConnected] = useState(false);
+  useEffect(() => () => { if (filePreview) URL.revokeObjectURL(filePreview); }, [filePreview]);
+  useEffect(() => { messageIdsRef.current = new Set(messages.map(message => message.id)); }, [messages]);
+
+  const messageScrollRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScroll = useRef(true);
+
   const bottomRef =
     useRef<HTMLDivElement>(
       null
@@ -486,19 +508,13 @@ export default function MessageThread({
   }
 
   useEffect(() => {
-    bottomRef.current
-      ?.scrollIntoView({
-        behavior: "smooth",
-      });
-  }, [
-    messages.length,
-  ]);
+    const container = messageScrollRef.current;
+    if (container && shouldAutoScroll.current) container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+  }, [messages.length]);
 
   useEffect(() => {
-    if (!readOnly) {
-      void markConversationRead(
-        conversationId
-      );
+    if (!readOnly && document.visibilityState === "visible") {
+      void markConversationRead(conversationId).catch(() => {});
     }
   }, [
     conversationId,
@@ -581,46 +597,27 @@ export default function MessageThread({
 
 
   const refreshMessages = useCallback(async () => {
-    const supabase =
-      createClient();
-
-    const {
-      data,
-    } =
-      await supabase
-        .from("messages")
-        .select(`
-          id,
-          conversation_id,
-          sender_id,
-          content,
-          created_at,
-          read_at,
-          message_type,
-          attachment_url,
-          attachment_name,
-          attachment_size,
-          edited_at,
-          deleted_at
-        `)
-        .eq(
-          "conversation_id",
-          conversationId
-        )
-        .order(
-          "created_at",
-          {
-            ascending:
-              true,
-          }
-        );
-
-    if (data) {
-      setMessages(
-        data as ChatMessage[]
-      );
-    }
+    const sequence = ++refreshSequence.current;
+    const data = await getConversationMessages(conversationId);
+    if (sequence === refreshSequence.current) setMessages(data);
   }, [conversationId]);
+
+  useEffect(() => {
+    const sync = () => {
+      if (document.visibilityState !== "visible") return;
+      void refreshMessages().then(() => {
+        if (!readOnly) return markConversationRead(conversationId);
+      }).catch(() => setToast({ type: "error", message: isArabic ? "تعذر تحديث الرسائل. أعد المحاولة عند عودة الاتصال." : "Unable to refresh messages. Retry when your connection returns." }));
+    };
+    window.addEventListener("focus", sync);
+    window.addEventListener("online", sync);
+    document.addEventListener("visibilitychange", sync);
+    const timer = window.setInterval(sync, 30000);
+    return () => {
+      window.removeEventListener("focus", sync); window.removeEventListener("online", sync);
+      document.removeEventListener("visibilitychange", sync); window.clearInterval(timer);
+    };
+  }, [refreshMessages, conversationId, readOnly, isArabic]);
 
   useEffect(() => {
     let mounted =
@@ -659,131 +656,53 @@ export default function MessageThread({
   ]);
 
   useEffect(() => {
-    const supabase =
-      createClient();
-
-    const channel =
-      supabase
-        .channel(
-          `messages-${conversationId}`
-        )
-        .on(
-          "broadcast",
-          {
-            event: "typing",
-          },
-          (
-            payload
-          ) => {
-            if (
-              payload
-                .payload
-                .user_id !==
-              currentUserId
-            ) {
-              setIsTyping(
-                Boolean(
-                  payload
-                    .payload
-                    .typing
-                )
-              );
-
-              if (
-                payload
-                  .payload
-                  .typing
-              ) {
-                window.setTimeout(
-                  () => {
-                    setIsTyping(
-                      false
-                    );
-                  },
-                  2000
-                );
-              }
-            }
-          }
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema:
-              "public",
-            table:
-              "messages",
-          },
-          async (
-            payload
-          ) => {
-            const changed =
-              payload.new as
-                Partial<ChatMessage>;
-
-            if (
-              changed.conversation_id &&
-              changed.conversation_id !==
-                conversationId
-            ) {
-              return;
-            }
-
-            await refreshMessages();
-
-            if (
-              !readOnly &&
-              changed.sender_id &&
-              changed.sender_id !==
-                currentUserId
-            ) {
-              void markConversationRead(
-                conversationId
-              );
-            }
-          }
-        )
-        .subscribe();
-
+    const supabase = createClient();
+    const otherId = currentUserId === conversation.student_id ? conversation.teacher_id : conversation.student_id;
+    const sync = () => refreshMessages().catch(() => {});
+    const channel = supabase.channel(`messages-${conversationId}`, { config: { private: true } })
+      .on("broadcast", { event: "typing" }, ({ payload }) => {
+        if (readOnly || payload?.user_id !== otherId) return;
+        if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+        setIsTyping(Boolean(payload.typing));
+        if (payload.typing) typingTimerRef.current = setTimeout(() => setIsTyping(false), 2500);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, async payload => {
+        await sync();
+        const changed = payload.new as Partial<ChatMessage>;
+        if (!readOnly && payload.eventType === "INSERT" && changed.sender_id !== currentUserId && document.visibilityState === "visible") {
+          void markConversationRead(conversationId).catch(() => {});
+        }
+      })
+      // Supabase cannot filter DELETE events. Only refresh when a known row disappears.
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages" }, payload => {
+        if (messageIdsRef.current.has(payload.old.id)) void sync();
+      })
+      ;
+    const dispose = subscribeChat(supabase, channel, status => { setLiveConnected(status === "SUBSCRIBED"); if (status === "SUBSCRIBED") void sync(); });
+    channelRef.current = channel;
     return () => {
-      void supabase.removeChannel(
-        channel
-      );
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      channelRef.current = null;
+      dispose();
     };
-  }, [
-    conversationId,
-    currentUserId,
-    readOnly,
-    refreshMessages,
-  ]);
+  }, [conversationId, currentUserId, readOnly, refreshMessages, conversation.student_id, conversation.teacher_id]);
 
-  function handleTyping(
-    value: string
-  ) {
-    setDraft(value);
+  function sendTyping(typing: boolean) {
+    if (readOnly || !channelRef.current || channelRef.current.state !== "joined") return;
+    if (typing && Date.now() - lastTypingRef.current < 600) return;
+    lastTypingRef.current = Date.now();
+    void channelRef.current.send({ type: "broadcast", event: "typing", payload: { user_id: currentUserId, typing } });
+  }
 
-    const supabase =
-      createClient();
+  function handleTyping(value: string) { setDraft(value); sendTyping(Boolean(value.trim())); }
 
-    void supabase
-      .channel(
-        `messages-${conversationId}`
-      )
-      .send({
-        type: "broadcast",
-        event: "typing",
-        payload: {
-          user_id:
-            currentUserId,
-
-          typing:
-            value
-              .trim()
-              .length >
-            0,
-        },
-      });
+  function chooseFile(file: File | null) {
+    if (file && !validChatFile(file.name, file.size)) {
+      setToast({ type: "error", message: isArabic ? "اختر صورة أو PDF أو Word أو ZIP بحجم بين 1 بايت و10MB." : "Choose an image, PDF, Word or ZIP file between 1 byte and 10MB." });
+      return;
+    }
+    setSelectedFile(file);
+    setFilePreview(file?.type.startsWith("image/") ? URL.createObjectURL(file) : null);
   }
 
   async function uploadFile(
@@ -805,48 +724,14 @@ export default function MessageThread({
       );
     }
 
-    const filePath =
-      `${conversationId}/${crypto.randomUUID()}-${file.name}`;
-
-    const {
-      error,
-    } =
-      await supabase.storage
-        .from(
-          "chat-files"
-        )
-        .upload(
-          filePath,
-          file
-        );
-
-    if (error) {
-      throw error;
-    }
-
-    const {
-      data,
-      error:
-        signedError,
-    } =
-      await supabase.storage
-        .from(
-          "chat-files"
-        )
-        .createSignedUrl(
-          filePath,
-          60 * 60
-        );
-
-    if (
-      signedError
-    ) {
-      throw signedError;
-    }
-
+    if (!validChatFile(file.name, file.size)) throw new Error(isArabic ? "نوع الملف أو حجمه غير مدعوم" : "Unsupported file type or size");
+    const extension = file.name.split(".").pop()!.toLowerCase();
+    const filePath = `${conversationId}/${crypto.randomUUID()}.${extension}`;
+    const { error } = await supabase.storage.from("chat-files").upload(filePath, file);
+    if (error) throw error;
     return {
       url:
-        data.signedUrl,
+        filePath,
 
       name:
         file.name,
@@ -863,79 +748,39 @@ export default function MessageThread({
     };
   }
 
-  function handleSend(
-    event:
-      React.FormEvent<HTMLFormElement>
-  ) {
+  function handleSend(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    const content =
-      draft.trim();
-
-    if (
-      !content &&
-      !selectedFile
-    ) {
-      return;
-    }
-
-    setDraft("");
-
-    startTransition(
-      async () => {
-        try {
-          let attachment;
-
-          if (
-            selectedFile
-          ) {
-            attachment =
-              await uploadFile(
-                selectedFile
-              );
-          }
-
-          await sendMessage(
-            conversationId,
-            content,
-            attachment
-          );
-
-          setSelectedFile(
-            null
-          );
-
-          await refreshMessages();
-        } catch (error) {
-          setDraft(
-            content
-          );
-
-          setToast({
-            type: "error",
-
-            message:
-              error instanceof
-              Error
-                ? error.message
-                : isArabic
-                  ? "تعذر إرسال الرسالة."
-                  : "Unable to send message.",
-          });
-        }
-      }
-    );
+    const content = draft.trim();
+    const file = selectedFile;
+    if (readOnly || sendLock.current || (!content && !file)) return;
+    sendLock.current = true;
+    shouldAutoScroll.current = true;
+    startTransition(async () => {
+      let uploadedPath: string | null = null;
+      let sent = false;
+      try {
+        const attachment = file ? await uploadFile(file) : undefined;
+        uploadedPath = attachment?.url ?? null;
+        await sendMessage(conversationId, content, attachment);
+        sent = true;
+        setDraft(""); chooseFile(null); sendTyping(false);
+        await refreshMessages();
+      } catch (error) {
+        if (uploadedPath && !sent) await createClient().storage.from("chat-files").remove([uploadedPath]);
+        setToast({ type: "error", message: sent ? (isArabic ? "تم الإرسال، لكن تعذر تحديث العرض. أعد فتح المحادثة." : "Sent, but the view could not refresh. Reopen the conversation.") : error instanceof Error ? error.message : isArabic ? "تعذر إرسال الرسالة." : "Unable to send message." });
+      } finally { sendLock.current = false; }
+    });
   }
 
   async function saveEdit(
     messageId: string
   ) {
-    if (
-      !editingText.trim()
-    ) {
+    if (readOnly || editLock.current || !editingText.trim()) {
       return;
     }
 
+    editLock.current = true;
+    setSavingEdit(true);
     try {
       await editMessage(
         messageId,
@@ -950,7 +795,8 @@ export default function MessageThread({
         ""
       );
 
-      await refreshMessages();
+      setMessages(previous => previous.map(message => message.id === messageId ? { ...message, content: editingText.trim(), edited_at: new Date().toISOString() } : message));
+      void refreshMessages().catch(() => {});
 
       setToast({
         type: "success",
@@ -970,16 +816,17 @@ export default function MessageThread({
               ? "تعذر تعديل الرسالة."
               : "Unable to edit message.",
       });
-    }
+    } finally { editLock.current = false; setSavingEdit(false); }
   }
 
   async function confirmDelete() {
     if (
-      !deleteTarget
+      !deleteTarget || deleteLock.current || readOnly
     ) {
       return;
     }
 
+    deleteLock.current = true;
     try {
       setDeleting(
         true
@@ -989,11 +836,9 @@ export default function MessageThread({
         deleteTarget
       );
 
-      setDeleteTarget(
-        null
-      );
-
-      await refreshMessages();
+      setMessages(previous => previous.map(message => message.id === deleteTarget ? { ...message, content: "", deleted_at: new Date().toISOString(), attachment_url: null, attachment_name: null, attachment_size: null } : message));
+      setDeleteTarget(null);
+      void refreshMessages().catch(() => {});
 
       setToast({
         type: "success",
@@ -1015,6 +860,7 @@ export default function MessageThread({
               : "Unable to delete message.",
       });
     } finally {
+      deleteLock.current = false;
       setDeleting(
         false
       );
@@ -1024,7 +870,7 @@ export default function MessageThread({
   return (
     <>
       <section
-        className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border bg-[var(--brand-surface)] shadow-sm"
+        className="yw-chat-thread flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border bg-[var(--brand-surface)] shadow-sm"
         dir={
           isArabic
             ? "rtl"
@@ -1033,7 +879,7 @@ export default function MessageThread({
       >
         <header className="flex shrink-0 items-center gap-3 border-b bg-[var(--brand-surface)] px-4 py-3 sm:px-5 sm:py-4">
           <Link
-            href="/messages"
+            href={readOnly ? "/admin/messages" : "/messages"}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-[var(--brand-text-muted)] transition hover:bg-[var(--brand-bg)] hover:text-[var(--brand-text)]"
             aria-label={
               isArabic
@@ -1104,7 +950,7 @@ export default function MessageThread({
                         : "text-[var(--brand-text-muted)]"
                   }
                 >
-                  {isTyping
+                  {!liveConnected ? (isArabic ? "جارٍ الاتصال..." : "Connecting...") : isTyping
                     ? isArabic
                       ? "يكتب الآن..."
                       : "Typing..."
@@ -1136,6 +982,8 @@ export default function MessageThread({
         </header>
 
         <div
+          ref={messageScrollRef}
+          onScroll={event => { const container = event.currentTarget; shouldAutoScroll.current = container.scrollHeight - container.scrollTop - container.clientHeight < 120; }}
           className="min-h-0 flex-1 overflow-y-auto bg-[var(--brand-bg)]/35 px-3 py-5 sm:px-6"
           dir="ltr"
         >
@@ -1222,9 +1070,9 @@ export default function MessageThread({
                         }`}
                       >
                         <div
-                          className={`max-w-[86%] rounded-2xl px-4 py-3 shadow-sm sm:max-w-[72%] ${
+                          className={`min-w-0 max-w-[86%] rounded-2xl px-4 py-3 shadow-sm sm:max-w-[72%] ${
                             isOwn
-                              ? "rounded-br-md bg-[#087a54] text-white"
+                              ? "yw-chat-own rounded-br-md bg-[var(--brand-ink)] text-[var(--brand-on-ink)]"
                               : "rounded-bl-md border bg-[var(--brand-surface)] text-[var(--brand-text)]"
                           }`}
                           dir={
@@ -1237,7 +1085,7 @@ export default function MessageThread({
                             <p
                               className={`text-sm italic ${
                                 isOwn
-                                  ? "text-white/70"
+                                  ? "text-[var(--brand-on-ink)] opacity-75"
                                   : "text-[var(--brand-text-muted)]"
                               }`}
                             >
@@ -1249,8 +1097,11 @@ export default function MessageThread({
                             <>
                               {editingId ===
                               message.id ? (
-                                <div className="w-[min(260px,75vw)] min-w-0 space-y-3">
+                                <div className="w-60 max-w-[min(240px,calc(100vw-8rem))] min-w-0 space-y-3">
                                   <textarea
+                                    disabled={savingEdit}
+                                    aria-label={isArabic ? "تعديل الرسالة" : "Edit message"}
+                                    maxLength={4000}
                                     value={
                                       editingText
                                     }
@@ -1290,6 +1141,7 @@ export default function MessageThread({
 
                                     <button
                                       type="button"
+                                      disabled={savingEdit}
                                       onClick={() =>
                                         void saveEdit(
                                           message.id
@@ -1307,7 +1159,7 @@ export default function MessageThread({
                                 <>
                                   {message.content &&
                                     message.content.trim() && (
-                                      <p className="whitespace-pre-wrap break-words text-sm leading-6">
+                                      <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm leading-6">
                                         {
                                           message.content
                                         }
@@ -1315,6 +1167,8 @@ export default function MessageThread({
                                     )}
                                 </>
                               )}
+
+                              {message.message_type !== "text" && !message.attachment_url && <p className="mt-2 text-xs">{isArabic ? "المرفق غير متاح. أعد فتح المحادثة للمحاولة مجددًا." : "Attachment unavailable. Reopen the conversation to retry."}</p>}
 
                               {message.attachment_url &&
                                 message.message_type ===
@@ -1367,7 +1221,7 @@ export default function MessageThread({
                                       <p
                                         className={`mt-0.5 text-[10px] ${
                                           isOwn
-                                            ? "text-white/60"
+                                            ? "text-[var(--brand-on-ink)] opacity-70"
                                             : "text-[var(--brand-text-muted)]"
                                         }`}
                                       >
@@ -1382,12 +1236,15 @@ export default function MessageThread({
                           )}
 
                           <div className="mt-2 flex items-center justify-end gap-2">
+                            {isOwn && !message.deleted_at && (
+                              <span className="text-[10px] text-[var(--brand-on-ink)]" aria-label={message.read_at ? (isArabic ? "تمت القراءة" : "Read") : (isArabic ? "تم الإرسال" : "Sent")} title={message.read_at ? (isArabic ? "تمت القراءة" : "Read") : (isArabic ? "تم الإرسال" : "Sent")}>{message.read_at ? "✓✓" : "✓"}</span>
+                            )}
                             {message.edited_at &&
                               !message.deleted_at && (
                                 <span
                                   className={`text-[10px] ${
                                     isOwn
-                                      ? "text-white/60"
+                                      ? "text-[var(--brand-on-ink)] opacity-70"
                                       : "text-[var(--brand-text-muted)]"
                                   }`}
                                 >
@@ -1400,7 +1257,7 @@ export default function MessageThread({
                             <span
                               className={`text-[10px] ${
                                 isOwn
-                                  ? "text-white/70"
+                                  ? "text-[var(--brand-on-ink)] opacity-75"
                                   : "text-[var(--brand-text-muted)]"
                               }`}
                             >
@@ -1410,11 +1267,11 @@ export default function MessageThread({
                             </span>
                           </div>
 
-                          {isOwn &&
+                          {isOwn && !readOnly &&
                             !message.deleted_at &&
                             editingId !==
                               message.id && (
-                              <div className="mt-2 hidden justify-end gap-3 border-t border-white/10 pt-2 group-hover:flex">
+                              <div className="mt-2 flex justify-end gap-3 border-t border-current/15 pt-2">
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1426,7 +1283,7 @@ export default function MessageThread({
                                       message.content
                                     );
                                   }}
-                                  className="text-[11px] font-semibold text-white/75 transition hover:text-white"
+                                  className="min-h-8 rounded px-1 text-xs font-semibold text-[var(--brand-on-ink)] transition hover:underline"
                                 >
                                   {isArabic
                                     ? "تعديل"
@@ -1440,7 +1297,7 @@ export default function MessageThread({
                                       message.id
                                     )
                                   }
-                                  className="text-[11px] font-semibold text-white/75 transition hover:text-white"
+                                  className="min-h-8 rounded px-1 text-xs font-semibold text-[var(--brand-on-ink)] transition hover:underline"
                                 >
                                   {isArabic
                                     ? "حذف"
@@ -1510,9 +1367,7 @@ export default function MessageThread({
                 ) ? (
                   <img
                     src={
-                      URL.createObjectURL(
-                        selectedFile
-                      )
+                      filePreview ?? undefined
                     }
                     alt=""
                     className="h-12 w-12 rounded-xl object-cover"
@@ -1540,10 +1395,10 @@ export default function MessageThread({
                 <button
                   type="button"
                   onClick={() =>
-                    setSelectedFile(
-                      null
-                    )
+                    chooseFile(null)
                   }
+                  aria-label={isArabic ? "إزالة المرفق" : "Remove attachment"}
+                  disabled={isPending}
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-lg text-red-500 transition hover:bg-red-500/10"
                 >
                   ×
@@ -1552,27 +1407,15 @@ export default function MessageThread({
             )}
 
             <div className="flex items-end gap-2">
-              <label className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border text-[var(--brand-text-muted)] transition hover:bg-[var(--brand-bg)] hover:text-[#087a54]">
-                <PaperclipIcon />
-
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*,.pdf,.doc,.docx,.zip"
-                  onChange={(
-                    event
-                  ) =>
-                    setSelectedFile(
-                      event.target
-                        .files?.[0] ??
-                        null
-                    )
-                  }
-                />
-              </label>
+              <button type="button" disabled={isPending} aria-label={isArabic ? "إرفاق ملف" : "Attach file"} onClick={() => fileInputRef.current?.click()}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-[var(--brand-text-muted)] transition hover:bg-[var(--brand-bg)]"><PaperclipIcon /></button>
+              <input ref={fileInputRef} type="file" className="hidden" accept={CHAT_FILE_ACCEPT} disabled={isPending}
+                onChange={event => { chooseFile(event.target.files?.[0] ?? null); event.target.value = ""; }} />
 
               <div className="min-w-0 flex-1">
                 <textarea
+                  disabled={isPending}
+                  aria-label={isArabic ? "اكتب رسالتك" : "Write a message"}
                   value={
                     draft
                   }
@@ -1590,7 +1433,7 @@ export default function MessageThread({
                     if (
                       event.key ===
                         "Enter" &&
-                      !event.shiftKey
+                      !event.shiftKey && !event.nativeEvent.isComposing
                     ) {
                       event.preventDefault();
 
@@ -1614,6 +1457,7 @@ export default function MessageThread({
 
               <button
                 type="submit"
+                aria-label={isArabic ? "إرسال" : "Send"}
                 disabled={
                   isPending ||
                   (

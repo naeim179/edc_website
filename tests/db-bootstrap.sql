@@ -30,3 +30,11 @@ grant usage on schema auth, storage, public to anon, authenticated, service_role
 grant select, insert, update, delete on storage.objects to authenticated, service_role;
 grant all on auth.users, storage.buckets to service_role;
 create publication supabase_realtime;
+
+-- Minimal Realtime authorization surface for private-channel policy regressions.
+create schema realtime;
+create table realtime.messages (id uuid default gen_random_uuid(), topic text, extension text, payload jsonb);
+alter table realtime.messages enable row level security;
+create function realtime.topic() returns text language sql stable as $$ select current_setting('realtime.topic',true); $$;
+grant usage on schema realtime to authenticated,anon;
+grant select,insert on realtime.messages to authenticated,anon;
