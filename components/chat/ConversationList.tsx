@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { subscribeChat } from "@/lib/chat-realtime";
+import { chatPreview } from "@/lib/chat";
 
 import {
   useEffect,
@@ -172,7 +174,7 @@ export default function ConversationList({
     useState<Filter>("all");
 
   useEffect(() => {
-    window.setTimeout(
+    const timer = window.setTimeout(
       () => {
         setConversations(
           initialConversations
@@ -180,6 +182,7 @@ export default function ConversationList({
       },
       0
     );
+    return () => window.clearTimeout(timer);
   }, [
     initialConversations,
   ]);
@@ -209,6 +212,10 @@ export default function ConversationList({
               `${column}=eq.${userId}`,
           },
           (payload) => {
+            if (payload.eventType === "DELETE") {
+              setConversations(previous => previous.filter(item => item.id !== payload.old.id));
+              return;
+            }
             const updated =
               payload.new as
                 Partial<ConversationListItem> & {
@@ -257,12 +264,10 @@ export default function ConversationList({
                         ...conversation,
 
                         last_message_at:
-                          updated.last_message_at ??
-                          conversation.last_message_at,
+                          updated.last_message_at !== undefined ? updated.last_message_at : conversation.last_message_at,
 
                         last_message_preview:
-                          updated.last_message_preview ??
-                          conversation.last_message_preview,
+                          updated.last_message_preview !== undefined ? updated.last_message_preview : conversation.last_message_preview,
 
                         unread_count:
                           role ===
@@ -289,18 +294,25 @@ export default function ConversationList({
             );
           }
         )
-        .subscribe();
+        ;
+    const dispose = subscribeChat(supabase, channel, status => { if (status === "SUBSCRIBED") router.refresh(); });
 
     return () => {
-      supabase.removeChannel(
-        channel
-      );
+      dispose();
     };
   }, [
     userId,
     role,
     router,
   ]);
+
+  useEffect(() => {
+    const sync = () => { if (document.visibilityState === "visible") router.refresh(); };
+    window.addEventListener("focus", sync);
+    document.addEventListener("visibilitychange", sync);
+    const timer = window.setInterval(sync, 30000);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", sync); document.removeEventListener("visibilitychange", sync); };
+  }, [router]);
 
   const totalUnread =
     useMemo(
@@ -870,7 +882,7 @@ export default function ConversationList({
                           >
                             {conversation.last_message_preview
                               ?.trim()
-                              ? conversation.last_message_preview
+                              ? chatPreview(conversation.last_message_preview, language)
                               : copy.noMessages}
                           </p>
 

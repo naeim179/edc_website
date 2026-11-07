@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getMessages } from "@/lib/chat";
+import { chatAttachmentPath, validChatFile } from "@/lib/chat-attachments";
 
 export async function startConversation(
   courseId: string
@@ -161,133 +163,97 @@ export async function startConversation(
 }
 
 
+function refreshChatPaths(conversationId: string) {
+  revalidatePath(`/messages/${conversationId}`);
+  revalidatePath("/messages");
+  revalidatePath("/admin/messages");
+}
+
+export async function getConversationMessages(conversationId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("يجب تسجيل الدخول أولاً");
+  return getMessages(supabase, conversationId);
+}
+
 export async function sendMessage(
   conversationId: string,
   content: string,
-  attachment?: {
-    url: string;
-    name: string;
-    size: number;
-    type: "image" | "file";
-  }
+  attachment?: { url: string; name: string; size: number; type: "image" | "file" }
 ) {
   const trimmed = content.trim();
-
-  if (!trimmed && !attachment) {
-    throw new Error("لا يمكن إرسال رسالة فارغة");
-  }
-  if (trimmed.length > 4000) {
-    throw new Error("الرسالة طويلة جدًا");
-  }
-
+  if (!trimmed && !attachment) throw new Error("لا يمكن إرسال رسالة فارغة");
+  if (trimmed.length > 4000) throw new Error("الرسالة طويلة جدًا");
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("يجب تسجيل الدخول أولاً");
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("يجب تسجيل الدخول أولاً");
+  // Verify membership before touching uploaded files. Administrators remain read-only.
+  const { data: conversation, error: conversationError } = await supabase.from("conversations")
+    .select("student_id,teacher_id").eq("id", conversationId).maybeSingle();
+  if (conversationError || !conversation || ![conversation.student_id, conversation.teacher_id].includes(user.id)) {
+    throw new Error("لا يمكنك الإرسال في هذه المحادثة");
   }
-
+  let attachmentPath: string | null = null;
+  if (attachment) {
+    attachmentPath = chatAttachmentPath(attachment.url, conversationId);
+    if (!attachmentPath || !validChatFile(attachment.name, attachment.size) || !["image", "file"].includes(attachment.type)) {
+      throw new Error("مرفق غير صالح أو أكبر من 10MB");
+    }
+    const { data: info, error } = await supabase.storage.from("chat-files").info(attachmentPath);
+    if (error || !info || info.size !== attachment.size) throw new Error("تعذر التحقق من المرفق");
+  }
   const { error } = await supabase.from("messages").insert({
-    conversation_id: conversationId,
-    sender_id: user.id,
-    content: trimmed || " ",
-    message_type: attachment?.type ?? "text",
-    attachment_url: attachment?.url ?? null,
-    attachment_name: attachment?.name ?? null,
-    attachment_size: attachment?.size ?? null,
+    conversation_id: conversationId, sender_id: user.id, content: trimmed || " ",
+    message_type: attachment?.type ?? "text", attachment_url: attachmentPath,
+    attachment_name: attachment?.name ?? null, attachment_size: attachment?.size ?? null,
   });
-
-  if (error) {
-    console.error("sendMessage error:", error.message, error.code, error.details, error.hint);
-    throw new Error(`تعذر إرسال الرسالة: ${error.message}`);
-  }
-
-  revalidatePath(`/messages/${conversationId}`);
-  revalidatePath("/messages");
+  if (error) throw new Error("تعذر إرسال الرسالة");
+  refreshChatPaths(conversationId);
 }
 
 export async function markConversationRead(conversationId: string) {
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-
-  const { error } = await supabase.rpc("mark_conversation_read", {
-    p_conversation_id: conversationId,
-  });
-
-  if (error) {
-    console.error("markConversationRead error:", error.message);
-  }
-
+  const { error } = await supabase.rpc("mark_conversation_read", { p_conversation_id: conversationId });
+  if (error) throw new Error("تعذر تحديث حالة قراءة المحادثة");
   revalidatePath("/messages");
 }
 
-export async function editMessage(
-  messageId: string,
-  content: string
-) {
+export async function editMessage(messageId: string, content: string) {
   const trimmed = content.trim();
-
-  if (!trimmed) {
-    throw new Error("الرسالة لا يمكن أن تكون فارغة");
-  }
-
+  if (!trimmed) throw new Error("الرسالة لا يمكن أن تكون فارغة");
+  if (trimmed.length > 4000) throw new Error("الرسالة طويلة جدًا");
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("يجب تسجيل الدخول");
-  }
-
-  const { error } = await supabase
-    .from("messages")
-    .update({
-      content: trimmed,
-      edited_at: new Date().toISOString(),
-    })
-    .eq("id", messageId)
-    .eq("sender_id", user.id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("يجب تسجيل الدخول");
+  const { data, error } = await supabase.from("messages")
+    .update({ content: trimmed, edited_at: new Date().toISOString() })
+    .eq("id", messageId).eq("sender_id", user.id).is("deleted_at", null)
+    .select("id,conversation_id").maybeSingle();
+  if (error || !data) throw new Error("تعذر تعديل الرسالة أو لم تعد متاحة");
+  refreshChatPaths(data.conversation_id);
 }
 
-
-export async function deleteMessage(
-  messageId: string
-) {
+export async function deleteMessage(messageId: string) {
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("يجب تسجيل الدخول");
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("يجب تسجيل الدخول");
+  const { data: message, error: lookupError } = await supabase.from("messages")
+    .select("conversation_id,attachment_url").eq("id", messageId).eq("sender_id", user.id)
+    .is("deleted_at", null).maybeSingle();
+  if (lookupError || !message) throw new Error("تعذر حذف الرسالة أو لم تعد متاحة");
+  const { data, error } = await supabase.from("messages")
+    .update({ deleted_at: new Date().toISOString(), content: "" })
+    .eq("id", messageId).eq("sender_id", user.id).is("deleted_at", null)
+    .select("id").maybeSingle();
+  if (error || !data) throw new Error("تعذر حذف الرسالة أو لم تعد متاحة");
+  if (message.attachment_url) {
+    const path = chatAttachmentPath(message.attachment_url, message.conversation_id);
+    if (path) {
+      const { error: removalError } = await supabase.storage.from("chat-files").remove([path]);
+      if (removalError) console.error("Chat attachment cleanup failed:", removalError.message);
+    }
   }
-
-  const { error } = await supabase
-    .from("messages")
-    .update({
-      deleted_at: new Date().toISOString(),
-      content: "",
-    })
-    .eq("id", messageId)
-    .eq("sender_id", user.id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  refreshChatPaths(message.conversation_id);
 }
-

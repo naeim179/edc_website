@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Server Action arguments can include passwords and private message bodies.
+  logging: { serverFunctions: false },
   images: {
     remotePatterns: [
       {

@@ -2,12 +2,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 db_container="edc-security-test-$$"
+db_image="${TEST_POSTGRES_IMAGE:-postgres:17}"
 docker_local() {
   env -u DOCKER_HOST -u DOCKER_CONTEXT -u DOCKER_TLS -u DOCKER_TLS_VERIFY -u DOCKER_CERT_PATH \
     docker --host=unix:///var/run/docker.sock "$@"
 }
 trap 'docker_local rm -f -v "$db_container" >/dev/null 2>&1 || true' EXIT
-docker_local run -d --name "$db_container" -e POSTGRES_PASSWORD=disposable-test-only postgres:17 >/dev/null
+docker_local run -d --name "$db_container" -e POSTGRES_PASSWORD=disposable-test-only "$db_image" >/dev/null
 ready=false
 for ((attempt=0; attempt<60; attempt++)); do
   # The image's temporary init server listens only on a Unix socket. Wait for
@@ -39,4 +40,5 @@ SQL
   psql_local -q -1 < "$migration"
 done
 psql_local < tests/security-regression.sql
+psql_local < tests/chat-regression.sql
 echo 'All migrations and database security checks passed.'

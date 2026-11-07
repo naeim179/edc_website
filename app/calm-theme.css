@@ -267,3 +267,9 @@ html[data-theme] body.yw-design-system .yw-auth-language > button[aria-pressed="
 @media (max-width: 767px) {
   html[data-theme] body.yw-design-system .yw-display-trigger { font-size: 12px; padding-inline: 10px; }
 }
+
+/* Chat surfaces use the same quiet borders as the rest of the platform. */
+.yw-design-system .yw-chat-thread,
+.yw-design-system .yw-chat-thread > header,
+.yw-design-system .yw-chat-thread > form,
+.yw-design-system .yw-chat-thread [class~="border"] { border-color: var(--brand-border); }

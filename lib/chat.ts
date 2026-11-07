@@ -1,3 +1,4 @@
+import { signChatAttachments } from "@/lib/chat-attachments";
 import type {
   SupabaseClient,
 } from "@supabase/supabase-js";
@@ -623,8 +624,15 @@ export async function getMessages(
     );
   }
 
-  return (
-    data ??
-    []
-  ) as ChatMessage[];
+  const messages = ((data ?? []) as ChatMessage[]).map(message => message.deleted_at ? { ...message, content: "", attachment_url: null, attachment_name: null, attachment_size: null } : message);
+  return signChatAttachments(supabase, messages);
+}
+
+export function chatPreview(preview: string | null, language: "ar" | "en"): string | null {
+  const labels: Record<string, [string, string]> = {
+    __deleted__: ["تم حذف هذه الرسالة", "This message was deleted"],
+    __image__: ["صورة", "Image"],
+    __file__: ["ملف مرفق", "Attachment"],
+  };
+  return preview && labels[preview] ? labels[preview][language === "ar" ? 0 : 1] : preview;
 }
