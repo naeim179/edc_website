@@ -235,3 +235,9 @@ html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) .yw
   .yw-design-system .yw-public-header nav { gap: 12px; padding-top: 12px; }
   .yw-design-system .yw-public-header nav a { flex: 1; }
 }
+
+/* Navigation branding uses the original academy artwork in every theme and role. */
+html[data-theme] body.yw-design-system .yw-brand-logo-original {
+  background: #fff; border-radius: 50%; overflow: hidden;
+}
+html[data-theme] body.yw-design-system .yw-brand-logo-original img { filter: none; }
