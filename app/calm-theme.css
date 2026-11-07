@@ -236,8 +236,8 @@ html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) .yw
   .yw-design-system .yw-public-header nav a { flex: 1; }
 }
 
-/* Welcome-page branding uses the original academy artwork in every theme. */
-html[data-theme] body.yw-design-system .yw-guest-landing .yw-brand-logo-original {
+/* Navigation branding uses the original academy artwork in every theme and role. */
+html[data-theme] body.yw-design-system .yw-brand-logo-original {
   background: #fff; border-radius: 50%; overflow: hidden;
 }
-html[data-theme] body.yw-design-system .yw-guest-landing .yw-brand-logo-original img { filter: none; }
+html[data-theme] body.yw-design-system .yw-brand-logo-original img { filter: none; }
