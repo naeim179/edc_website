@@ -169,7 +169,7 @@ html[data-theme] body.yw-design-system :is(.border-gray-100,.border-gray-200,.bo
 .yw-design-system [class~="hover:bg-gray-50"]:hover,
 .yw-design-system [class~="hover:bg-gray-100"]:hover { background-color: var(--calm-soft) !important; }
 
-/* Account pages retain their original green/navy atmosphere in every display mode. */
+/* Account pages retain their original blue gradient in every display mode. */
 html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) {
   --calm-surface: #f8fafc;
   --calm-text: #1e293b;
@@ -177,8 +177,7 @@ html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) {
   --calm-border: #e2e8f0;
   --calm-accent: #d6b56c;
   --calm-hover: #e8ce95;
-  background: radial-gradient(ellipse at top right, #28634e 0, transparent 60%),
-    radial-gradient(ellipse at bottom left, #315879 0, transparent 55%), #153e39;
+  background: linear-gradient(135deg, #0b1f3a, #124b8a, #d6b56c);
   color: #fff;
   color-scheme: light;
 }
@@ -194,9 +193,9 @@ html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) inp
 }
 /* Transparent artwork belongs to the page, without a white disc or frame. */
 .yw-design-system .yw-brand-logo { background: transparent; border-radius: 0; overflow: visible; }
-html[data-theme="dark"] .yw-brand-logo img,
+html[data-theme="dark"] .yw-brand-logo img { filter: brightness(0) invert(1); }
 html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) .yw-brand-logo img {
-  filter: brightness(0) invert(1);
+  filter: brightness(0) saturate(100%) invert(77%) sepia(30%) saturate(568%) hue-rotate(3deg) brightness(93%) contrast(91%);
 }
 .yw-design-system .yw-auth-brand { width: 176px; height: 176px; }
 .yw-design-system .yw-brand-logo-auth { width: 176px; height: 176px; }
