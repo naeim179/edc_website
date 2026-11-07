@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c]"
+      className="yw-auth-page min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c]"
       dir={isArabic ? "rtl" : "ltr"}
     >
 
@@ -82,7 +82,7 @@ export default function ResetPasswordPage() {
 
         <div className="text-center mb-8">
 
-          <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm shadow-[0_15px_40px_rgba(0,0,0,0.18)] sm:mb-8 sm:h-44 sm:w-44">
+          <div className="yw-auth-brand mx-auto mb-6 flex items-center justify-center sm:mb-8">
 
             <BrandLogo variant="auth" priority />
 
@@ -142,6 +142,7 @@ export default function ResetPasswordPage() {
 
 
           <button
+            type="submit"
             disabled={loading}
             className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white hover:bg-[#0d3b6e]"
           >

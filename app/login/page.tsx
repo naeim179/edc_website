@@ -93,7 +93,7 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-md p-4 sm:p-8">
         <div className="mb-10 text-center">
-          <div className="relative mx-auto mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-white/90 shadow-[0_15px_40px_rgba(0,0,0,0.18)] sm:mb-8 sm:h-44 sm:w-44">
+          <div className="yw-auth-brand mx-auto mb-6 flex items-center justify-center sm:mb-8">
             <BrandLogo variant="auth" priority />
           </div>
 
