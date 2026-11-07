@@ -30,6 +30,7 @@ export default async function CheckoutPage({
 
   searchParams: Promise<{
     booking?: string;
+    method?: string;
   }>;
 }) {
   const {
@@ -252,6 +253,7 @@ export default async function CheckoutPage({
   return (
     <AppShell>
       <SubscriptionCheckout
+        initialPaymentMethod={query.method === "cliq" ? "cliq" : query.method === "paytabs" ? "paytabs" : undefined}
         courseId={
           course.id
         }

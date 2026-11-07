@@ -21,6 +21,7 @@ type BookingSlot = {
 };
 
 type Props = {
+  initialPaymentMethod?: "paytabs" | "cliq";
   courseId: string;
   title: string;
   monthlyPriceUsd: number;
@@ -154,6 +155,7 @@ export default function SubscriptionCheckout({
   monthlyPriceUsd,
   courseType,
   isRenewal,
+  initialPaymentMethod,
   groupDayOfWeek,
   groupStartTime,
   groupEndTime,
@@ -242,8 +244,8 @@ export default function SubscriptionCheckout({
   ] =
     useState<
       "paytabs" |
-      "cliq"
-    >("paytabs");
+      "cliq" | null
+    >(initialPaymentMethod ?? null);
 
   const [
     secondsLeft,
@@ -758,6 +760,7 @@ export default function SubscriptionCheckout({
                 <div className="grid gap-3 sm:grid-cols-2">
                   <button
                     type="button"
+                    aria-pressed={paymentMethod === "paytabs"}
                     onClick={() =>
                       setPaymentMethod(
                         "paytabs"
@@ -786,6 +789,7 @@ export default function SubscriptionCheckout({
                   {!privateNewBooking && (
                     <button
                       type="button"
+                      aria-pressed={paymentMethod === "cliq"}
                       onClick={() =>
                         setPaymentMethod(
                           "cliq"
@@ -939,13 +943,13 @@ export default function SubscriptionCheckout({
                 paymentMethod === "paytabs" && autoRenew
               }
               paymentMethod={
-                paymentMethod
+                paymentMethod ?? "paytabs"
               }
               privateBookingId={
                 privateBookingId
               }
               disabled={
-                holdExpired
+                holdExpired || (!paymentMethod && !isFreeCoupon && totalUsd > 0)
               }
               couponCode={
                 couponValid
@@ -967,7 +971,9 @@ export default function SubscriptionCheckout({
                       : isArabic
                         ? `تفعيل الاشتراك المجاني${couponMonths ? ` (${couponMonths} شهر)` : ""}`
                         : `Activate Free Subscription${couponMonths ? ` (${couponMonths} month${couponMonths === 1 ? "" : "s"})` : ""}`
-                    : isArabic
+                    : !paymentMethod
+                      ? (isArabic ? "اختر طريقة الدفع أولًا" : "Choose a payment method first")
+                      : isArabic
                       ? `دفع ${payableTotalUsd.toFixed(
                           2
                         )} USD`

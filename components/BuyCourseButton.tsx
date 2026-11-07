@@ -48,7 +48,7 @@ export default function BuyCourseButton({
   );
 
   const [errorCode, setErrorCode] = useState<
-    "pending" | "uncertain" | "generic" | null
+    "pending" | "paytabs" | "uncertain" | "generic" | null
   >(null);
 
   const [
@@ -80,8 +80,8 @@ export default function BuyCourseButton({
 
         if (result && typeof result === "object" && "checkoutError" in result) {
           setErrorCode(
-            result.checkoutError === "PAYMENT_PENDING_REVIEW"
-              ? "pending"
+            result.checkoutError === "PAYTABS_PENDING"
+              ? "paytabs"
               : result.checkoutError === "PAYMENT_INIT_UNCERTAIN"
                 ? "uncertain"
                 : "generic"
@@ -118,7 +118,11 @@ export default function BuyCourseButton({
           aria-live="assertive"
           className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800"
         >
-          {errorCode === "pending"
+          {errorCode === "paytabs"
+            ? isArabic
+              ? "توجد محاولة PayTabs سابقة لم يُحسم وضعها بعد. تم التحقق الآن؛ لا يمكن فتح تحويل جديد حتى يؤكد المزود انتهاء محاولة البطاقة بدون دفع. يمكنك الضغط مجددًا لإعادة التحقق لاحقًا."
+              : "A previous PayTabs attempt is unresolved. We checked it now; a new transfer can start only once the provider confirms the card attempt ended unpaid. Try again later to recheck."
+            : errorCode === "pending"
             ? isArabic
               ? "توجد عملية دفع سابقة لهذه الدورة قيد التحقق. يرجى التواصل مع الدعم قبل إعادة المحاولة."
               : "A previous payment for this course is still under review. Please contact support before retrying."

@@ -157,7 +157,7 @@ export default async function CheckoutSuccessPage({
         <>
           <h1 className="mb-4 text-2xl font-bold">تم إلغاء طلب CliQ</h1>
           <p className="mb-5">يمكنك العودة واختيار طريقة دفع أخرى. إلغاء الطلب لا يعيد أي مبلغ حوّلته خارج الموقع.</p>
-          <Link href={courseId ? `/checkout/${courseId}` : "/courses"} className="inline-block rounded-xl bg-[#124b8a] px-6 py-3 font-bold text-white">العودة للدفع</Link>
+          <Link href={courseId ? `/checkout/${courseId}?method=cliq` : "/courses"} className="inline-block rounded-xl bg-[#124b8a] px-6 py-3 font-bold text-white">العودة للدفع</Link>
         </>
       ) : isCliq ? (
         <>
