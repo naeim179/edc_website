@@ -70,3 +70,14 @@ export async function uploadPaymentProof(
 
   return { success: true };
 }
+
+export async function cancelCliqPayment(orderId: string) {
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("Unauthorized");
+  const { data: courseId, error } = await supabase.rpc(
+    "cancel_unsubmitted_cliq_order", { p_order_id: orderId }
+  );
+  if (error || !courseId) throw new Error("CLIQ_ORDER_NOT_CANCELLABLE");
+  return { courseId: String(courseId) };
+}

@@ -19,8 +19,10 @@ export default async function CheckoutSuccessPage({
   const params =
     await searchParams;
 
-  const isCliq =
-    params.method === "cliq";
+  let isCliq = false;
+  let cliqCancelled = false;
+  let proofSubmitted = false;
+  let cliqAmount: string | null = null;
 
   const cliqAlias = process.env.CLIQ_ALIAS?.trim();
   const cliqAccountName = process.env.CLIQ_ACCOUNT_NAME?.trim();
@@ -42,6 +44,28 @@ export default async function CheckoutSuccessPage({
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  if (params.method === "cliq" && orderId && user) {
+    const { data: cliqOrder } = await supabase.from("orders")
+      .select("course_id,status,payment_proof,cliq_cancelled_at,amount,currency")
+      .eq("id", orderId).eq("user_id", user.id)
+      .eq("payment_method", "cliq").eq("source", "manual").maybeSingle();
+    if (cliqOrder) {
+      courseId = cliqOrder.course_id;
+      cliqAmount = `${Number(cliqOrder.amount).toFixed(2)} ${cliqOrder.currency}`;
+      isCliq = cliqOrder.status === "pending";
+      proofSubmitted = Boolean(cliqOrder.payment_proof);
+      cliqCancelled = cliqOrder.status === "failed" && Boolean(cliqOrder.cliq_cancelled_at);
+      if (cliqOrder.status === "paid") {
+        paid = true;
+        const { data: subscription } = await supabase.from("subscriptions")
+          .select("expires_at,auto_renew").eq("student_id", user.id)
+          .eq("course_id", courseId).maybeSingle();
+        expiresAt = subscription?.expires_at ?? null;
+        autoRenew = Boolean(subscription?.auto_renew);
+      }
+    }
+  }
 
   if (params.tranRef && user) {
     for (
@@ -129,11 +153,19 @@ export default async function CheckoutSuccessPage({
       className="mx-4 mt-6 max-w-lg rounded-[26px] border bg-white p-5 text-center shadow-sm sm:mx-auto sm:mt-20 sm:p-8"
       dir="rtl"
     >
-      {isCliq ? (
+      {cliqCancelled ? (
+        <>
+          <h1 className="mb-4 text-2xl font-bold">تم إلغاء طلب CliQ</h1>
+          <p className="mb-5">يمكنك العودة واختيار طريقة دفع أخرى. إلغاء الطلب لا يعيد أي مبلغ حوّلته خارج الموقع.</p>
+          <Link href={courseId ? `/checkout/${courseId}` : "/courses"} className="inline-block rounded-xl bg-[#124b8a] px-6 py-3 font-bold text-white">العودة للدفع</Link>
+        </>
+      ) : isCliq ? (
         <>
           <h1 className="text-2xl font-bold text-[#087a54] mb-4">
             الدفع عبر CliQ
           </h1>
+          {cliqAmount && <p dir="ltr" className="mb-4 text-xl font-bold">{cliqAmount}</p>}
+          <p className="mb-4 text-sm text-slate-600">هذا طلب CliQ الحالي لهذه الدورة. لاختيار طريقة دفع أخرى، ألغِ الطلب أولًا إذا لم تحوّل المبلغ.</p>
 
           <p className="text-slate-600 mb-4">
             {cliqReady ? "قم بتحويل المبلغ إلى حساب CliQ التالي ثم ارفع إثبات التحويل." : "الدفع عبر CliQ غير متاح حاليًا. يرجى اختيار طريقة دفع أخرى."}
@@ -155,9 +187,11 @@ export default async function CheckoutSuccessPage({
           </div>
           )}
 
-          {cliqReady && orderId && (
+          {orderId && (
             <CliqPaymentUpload
               orderId={orderId}
+              proofSubmitted={proofSubmitted}
+              uploadEnabled={cliqReady}
             />
           )}
         </>
