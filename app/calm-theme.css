@@ -195,7 +195,7 @@ html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) inp
 .yw-design-system .yw-brand-logo { background: transparent; border-radius: 0; overflow: visible; }
 html[data-theme="dark"] .yw-brand-logo img { filter: brightness(0) invert(1); }
 html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) .yw-brand-logo img {
-  filter: brightness(0);
+  filter: brightness(0) saturate(100%) invert(77%) sepia(30%) saturate(568%) hue-rotate(3deg) brightness(93%) contrast(91%);
 }
 .yw-design-system .yw-auth-brand { width: 176px; height: 176px; }
 .yw-design-system .yw-brand-logo-auth { width: 176px; height: 176px; }
