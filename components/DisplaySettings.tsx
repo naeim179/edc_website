@@ -135,7 +135,7 @@ export default function DisplaySettings() {
         style={{
           borderColor: "var(--brand-border)",
           backgroundColor: "var(--brand-ink)",
-          color: "#ffffff",
+          color: "var(--brand-on-ink)",
         }}
       >
         <SlidersIcon />
