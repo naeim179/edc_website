@@ -454,7 +454,7 @@ export async function createOrder(
   if (pendingError) throw new Error(pendingError.message);
   if (existingPending) {
     // Re-open the original CliQ upload page without repricing or creating a new order.
-    if (paymentMethod === "cliq" && existingPending.payment_method === "cliq" &&
+    if (existingPending.payment_method === "cliq" &&
         existingPending.source === "manual") {
       redirect(`/checkout/success?order=${existingPending.id}&method=cliq`);
     }

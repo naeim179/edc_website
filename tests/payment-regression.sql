@@ -104,4 +104,31 @@ begin
  if result.result_state<>'paid' or (select status from private_course_bookings where id=aid2)<>'confirmed' or not exists(select 1 from enrollments where student_id=student and course_id=oid2) then raise exception 'Private atomic fulfillment failed'; end if;
  raise notice 'Payment regression: approval, amount/currency, snapshots, idempotency, expiry, CliQ and renewal passed';
 end $$;
+-- Authenticated cancellation: owns the order, no proof, still pending.
+do $$ declare c uuid; o uuid; cp uuid; result uuid;
+begin
+ insert into courses(title,is_published,is_free,price,course_type) values('CliQ cancellation test',true,false,25,'group') returning id into c;
+ insert into course_coupons(code,course_id,coupon_type,discount_type,discount_value,subscription_months) values('CANCEL-COUPON',c,'discount','fixed',5,null) returning id into cp;
+ insert into orders(user_id,course_id,amount,original_amount,currency,status,subscription_months,payment_method,source)
+ values('d0000000-0000-4000-8000-000000000001',c,25,25,'USD','pending',1,'cliq','manual') returning id into o;
+ perform reserve_discount_coupon_for_order('CANCEL-COUPON','d0000000-0000-4000-8000-000000000001',c,o,25,90);
+ perform set_config('request.jwt.claim.sub','d0000000-0000-4000-8000-000000000099',true);
+ begin perform cancel_unsubmitted_cliq_order(o); raise exception 'Foreign cancellation accepted'; exception when others then if sqlerrm<>'CLIQ_ORDER_UNAVAILABLE' then raise; end if; end;
+ perform set_config('request.jwt.claim.sub','d0000000-0000-4000-8000-000000000001',true);
+ result := cancel_unsubmitted_cliq_order(o);
+ if result<>c or (select status from orders where id=o)<>'failed' or (select cliq_cancelled_at from orders where id=o) is null then raise exception 'Cancellation failed'; end if;
+ if exists(select 1 from coupon_redemptions where order_id=o and status='reserved') then raise exception 'Coupon not released'; end if;
+ if cancel_unsubmitted_cliq_order(o)<>c then raise exception 'Cancellation retry failed'; end if;
+ insert into orders(user_id,course_id,amount,currency,status,subscription_months,payment_method,source,payment_proof)
+ values('d0000000-0000-4000-8000-000000000001',c,25,'USD','pending',1,'cliq','manual','proof.jpg') returning id into o;
+ begin perform cancel_unsubmitted_cliq_order(o); raise exception 'Submitted proof cancelled'; exception when others then if sqlerrm<>'CLIQ_ORDER_NOT_CANCELLABLE' then raise; end if; end;
+ update orders set status='failed' where id=o;
+ insert into orders(user_id,course_id,amount,currency,status,subscription_months,payment_method,source)
+ values('d0000000-0000-4000-8000-000000000001',c,25,'USD','paid',1,'cliq','manual') returning id into o;
+ begin perform cancel_unsubmitted_cliq_order(o); raise exception 'Paid cancelled'; exception when others then if sqlerrm<>'CLIQ_ORDER_NOT_CANCELLABLE' then raise; end if; end;
+ insert into orders(user_id,course_id,amount,currency,status,subscription_months,payment_method,source)
+ values('d0000000-0000-4000-8000-000000000001',c,25,'USD','pending',1,'paytabs','manual') returning id into o;
+ begin perform cancel_unsubmitted_cliq_order(o); raise exception 'PayTabs cancelled'; exception when others then if sqlerrm<>'CLIQ_ORDER_UNAVAILABLE' then raise; end if; end;
+ if has_function_privilege('anon','public.cancel_unsubmitted_cliq_order(uuid)','execute') then raise exception 'Anonymous cancellation grant'; end if;
+end $$;
 rollback;
