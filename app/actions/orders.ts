@@ -1,5 +1,7 @@
 "use server";
 
+import { reconcileOwnedPaytabsOrder } from "@/lib/paytabs-reconciliation";
+
 import {
   redirect,
 } from "next/navigation";
@@ -458,6 +460,18 @@ export async function createOrder(
         existingPending.source === "manual") {
       redirect(`/checkout/success?order=${existingPending.id}&method=cliq`);
     }
+    if (existingPending.payment_method === "paytabs") {
+      try {
+        const state = await reconcileOwnedPaytabsOrder(existingPending.id, user.id);
+        if (state === "closed" || state === "expired") {
+          return createOrder(courseId, subscriptionMonths, autoRenew, paymentMethod, couponCode, privateBookingId);
+        }
+        if (state === "paid") redirect(`/courses/${courseId}`);
+      } catch (error) {
+        // Next redirects must propagate. Verification outages preserve the order.
+        if (error instanceof Error && "digest" in error) throw error;
+      }
+    }
     const { data: priorAttempt, error: priorError } = await admin
       .from("paytabs_payment_attempts")
       .select("payment_url,status,created_at")
@@ -481,7 +495,7 @@ export async function createOrder(
     ) {
       redirect(priorAttempt.payment_url);
     }
-    return { checkoutError: "PAYMENT_PENDING_REVIEW" as const };
+    return { checkoutError: "PAYTABS_PENDING" as const };
   }
 
   let normalizedCouponCode:

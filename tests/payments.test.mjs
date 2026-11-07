@@ -85,7 +85,7 @@ test('Unsigned return query never changes payment state',async()=>{
  assert.equal(res.status,303);assert.equal(res.headers.get('location'),env.SITE_URL+'/checkout/success?tranRef=T1');
 });
 for(const file of ['app/api/payments/reconcile/route.ts','app/api/subscriptions/renew/route.ts'])test(`${file} rejects unauthorized scheduling calls`,async()=>{
- const mocks={'next/server':nextServer,'@/lib/supabase/admin':{createAdminClient(){throw Error('Must not access database');}},'@/lib/paytabs':{},'@/lib/payments':{}};
+ const mocks={'@/lib/paytabs-reconciliation':{},'next/server':nextServer,'@/lib/supabase/admin':{createAdminClient(){throw Error('Must not access database');}},'@/lib/paytabs':{},'@/lib/payments':{}};
  assert.equal((await load(file,mocks,{CRON_SECRET:'test'}).GET(new Request('https://academy.example'))).status,401);
  assert.equal((await load(file,mocks).GET(new Request('https://academy.example'))).status,503);
 });
@@ -135,10 +135,24 @@ test('Signed cancellation requires provider verification and returns the closed 
 
 for(const method of ['paytabs','cliq'])test(`An existing manual CliQ order reopens its cancellable page when selecting ${method}`,async()=>{
  const admin={from:table=>({select(){return this;},eq(){return this;},async maybeSingle(){return {data:table==='courses'?{id:'course',title:'cys',price:70,is_published:true,registration_open:true,course_type:'group'}:table==='orders'?{id:'pending-cliq',payment_method:'cliq',source:'manual'}:null};}})};
- const action=load('app/actions/orders.ts',{'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},'next/cache':{revalidatePath(){}},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/paytabs':{},'@/lib/free-enrollment':{calculateFinalPrice:p=>p}});
+ const action=load('app/actions/orders.ts',{'@/lib/paytabs-reconciliation':{},'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},'next/cache':{revalidatePath(){}},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/paytabs':{},'@/lib/free-enrollment':{calculateFinalPrice:p=>p}});
  await assert.rejects(action.createOrder('course',1,false,method),/REDIRECT:\/checkout\/success\?order=pending-cliq&method=cliq/);
 });
 test('CliQ cancellation uses the authenticated RPC and never a caller-supplied user ID',async()=>{
  let args;const action=load('app/actions/payment-proof.ts',{'@/lib/supabase/admin':{},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})},rpc:async(name,input)=>{args={name,input};return {data:'course'};}})}});
  assert.equal((await action.cancelCliqPayment('order')).courseId,'course');assert.equal(args.name,'cancel_unsubmitted_cliq_order');assert.deepEqual(Object.keys(args.input),['p_order_id']);
+});
+
+for(const status of ['C','D','P','A'])test(`On-demand verification preserves payment safety for status ${status}`,async()=>{
+ const calls=[];const filters={};const admin={from:table=>({select(){return this;},eq(k,v){filters[table+':'+k]=v;return this;},update(){return this;},async maybeSingle(){return {data:table==='orders'?{id:'order',created_at:new Date(Date.now()-20*60000).toISOString()}:{id:cart,status:'initiated',created_at:new Date(Date.now()-20*60000).toISOString(),tran_ref:null}};},then(resolve){resolve({});}}),rpc:async(name)=>{calls.push(name);return {data:true};}};
+ const helper=load('lib/paytabs-reconciliation.ts',{'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/payments':{fulfillPaymentByTranRef:async()=>({paid:true})}},env,{fetch:async()=>({ok:true,status:200,json:async()=>[{cart_id:cart,tran_ref:'R1',payment_result:{response_status:status}}]})});
+ const result=await helper.reconcileOwnedPaytabsOrder('order','student');
+ assert.equal(filters['orders:user_id'],'student');assert.equal(filters['orders:payment_method'],'paytabs');
+ if(status==='C'||status==='D'){assert.ok(['closed','expired'].includes(result));assert.deepEqual(calls,['close_expired_unpaid_paytabs_order']);}else{assert.equal(calls.length,0);assert.equal(result,status==='A'?'paid':'skipped');}
+});
+for(const method of [undefined,'cliq'])test(`Checkout requires explicit selection and preserves return method ${method}`,()=>{
+ const React=require('react');const {renderToStaticMarkup}=require('react-dom/server');
+ const component=load('components/SubscriptionCheckout.tsx',{'next/link':{__esModule:true,default:({children,href})=>React.createElement('a',{href},children)},'@/app/actions/coupons':{},'@/components/LanguageProvider':{useLanguage:()=>({language:'ar'})},'@/components/BuyCourseButton':{__esModule:true,default:props=>React.createElement('button',{'data-method':props.paymentMethod,disabled:props.disabled},props.label)}}).default;
+ const html=renderToStaticMarkup(React.createElement(component,{courseId:'course',title:'cys',monthlyPriceUsd:70,courseType:'group',isRenewal:false,registrationOpen:true,initialPaymentMethod:method}));
+ if(method){assert.match(html,/data-method="cliq"/);assert.doesNotMatch(html,/اختر طريقة الدفع أولًا/);}else{assert.match(html,/اختر طريقة الدفع أولًا/);assert.match(html,/disabled=""/);}
 });

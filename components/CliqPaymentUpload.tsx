@@ -55,7 +55,7 @@ export default function CliqPaymentUpload({ orderId, proofSubmitted = false, upl
   if (cancelledCourse) return <div role="status" className="rounded-2xl border p-5">
     <p className="font-bold">{ar ? "تم إلغاء طلب الدفع عبر CliQ." : "CliQ payment request cancelled."}</p>
     <p className="my-3 text-sm">{ar ? "الإلغاء لا يعيد أي مبلغ حوّلته خارج الموقع." : "Cancellation does not refund any transfer made outside this site."}</p>
-    <Link href={`/checkout/${cancelledCourse}`} className="inline-block rounded-xl bg-[#124b8a] px-5 py-3 font-bold text-white">{ar ? "اختيار طريقة دفع أخرى" : "Choose another payment method"}</Link>
+    <Link href={`/checkout/${cancelledCourse}?method=cliq`} className="inline-block rounded-xl bg-[#124b8a] px-5 py-3 font-bold text-white">{ar ? "اختيار طريقة دفع أخرى" : "Choose another payment method"}</Link>
   </div>;
 
   return <div className="rounded-2xl border bg-[var(--brand-surface)] p-5">
