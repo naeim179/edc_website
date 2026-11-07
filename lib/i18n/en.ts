@@ -52,6 +52,16 @@ export const en = {
   },
 
   auth: {
+    identifier: "Username or email",
+    identifierRequired: "Username or email is required",
+    username: "Username",
+    usernameRequired: "Username is required",
+    usernameFormat: "Use 3–30 English letters, numbers, underscores or periods",
+    usernameTaken: "This username is taken. Please choose another",
+    accountExists: "This username or email is already in use",
+    show: "Show",
+    hide: "Hide",
+
     login: "Login",
     register: "Register",
     email: "Email",

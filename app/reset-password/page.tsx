@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AuthLanguageSwitcher from "@/components/auth/AuthLanguageSwitcher";
 import BrandLogo from "@/components/BrandLogo";
 import { createClient } from "@/lib/supabase/client";
+import { translateAuthMessage } from "@/lib/i18n/auth-message";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function ResetPasswordPage() {
@@ -79,6 +81,7 @@ export default function ResetPasswordPage() {
     >
 
       <div className="w-full max-w-md">
+        <AuthLanguageSwitcher />
 
         <div className="text-center mb-8">
 
@@ -90,12 +93,12 @@ export default function ResetPasswordPage() {
 
 
           <h1 className="text-3xl font-bold text-white">
-            إنشاء كلمة مرور جديدة
+            {t.auth.resetTitle}
           </h1>
 
 
           <p className="mt-2 text-white/70">
-            أدخل كلمة المرور الجديدة لحسابك
+            {t.auth.resetDescription}
           </p>
 
         </div>
@@ -104,14 +107,14 @@ export default function ResetPasswordPage() {
 
         {message && (
           <div className="mb-5 rounded-xl bg-green-50 p-3 text-center text-sm text-green-700">
-            {message}
+            {translateAuthMessage(message, language)}
           </div>
         )}
 
 
         {error && (
           <div className="mb-5 rounded-xl bg-red-50 p-3 text-center text-sm text-red-600">
-            {error}
+            {translateAuthMessage(error, language)}
           </div>
         )}
 
@@ -126,6 +129,7 @@ export default function ResetPasswordPage() {
             type="password"
             value={password}
             onChange={(e)=>setPassword(e.target.value)}
+            aria-label={t.auth.newPassword}
             placeholder={t.auth.newPassword}
             className="w-full rounded-xl bg-white px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-[#d6b56c]"
           />
@@ -135,6 +139,7 @@ export default function ResetPasswordPage() {
             type="password"
             value={confirmPassword}
             onChange={(e)=>setConfirmPassword(e.target.value)}
+            aria-label={t.auth.confirmNewPassword}
             placeholder={t.auth.confirmNewPassword}
             className="w-full rounded-xl bg-white px-4 py-3 text-slate-700 outline-none focus:ring-2 focus:ring-[#d6b56c]"
           />
@@ -162,7 +167,7 @@ export default function ResetPasswordPage() {
             href="/login"
             className="font-bold text-[#d6b56c]"
           >
-            العودة لتسجيل الدخول
+            {t.auth.backToLogin}
           </Link>
 
         </div>

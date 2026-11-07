@@ -11,11 +11,12 @@ import {
   UserIcon,
 } from "@/components/icons";
 import { PasswordToggle } from "@/components/password-toggle";
+import { translateAuthMessage } from "@/lib/i18n/auth-message";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const supabase = createClient();
 
   const [fullName, setFullName] = useState("");
@@ -55,10 +56,10 @@ export default function RegisterPage() {
     }
 
     if (!username.trim()) {
-      newErrors.username = "اسم المستخدم مطلوب";
+      newErrors.username = t.auth.usernameRequired;
     } else if (!/^[A-Za-z0-9_.]{3,30}$/.test(username.trim())) {
       newErrors.username =
-        "من 3 إلى 30 حرف: إنجليزي، أرقام، _ أو . فقط";
+        t.auth.usernameFormat;
     }
 
     if (!email) {
@@ -105,7 +106,7 @@ export default function RegisterPage() {
       if (!available) {
         setErrors((prev) => ({
           ...prev,
-          username: "اسم المستخدم مأخوذ، جرّب اسماً آخر",
+          username: t.auth.usernameTaken,
         }));
         return;
       }
@@ -129,7 +130,7 @@ export default function RegisterPage() {
       setServerError(
         err instanceof Error
           ? /database error/i.test(err.message)
-            ? "اسم المستخدم أو البريد الإلكتروني مستخدم مسبقاً"
+            ? t.auth.accountExists
             : err.message
           : t.auth.registerFailed
       );
@@ -145,7 +146,7 @@ export default function RegisterPage() {
     >
       {serverError && (
         <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
-          {serverError}
+          {translateAuthMessage(serverError, language)}
         </div>
       )}
 
@@ -155,25 +156,25 @@ export default function RegisterPage() {
         noValidate
       >
         <div>
-          <label className="mb-2 block text-sm font-medium text-white/90">
-            الاسم الكامل
+          <label htmlFor="register-fullName" className="mb-2 block text-sm font-medium text-white/90">
+            {t.auth.fullName}
           </label>
 
           <div className="relative">
             <UserIcon
               width={19}
               height={19}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
-            <input
+            <input id="register-fullName"
               value={fullName}
               onChange={(event) =>
                 setFullName(event.target.value)
               }
-              placeholder="الاسم الكامل"
+              placeholder={t.auth.fullName}
               disabled={isLoading}
-              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+              className={`w-full rounded-xl border bg-slate-50 py-3 ps-11 pe-4 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                 errors.fullName
                   ? "border-red-400"
                   : "border-slate-200"
@@ -183,24 +184,24 @@ export default function RegisterPage() {
 
           {errors.fullName && (
             <p className="mt-1 text-xs text-red-500">
-              {errors.fullName}
+              {translateAuthMessage(errors.fullName, language)}
             </p>
           )}
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-white/90">
-            اسم المستخدم
+          <label htmlFor="register-username" className="mb-2 block text-sm font-medium text-white/90">
+            {t.auth.username}
           </label>
 
           <div className="relative">
             <UserIcon
               width={19}
               height={19}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
-            <input
+            <input id="register-username"
               type="text"
               dir="ltr"
               autoComplete="username"
@@ -212,7 +213,7 @@ export default function RegisterPage() {
               }
               placeholder="username"
               disabled={isLoading}
-              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+              className={`w-full rounded-xl border bg-slate-50 py-3 px-11 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                 errors.username
                   ? "border-red-400"
                   : "border-slate-200"
@@ -222,24 +223,24 @@ export default function RegisterPage() {
 
           {errors.username && (
             <p className="mt-1 text-xs text-red-500">
-              {errors.username}
+              {translateAuthMessage(errors.username, language)}
             </p>
           )}
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-white/90">
-            البريد الإلكتروني
+          <label htmlFor="register-email" className="mb-2 block text-sm font-medium text-white/90">
+            {t.auth.email}
           </label>
 
           <div className="relative">
             <GlobeIcon
               width={19}
               height={19}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
-            <input
+            <input id="register-email"
               type="email"
               value={email}
               onChange={(event) =>
@@ -247,7 +248,7 @@ export default function RegisterPage() {
               }
               placeholder="name@example.com"
               disabled={isLoading}
-              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+              className={`w-full rounded-xl border bg-slate-50 py-3 px-11 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                 errors.email
                   ? "border-red-400"
                   : "border-slate-200"
@@ -257,24 +258,24 @@ export default function RegisterPage() {
 
           {errors.email && (
             <p className="mt-1 text-xs text-red-500">
-              {errors.email}
+              {translateAuthMessage(errors.email, language)}
             </p>
           )}
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-white/90">
-            كلمة المرور
+          <label htmlFor="register-password" className="mb-2 block text-sm font-medium text-white/90">
+            {t.auth.password}
           </label>
 
           <div className="relative">
             <LockIcon
               width={19}
               height={19}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
-            <input
+            <input id="register-password"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(event) =>
@@ -282,44 +283,44 @@ export default function RegisterPage() {
               }
               placeholder="••••••••"
               disabled={isLoading}
-              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+              className={`w-full rounded-xl border bg-slate-50 py-3 ps-11 pe-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                 errors.password
                   ? "border-red-400"
                   : "border-slate-200"
               }`}
             />
 
-            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+            <div className="absolute end-3 top-1/2 -translate-y-1/2">
               <PasswordToggle
                 visible={showPassword}
                 onToggle={() =>
                   setShowPassword((v) => !v)
                 }
-                label="كلمة المرور"
+                label={t.auth.password}
               />
             </div>
           </div>
 
           {errors.password && (
             <p className="mt-1 text-xs text-red-500">
-              {errors.password}
+              {translateAuthMessage(errors.password, language)}
             </p>
           )}
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-white/90">
-            تأكيد كلمة المرور
+          <label htmlFor="register-confirmPassword" className="mb-2 block text-sm font-medium text-white/90">
+            {t.auth.confirmPassword}
           </label>
 
           <div className="relative">
             <LockIcon
               width={19}
               height={19}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
-            <input
+            <input id="register-confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(event) =>
@@ -327,27 +328,27 @@ export default function RegisterPage() {
               }
               placeholder="••••••••"
               disabled={isLoading}
-              className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+              className={`w-full rounded-xl border bg-slate-50 py-3 ps-11 pe-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                 errors.confirmPassword
                   ? "border-red-400"
                   : "border-slate-200"
               }`}
             />
 
-            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+            <div className="absolute end-3 top-1/2 -translate-y-1/2">
               <PasswordToggle
                 visible={showConfirmPassword}
                 onToggle={() =>
                   setShowConfirmPassword((v) => !v)
                 }
-                label="تأكيد كلمة المرور"
+                label={t.auth.confirmPassword}
               />
             </div>
           </div>
 
           {errors.confirmPassword && (
             <p className="mt-1 text-xs text-red-500">
-              {errors.confirmPassword}
+              {translateAuthMessage(errors.confirmPassword, language)}
             </p>
           )}
         </div>
@@ -357,17 +358,17 @@ export default function RegisterPage() {
           disabled={isLoading}
           className="w-full rounded-xl bg-[#124b8a] py-3 font-bold text-white transition hover:bg-[#0d3b6e] disabled:opacity-50"
         >
-          {isLoading ? t.auth.creatingAccount : "إنشاء حساب"}
+          {isLoading ? t.auth.creatingAccount : t.auth.register}
         </button>
       </form>
 
       <div className="mt-6 text-center text-sm text-white/70">
-        لديك حساب؟{" "}
+        {t.auth.haveAccount}{" "}
         <Link
           href="/login"
           className="font-bold text-[#d6b56c] hover:underline"
         >
-          تسجيل الدخول
+          {t.auth.login}
         </Link>
       </div>
     </AuthLayout>

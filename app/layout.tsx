@@ -24,9 +24,9 @@ export default async function RootLayout({
   const themeCookie = cookieStore.get("app-theme")?.value;
 
   const theme =
-    themeCookie === "dark" || themeCookie === "eye"
+    themeCookie === "light" || themeCookie === "eye"
       ? themeCookie
-      : "light";
+      : "dark";
 
   return (
     <html

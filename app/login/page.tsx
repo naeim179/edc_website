@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AuthLanguageSwitcher from "@/components/auth/AuthLanguageSwitcher";
 import BrandLogo from "@/components/BrandLogo";
 import { loginWithIdentifier } from "@/app/actions/login";
 import {
@@ -10,6 +11,7 @@ import {
   GlobeIcon,
 } from "@/components/icons";
 import { PasswordToggle } from "@/components/password-toggle";
+import { translateAuthMessage } from "@/lib/i18n/auth-message";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function LoginPage() {
@@ -39,7 +41,7 @@ export default function LoginPage() {
     } = {};
 
     if (!email) {
-      newErrors.email = t.auth.emailRequired;
+      newErrors.email = t.auth.identifierRequired;
     }
 
     if (!password) {
@@ -92,23 +94,24 @@ export default function LoginPage() {
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div className="w-full max-w-md p-4 sm:p-8">
+        <AuthLanguageSwitcher />
         <div className="mb-10 text-center">
           <div className="yw-auth-brand mx-auto mb-6 flex items-center justify-center sm:mb-8">
             <BrandLogo variant="auth" priority />
           </div>
 
           <h1 className="text-2xl font-bold text-white">
-            تسجيل الدخول
+            {t.auth.login}
           </h1>
 
           <p className="mt-2 text-sm text-white/70">
-            أدخل بيانات حسابك للمتابعة
+            {t.auth.loginDescription}
           </p>
         </div>
 
         {serverError && (
           <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
-            {serverError}
+            {translateAuthMessage(serverError, language)}
           </div>
         )}
 
@@ -118,18 +121,20 @@ export default function LoginPage() {
           noValidate
         >
           <div>
-            <label className="mb-2 block text-sm font-medium text-white/90">
-              اسم المستخدم أو البريد الإلكتروني
+            <label htmlFor="login-identifier" className="mb-2 block text-sm font-medium text-white/90">
+              {t.auth.identifier}
             </label>
 
             <div className="relative">
               <GlobeIcon
                 width={19}
                 height={19}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
 
               <input
+                id="login-identifier"
+                dir="ltr"
                 type="text"
                 autoComplete="username"
                 autoCapitalize="none"
@@ -137,9 +142,9 @@ export default function LoginPage() {
                 onChange={(event) =>
                   setEmail(event.target.value)
                 }
-                placeholder="اسم المستخدم أو البريد الإلكتروني"
+                placeholder={t.auth.identifier}
                 disabled={isLoading}
-                className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-4 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                className={`w-full rounded-xl border bg-slate-50 py-3 px-11 text-left text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                   errors.email
                     ? "border-red-400"
                     : "border-slate-200"
@@ -149,24 +154,25 @@ export default function LoginPage() {
 
             {errors.email && (
               <p className="mt-1 text-xs text-red-500">
-                {errors.email}
+                {translateAuthMessage(errors.email, language)}
               </p>
             )}
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-white/90">
-              كلمة المرور
+            <label htmlFor="login-password" className="mb-2 block text-sm font-medium text-white/90">
+              {t.auth.password}
             </label>
 
             <div className="relative">
               <LockIcon
                 width={19}
                 height={19}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
 
               <input
+                id="login-password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(event) =>
@@ -174,27 +180,27 @@ export default function LoginPage() {
                 }
                 placeholder="••••••••"
                 disabled={isLoading}
-                className={`w-full rounded-xl border bg-slate-50 py-3 pr-11 pl-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
+                className={`w-full rounded-xl border bg-slate-50 py-3 ps-11 pe-12 text-slate-800 outline-none transition focus:bg-white focus:ring-2 focus:ring-[#124b8a]/30 ${
                   errors.password
                     ? "border-red-400"
                     : "border-slate-200"
                 }`}
               />
 
-              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <div className="absolute end-3 top-1/2 -translate-y-1/2">
                 <PasswordToggle
                   visible={showPassword}
                   onToggle={() =>
                     setShowPassword((v) => !v)
                   }
-                  label="كلمة المرور"
+                  label={t.auth.password}
                 />
               </div>
             </div>
 
             {errors.password && (
               <p className="mt-1 text-xs text-red-500">
-                {errors.password}
+                {translateAuthMessage(errors.password, language)}
               </p>
             )}
 
@@ -203,7 +209,7 @@ export default function LoginPage() {
                 href="/forgot-password"
                 className="text-sm font-semibold text-[#d6b56c] hover:underline"
               >
-                نسيت كلمة المرور؟
+                {t.auth.forgotPassword}
               </Link>
             </div>
           </div>
@@ -220,12 +226,12 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-center text-sm text-white/70">
-          ليس لديك حساب؟{" "}
+          {t.auth.noAccount}{" "}
           <Link
             href="/register"
             className="font-bold text-[#d6b56c] hover:underline"
           >
-            إنشاء حساب جديد
+            {t.auth.createAccount}
           </Link>
         </div>
       </div>
