@@ -52,3 +52,9 @@ sql(f"update subscriptions set auto_renew=true,renewal_claim_id='{nonce}' where 
 race('start_wins', f"select begin_subscription_renewal('{sub}','{nonce}')", f"select set_config('request.jwt.claim.sub','{student}',false);do $$ declare r jsonb; begin r:=disable_subscription_auto_renew('{course}');if not (r->>'in_flight')::boolean then raise exception 'In-flight start hidden'; end if;end $$;")
 assert sql(f"select auto_renew from subscriptions where id='{sub}';") == 'f'
 assert sql(f"select count(*) from subscription_payment_tokens where subscription_id='{sub}';") == '0'
+
+private_a='e5000000-0000-4000-8000-000000000001'
+private_b='e5000000-0000-4000-8000-000000000002'
+other='e6000000-0000-4000-8000-000000000001'
+sql(f"insert into auth.users(id,email) values('{other}','other-slot@test.invalid');insert into courses(id,title,price,course_type,is_published,registration_open) values('{private_a}','First private',25,'private',true,true),('{private_b}','Second private',25,'private',true,true);insert into course_instructors(course_id,teacher_id) values('{private_a}','{teacher}'),('{private_b}','{teacher}');insert into private_course_availability(course_id,day_of_week,start_time,end_time,is_active) values('{private_a}',1,'10:00','11:00',true),('{private_a}',3,'10:00','11:00',true),('{private_b}',1,'10:00','11:00',true),('{private_b}',3,'10:00','11:00',true);")
+race('private_teacher_overlap', f"select set_config('request.jwt.claim.sub','{student}',true);select reserve_private_course('{private_a}',(select array_agg(id) from private_course_availability where course_id='{private_a}'))", f"select set_config('request.jwt.claim.sub','{other}',false);do $$ begin begin perform reserve_private_course('{private_b}',(select array_agg(id) from private_course_availability where course_id='{private_b}'));raise exception 'Teacher double-booked';exception when others then if sqlerrm<>'Invalid availability selection' then raise;end if;end;end $$;")

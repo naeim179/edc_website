@@ -125,6 +125,7 @@ export default async function AssignmentsPage() {
           title
         )
       `)
+      .or(`target_student_id.is.null,target_student_id.eq.${user.id}`)
       .in(
         "course_id",
         courseIds

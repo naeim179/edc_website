@@ -293,6 +293,7 @@ async function getStudentAssignment(
         max_attempts,
         is_published
       `)
+      .or(`target_student_id.is.null,target_student_id.eq.${user.id}`)
       .eq(
         "id",
         assignmentId

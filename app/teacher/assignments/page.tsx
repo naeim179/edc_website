@@ -1,3 +1,4 @@
+import { getCourseStudentRoster } from "@/lib/course-student-roster";
 import {
   redirect,
 } from "next/navigation";
@@ -15,7 +16,8 @@ import {
 } from "@/lib/supabase/admin";
 
 
-export default async function TeacherAssignmentsPage() {
+export default async function TeacherAssignmentsPage({searchParams}:{searchParams:Promise<{course?:string;student?:string}>}) {
+  const query=await searchParams;
   const supabase =
     await createClient();
 
@@ -107,7 +109,7 @@ export default async function TeacherAssignmentsPage() {
     await Promise.all([
       db
         .from("courses")
-        .select("id, title")
+        .select("id, title,course_type")
         .in(
           "id",
           courseIds
@@ -119,6 +121,7 @@ export default async function TeacherAssignmentsPage() {
         .select(`
           id,
           course_id,
+          target_student_id,
           title,
           instructions,
           due_at,
@@ -157,13 +160,16 @@ export default async function TeacherAssignmentsPage() {
     );
   }
 
+  const roster = await getCourseStudentRoster(db, (coursesResult.data??[]).map(c=>c.id));
+  const courseOptions = (coursesResult.data??[]).map(c=>({...c,students:roster.filter(r=>r.courseId===c.id).map(r=>({id:r.studentId,name:r.name}))}));
   return (
     <AppShell>
       <AssignmentsManager
         mode="teacher"
+        initialCourseId={query.course}
+        initialStudentId={query.student}
         courses={
-          coursesResult.data ??
-          []
+          courseOptions
         }
         assignments={
           (assignmentsResult.data ??

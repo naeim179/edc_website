@@ -93,9 +93,7 @@ export default async function TeacherLessonsPage({
             className="w-full border rounded-xl px-4 py-3"
           />
 
-          <LessonTypeFields />
-
-          <LessonVideoFields courseId={id} />
+          <LessonTypeFields courseId={id} />
 
           <input
             name="order_index"

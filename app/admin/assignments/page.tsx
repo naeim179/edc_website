@@ -1,3 +1,4 @@
+import { getCourseStudentRoster } from "@/lib/course-student-roster";
 import AppShell from "@/components/AppShell";
 
 import AssignmentsManager from "@/components/assignments/AssignmentsManager";
@@ -26,7 +27,7 @@ export default async function AdminAssignmentsPage() {
     await Promise.all([
       db
         .from("courses")
-        .select("id, title")
+        .select("id, title,course_type")
         .order("title"),
 
       db
@@ -34,6 +35,7 @@ export default async function AdminAssignmentsPage() {
         .select(`
           id,
           course_id,
+          target_student_id,
           title,
           instructions,
           due_at,
@@ -68,13 +70,14 @@ export default async function AdminAssignmentsPage() {
     );
   }
 
+  const roster = await getCourseStudentRoster(db, (coursesResult.data??[]).map(c=>c.id));
+  const courseOptions = (coursesResult.data??[]).map(c=>({...c,students:roster.filter(r=>r.courseId===c.id).map(r=>({id:r.studentId,name:r.name}))}));
   return (
     <AppShell>
       <AssignmentsManager
         mode="admin"
         courses={
-          coursesResult.data ??
-          []
+          courseOptions
         }
         assignments={
           (assignmentsResult.data ??

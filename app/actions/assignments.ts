@@ -245,6 +245,7 @@ export async function createAssignment(
       course_id:
         courseId,
       title,
+      target_student_id: String(formData.get("target_student_id") ?? "").trim() || null,
       instructions,
       due_at:
         dueAt,

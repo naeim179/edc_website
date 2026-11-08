@@ -1,9 +1,10 @@
 "use client";
 
+import LessonVideoFields from "@/components/lessons/LessonVideoFields";
 import { useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 
-export default function LessonTypeFields() {
+export default function LessonTypeFields({courseId}: {courseId: string}) {
   const { t } = useLanguage();
   const [type, setType] = useState("recorded");
 
@@ -30,6 +31,7 @@ export default function LessonTypeFields() {
         </select>
       </div>
 
+      {type === "recorded" && <LessonVideoFields courseId={courseId} />}
       {type === "live" && (
         <>
           <div>
