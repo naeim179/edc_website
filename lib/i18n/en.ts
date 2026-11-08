@@ -672,14 +672,14 @@ export const en = {
     reserving: "Reserving your schedule...",
     continueToPayment: "Continue to registration & payment",
     temporaryHoldHint:
-      "Choose exactly two appointments. The course will then be held temporarily while you complete payment.",
+      "Choose exactly two appointments. Those times will be held temporarily while you complete payment.",
 
     courseUnavailable: "This course is currently unavailable",
     unavailableText: "Please check again later for availability.",
 
-    bookedTitle: "Course booked",
+    bookedTitle: "Not enough available appointments",
     bookedText:
-      "This course has already been booked by another student and is currently unavailable.",
+      "There are not enough available times for a new pair of appointments. Please check again later.",
 
     heldTitle: "Course temporarily held",
     heldText:
@@ -699,7 +699,7 @@ export const en = {
 
     privateBooked: "Currently booked",
     privateBookedText:
-      "This 1-to-1 course has already been booked by one student.",
+      "There are currently not enough available times for a new booking.",
 
     yourHold: "Your booking is on hold",
     completePaymentToConfirm:
