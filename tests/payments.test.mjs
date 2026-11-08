@@ -90,15 +90,15 @@ for(const file of ['app/api/payments/reconcile/route.ts','app/api/subscriptions/
  assert.equal((await load(file,mocks).GET(new Request('https://academy.example'))).status,503);
 });
 
-function renewal({status='D',mismatch=false,throws=false}={}) {
+function renewal({status='D',mismatch=false,throws=false,cancelled=false}={}) {
  const calls=[];const claim={subscription_id:'sub',student_id:'student',course_id:'course',duration_months:1,amount:25,currency:'USD',token:'test-token',token_tran_ref:'ORIGINAL'};
- const admin={async rpc(name){calls.push(name);return {data:name==='claim_due_subscription_renewals'?[claim]:null};},
+ const admin={async rpc(name){calls.push(name);return {data:name==='claim_subscription_renewals_v2'?[{subscription_id:'sub',claim_id:'nonce'}]:name==='begin_subscription_renewal'&&!cancelled?{...claim,order_id:'renewal-order'}:null};},
   from(){return {insert(){return this;},select(){return this;},eq(){return this;},
    async single(){return {data:{id:'renewal-order'}};},update(){calls.push('mark-failed');return this;},async maybeSingle(){return {data:{id:'renewal-order'}};},
    async upsert(value){calls.push(value.reason);return {};}};}};
  const route=load('app/api/subscriptions/renew/route.ts',{'next/server':nextServer,
  '@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/payments':{fulfillPaymentByTranRef:async()=>({paid:false})},
- '@/lib/paytabs':{createRecurringPayment:async()=>{if(throws)throw Error('timeout');return {tran_ref:'R1'};},queryTransaction:async()=>({tran_ref:'R1',cart_id:mismatch?'foreign-order':'renewal-order',cart_amount:25,cart_currency:'USD',payment_result:{response_status:status}})}
+ '@/lib/paytabs':{createRecurringPayment:async()=>{calls.push('gateway-request');if(throws)throw Error('timeout');return {tran_ref:'R1'};},queryTransaction:async()=>({tran_ref:'R1',cart_id:mismatch?'foreign-order':'renewal-order',cart_amount:25,cart_currency:'USD',payment_result:{response_status:status}})}
  },{CRON_SECRET:'test'});
  return {calls,run:()=>route.GET(new Request('https://academy.example',{headers:{authorization:'Bearer test'}}))};
 }
@@ -156,3 +156,5 @@ for(const method of [undefined,'cliq'])test(`Checkout requires explicit selectio
  const html=renderToStaticMarkup(React.createElement(component,{courseId:'course',title:'cys',monthlyPriceUsd:70,courseType:'group',isRenewal:false,registrationOpen:true,initialPaymentMethod:method}));
  if(method){assert.match(html,/data-method="cliq"/);assert.doesNotMatch(html,/اختر طريقة الدفع أولًا/);}else{assert.match(html,/اختر طريقة الدفع أولًا/);assert.match(html,/disabled=""/);}
 });
+
+test('A cancelled renewal claim never contacts the gateway',async()=>{const {calls,run}=renewal({cancelled:true});const response=await run();assert.equal((await response.json()).skipped,1);assert.ok(!calls.includes('gateway-request'));});

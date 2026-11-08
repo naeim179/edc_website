@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { disableAutoRenew } from "@/app/actions/subscriptions";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -25,6 +25,8 @@ export default function SubscriptionRenewalControls({
   const isArabic =
     language === "ar";
 
+  const [notice, setNotice] = useState("");
+  const [stopped, setStopped] = useState(false);
   const [
     pending,
     startTransition,
@@ -53,11 +55,15 @@ export default function SubscriptionRenewalControls({
     }
 
     startTransition(async () => {
-      await disableAutoRenew(
-        courseId
-      );
-
-      window.location.reload();
+      try {
+        const result = await disableAutoRenew(courseId);
+        setStopped(true);
+        setNotice(result.inFlight
+          ? (isArabic ? "تم إيقاف التجديدات القادمة. توجد عملية تجديد بدأت بالفعل وقد تكتمل؛ سيتم التحقق من نتيجتها." : "Future renewals are disabled. A renewal already started and may complete; its result will be verified.")
+          : (isArabic ? "تم إيقاف التجديد التلقائي." : "Auto renewal disabled."));
+      } catch {
+        setNotice(isArabic ? "تعذر إيقاف التجديد، حاول مجددًا." : "Unable to disable renewal. Please try again.");
+      }
     });
   }
 
@@ -90,12 +96,12 @@ export default function SubscriptionRenewalControls({
 
         <span
           className={`rounded-full px-3 py-1 text-xs font-bold ${
-            autoRenew
+            autoRenew && !stopped
               ? "bg-emerald-100 text-emerald-700"
               : "bg-slate-200 text-slate-600"
           }`}
         >
-          {autoRenew
+          {autoRenew && !stopped
             ? isArabic
               ? "التجديد التلقائي مفعّل"
               : "Auto renewal on"
@@ -119,7 +125,7 @@ export default function SubscriptionRenewalControls({
             : "Renew subscription"}
         </Link>
 
-        {autoRenew && (
+        {autoRenew && !stopped && (
           <button
             type="button"
             disabled={pending}
@@ -137,7 +143,8 @@ export default function SubscriptionRenewalControls({
         )}
       </div>
 
-      {!autoRenew && accessActive && (
+      {notice && <p role="status" className="mt-3 text-sm">{notice}</p>}
+      {(!autoRenew || stopped) && accessActive && (
         <p className="mt-3 text-xs leading-5 text-slate-500">
           {isArabic
             ? "لتفعيل التجديد التلقائي لاحقًا، اختره عند عملية التجديد القادمة حتى توافق على حفظ رمز دفع آمن لدى PayTabs."

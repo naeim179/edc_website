@@ -42,4 +42,6 @@ done
 psql_local < tests/security-regression.sql
 psql_local < tests/chat-regression.sql
 psql_local < tests/payment-regression.sql
+psql_local < tests/concurrency-regression.sql
+python3 tests/concurrency-races.py "$db_container"
 echo 'All migrations and database security checks passed.'
