@@ -299,7 +299,7 @@ export default function AssignmentsManager({
 
             {chosenCourse?.course_type === "private" && <label className="block">
               <span className="mb-2 block text-sm font-bold">{isArabic ? "الطالب المستهدف (برايفت 1-1)" : "Recipient student (private 1-to-1)"}</span>
-              <select key={selectedCourse} name="target_student_id" required className="w-full rounded-xl border p-3" defaultValue={initialStudentId??""}>
+              <select key={selectedCourse} name="target_student_id" required className="w-full rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] px-4 py-3.5 text-[var(--brand-text)] outline-none" defaultValue={initialStudentId??""}>
                 <option value="">{isArabic ? "اختر الطالب" : "Choose a student"}</option>
                 {(chosenCourse.students??[]).map(student=><option key={student.id} value={student.id}>{student.name}</option>)}
               </select>
