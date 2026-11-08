@@ -14,21 +14,8 @@ import {
   fulfillPaymentByTranRef,
 } from "@/lib/payments";
 
-type RenewalClaim = {
-  subscription_id: string;
-  student_id: string;
-  course_id: string;
-
-  duration_months: number;
-
-  amount: number;
-  currency: string;
-
-  expires_at: string;
-
-  token: string;
-  token_tran_ref: string;
-};
+type RenewalClaim = { subscription_id: string; claim_id: string };
+type StartedRenewal = { order_id: string; duration_months: number; amount: number; currency: string; token: string; token_tran_ref: string };
 
 export async function GET(
   request: NextRequest
@@ -72,7 +59,7 @@ export async function GET(
     data,
     error,
   } = await admin.rpc(
-    "claim_due_subscription_renewals",
+    "claim_subscription_renewals_v2",
     {
       p_limit: 50,
     }
@@ -99,6 +86,7 @@ export async function GET(
 
   let successful = 0;
   let failed = 0;
+  let skipped = 0;
 
   for (
     const claim of claims
@@ -107,53 +95,14 @@ export async function GET(
     let paymentTranRef: string | null = null;
 
     try {
-      const {
-        data: order,
-        error:
-          orderError,
-      } = await admin
-        .from("orders")
-        .insert({
-          user_id:
-            claim.student_id,
-
-          course_id:
-            claim.course_id,
-
-          amount:
-            claim.amount,
-
-          currency:
-            claim.currency,
-
-          status:
-            "pending",
-
-          subscription_months:
-            claim.duration_months,
-
-          auto_renew_requested:
-            true,
-
-          source:
-            "auto_renew",
-        })
-        .select("id")
-        .single();
-
-      if (
-        orderError ||
-        !order
-      ) {
-        throw new Error(
-          orderError
-            ?.message ??
-            "Could not create renewal order"
-        );
-      }
-
-      orderId =
-        order.id;
+      const { data: started, error: startError } = await admin.rpc("begin_subscription_renewal", {
+        p_subscription_id: claim.subscription_id, p_claim_id: claim.claim_id,
+      });
+      if (startError) throw new Error(startError.message);
+      if (!started) { skipped++; continue; }
+      const payment = started as StartedRenewal;
+      const order = { id: payment.order_id };
+      orderId = order.id;
 
       const response =
         await createRecurringPayment(
@@ -163,20 +112,20 @@ export async function GET(
 
             amount:
               Number(
-                claim.amount
+                payment.amount
               ),
 
             currency:
-              claim.currency,
+              payment.currency,
 
             description:
-              `${claim.duration_months} month subscription renewal`,
+              `${payment.duration_months} month subscription renewal`,
 
             token:
-              claim.token,
+              payment.token,
 
             tokenTranRef:
-              claim.token_tran_ref,
+              payment.token_tran_ref,
           }
         );
 
@@ -204,9 +153,9 @@ export async function GET(
         // Pending / ambiguous / approved-but-unfulfilled require review.
         const verified = await queryTransaction(tranRef);
         if (verified?.tran_ref !== tranRef || verified?.cart_id !== order.id ||
-            Number(verified?.cart_amount) !== Number(claim.amount) ||
+            Number(verified?.cart_amount) !== Number(payment.amount) ||
             typeof verified?.cart_currency !== "string" ||
-            verified.cart_currency.toUpperCase() !== claim.currency.toUpperCase()) {
+            verified.cart_currency.toUpperCase() !== payment.currency.toUpperCase()) {
           throw new Error("Recurring payment query does not match renewal order");
         }
         const status = verified?.payment_result?.response_status;
@@ -262,5 +211,6 @@ export async function GET(
       claims.length,
     successful,
     failed,
+    skipped,
   });
 }

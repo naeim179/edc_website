@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+
 
 export async function disableAutoRenew(
   courseId: string
@@ -20,66 +20,8 @@ export async function disableAutoRenew(
     );
   }
 
-  const admin =
-    createAdminClient();
-
-  const {
-    data: subscription,
-    error,
-  } = await admin
-    .from("subscriptions")
-    .select("id")
-    .eq("student_id", user.id)
-    .eq("course_id", courseId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(
-      error.message
-    );
-  }
-
-  if (!subscription) {
-    throw new Error(
-      "الاشتراك غير موجود"
-    );
-  }
-
-  const {
-    error: updateError,
-  } = await admin
-    .from("subscriptions")
-    .update({
-      auto_renew: false,
-      updated_at:
-        new Date().toISOString(),
-    })
-    .eq("id", subscription.id);
-
-  if (updateError) {
-    throw new Error(
-      updateError.message
-    );
-  }
-
-  // حذف رمز البطاقة عند إلغاء التجديد التلقائي.
-  const {
-    error: tokenError,
-  } = await admin
-    .from(
-      "subscription_payment_tokens"
-    )
-    .delete()
-    .eq(
-      "subscription_id",
-      subscription.id
-    );
-
-  if (tokenError) {
-    throw new Error(
-      tokenError.message
-    );
-  }
+  const { data, error } = await supabase.rpc("disable_subscription_auto_renew", { p_course_id: courseId });
+  if (error) throw new Error(error.message);
 
   revalidatePath(
     `/courses/${courseId}`
@@ -88,5 +30,6 @@ export async function disableAutoRenew(
 
   return {
     success: true,
+    inFlight: Boolean(data?.in_flight),
   };
 }

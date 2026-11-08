@@ -1,0 +1,11 @@
+# Serialized assignment writes and renewal opt-out
+
+Assignment draft/submission writes now lock the assignment and current submission in one database transaction. They recheck publication, enrollment, deadline, late-submission policy and attempt limits under the lock. A draft cannot overwrite a submitted/late/graded record. Attempt counting is computed from the locked row; returning an assignment restores exactly one attempt. Teacher grading/return uses the observed revision to reject stale reviews rather than overwrite newer student work.
+
+Renewal processing now claims opaque nonces without copying payment tokens into the queue. A separate server-only RPC locks the subscription, verifies its current consent and claim, creates the pending order, consumes the nonce, and returns its current payment snapshot. That transaction is the documented start of the payment. Opt-out locks the same subscription, invalidates queued claims, increments the cancellation version and removes the stored token atomically. If opt-out wins the lock, no order/provider call can start from that claim. If start wins, opt-out reports an already-started renewal that may complete, while disabling all future renewals. Late approvals can extend paid access but cannot re-enable renewal or restore tokens after opt-out.
+
+Only the owner can call the authenticated opt-out RPC; assignment write/review, renewal claim and payment-start RPCs remain service-role-only. Content/path normalization stays in the authenticated server actions. The redundant pending-order index was removed after verifying identical keys/predicate, retaining the unique pending-order guard.
+
+Validation includes application regressions, full disposable PostgreSQL migrations, deadline/late/return/attempt/permission/duplicate-callback checks and real two-session races: draft versus submit, simultaneous final-attempt submissions, stale teacher reviews, opt-out before payment start and opt-out after payment start. Deployed SQL was also verified in a transaction whose fixture changes were rolled back. No provider calls or real charges are made by these database tests.
+
+The existing policy allowing permanently enrolled students to access assignments after subscription expiry is unchanged. Existing informational RLS/index/image/password advisories outside the duplicate index are not part of this repair.

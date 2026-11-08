@@ -174,7 +174,8 @@ export async function gradeAssignmentSubmission(
       )
       .select(`
         id,
-        status
+        status,
+        revision
       `)
       .eq(
         "id",
@@ -220,42 +221,10 @@ export async function gradeAssignmentSubmission(
         5000
       );
 
-  const now =
-    new Date()
-      .toISOString();
-
-  const {
-    error,
-  } =
-    await admin
-      .from(
-        "assignment_submissions"
-      )
-      .update({
-        status:
-          "graded",
-
-        score,
-
-        feedback,
-
-        graded_at:
-          now,
-
-        graded_by:
-          user.id,
-
-        updated_at:
-          now,
-      })
-      .eq(
-        "id",
-        submissionId
-      )
-      .eq(
-        "assignment_id",
-        assignmentId
-      );
+  const { error } = await admin.rpc("review_assignment_submission", {
+    p_assignment_id: assignmentId, p_submission_id: submissionId, p_teacher_id: user.id,
+    p_revision: submission.revision, p_return: false, p_score: score, p_feedback: feedback,
+  });
 
   if (error) {
     throw new Error(
@@ -279,6 +248,7 @@ export async function returnAssignmentSubmission(
   feedbackValue: string
 ) {
   const {
+    user,
     admin,
   } =
     await requireTeacherAssignment(
@@ -297,7 +267,8 @@ export async function returnAssignmentSubmission(
       .select(`
         id,
         status,
-        attempt_number
+        attempt_number,
+        revision
       `)
       .eq(
         "id",
@@ -349,60 +320,10 @@ export async function returnAssignmentSubmission(
     );
   }
 
-  /*
-   * Returning a submission gives the student
-   * the same attempt back.
-   *
-   * Example:
-   * attempt 2/2 -> teacher returns it -> 1/2
-   * student resubmits -> 2/2 again.
-   */
-  const nextAttempt =
-    Math.max(
-      0,
-      Number(
-        submission.attempt_number ??
-          0
-      ) - 1
-    );
-
-  const {
-    error,
-  } =
-    await admin
-      .from(
-        "assignment_submissions"
-      )
-      .update({
-        status:
-          "returned",
-
-        attempt_number:
-          nextAttempt,
-
-        score:
-          null,
-
-        feedback,
-
-        graded_at:
-          null,
-
-        graded_by:
-          null,
-
-        updated_at:
-          new Date()
-            .toISOString(),
-      })
-      .eq(
-        "id",
-        submissionId
-      )
-      .eq(
-        "assignment_id",
-        assignmentId
-      );
+  const { error } = await admin.rpc("review_assignment_submission", {
+    p_assignment_id: assignmentId, p_submission_id: submissionId, p_teacher_id: user.id,
+    p_revision: submission.revision, p_return: true, p_score: null, p_feedback: feedback,
+  });
 
   if (error) {
     throw new Error(
