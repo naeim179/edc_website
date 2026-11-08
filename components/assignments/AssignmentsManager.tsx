@@ -28,12 +28,15 @@ import {
 type Course = {
   id: string;
   title: string;
+  course_type?: string;
+  students?: {id:string;name:string}[];
 };
 
 
 type Assignment = {
   id: string;
   course_id: string;
+  target_student_id?: string | null;
   title: string;
   instructions: string;
   due_at: string | null;
@@ -49,7 +52,9 @@ export default function AssignmentsManager({
   courses,
   assignments,
   mode,
+  initialCourseId, initialStudentId,
 }: {
+  initialCourseId?: string; initialStudentId?: string;
   courses: Course[];
   assignments:
     Assignment[];
@@ -67,6 +72,9 @@ export default function AssignmentsManager({
 
   const copy =
     t.assignments;
+
+  const [selectedCourse,setSelectedCourse] = useState(initialCourseId??"");
+  const chosenCourse=courses.find(c=>c.id===selectedCourse);
 
   const router =
     useRouter();
@@ -260,6 +268,8 @@ export default function AssignmentsManager({
 
               <select
                 name="course_id"
+                value={selectedCourse}
+                onChange={e=>setSelectedCourse(e.target.value)}
                 required
                 className="w-full rounded-2xl border border-[#DCE5E0] bg-[#FCFDFC] px-4 py-3.5 text-[#24332E] outline-none"
               >
@@ -286,6 +296,15 @@ export default function AssignmentsManager({
               </select>
             </label>
 
+
+            {chosenCourse?.course_type === "private" && <label className="block">
+              <span className="mb-2 block text-sm font-bold">{isArabic ? "الطالب المستهدف (برايفت 1-1)" : "Recipient student (private 1-to-1)"}</span>
+              <select key={selectedCourse} name="target_student_id" required className="w-full rounded-xl border p-3" defaultValue={initialStudentId??""}>
+                <option value="">{isArabic ? "اختر الطالب" : "Choose a student"}</option>
+                {(chosenCourse.students??[]).map(student=><option key={student.id} value={student.id}>{student.name}</option>)}
+              </select>
+            </label>}
+            {chosenCourse?.course_type === "group" && <p className="text-sm">{isArabic ? "هذا الواجب لجميع طلاب القروب." : "This assignment applies to all group students."}</p>}
 
             <label className="block">
               <span className="mb-2 block text-sm font-bold text-[#24332E]">
@@ -476,6 +495,7 @@ export default function AssignmentsManager({
                         )}
                       </span>
 
+                      {assignment.target_student_id && <p className="mt-3 font-bold">{courses.find(c=>c.id===assignment.course_id)?.students?.find(p=>p.id===assignment.target_student_id)?.name ?? (isArabic ? "واجب فردي" : "Individual assignment")}</p>}
                       <h3 className="mt-3 text-lg font-bold text-[var(--brand-text)]">
                         {
                           assignment.title

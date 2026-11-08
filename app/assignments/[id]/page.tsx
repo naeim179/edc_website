@@ -214,6 +214,7 @@ export default async function AssignmentPage({
         max_attempts,
         is_published
       `)
+      .or(`target_student_id.is.null,target_student_id.eq.${user.id}`)
       .eq(
         "id",
         id

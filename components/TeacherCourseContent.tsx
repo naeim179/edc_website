@@ -30,7 +30,7 @@ export default function TeacherCourseContent({
   sections: Section[];
   studentsCount: number;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const totalSections = sections.length;
 
@@ -62,6 +62,7 @@ export default function TeacherCourseContent({
       </div>
 
 
+      <Link href={`/teacher/courses/${id}/students`} className="inline-block rounded-xl border px-5 py-3 font-bold">{language === "ar" ? "الطلاب والمواعيد والواجبات" : "Students, schedules and assignments"}</Link>
       <div className="grid md:grid-cols-3 gap-4">
 
         <div className="bg-white border rounded-2xl p-5">

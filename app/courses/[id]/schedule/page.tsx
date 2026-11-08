@@ -191,24 +191,7 @@ export default async function PrivateSchedulePage({
     error:
       slotsError,
   } =
-    await supabase
-      .from(
-        "private_course_availability"
-      )
-      .select(`
-        id,
-        day_of_week,
-        start_time,
-        end_time
-      `)
-      .eq(
-        "course_id",
-        id
-      )
-      .eq(
-        "is_active",
-        true
-      )
+    await supabase.rpc("available_private_slots", { p_course_id: id })
       .order(
         "day_of_week",
         {

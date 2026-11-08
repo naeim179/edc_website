@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import ts from 'typescript';
 function actions({fail=false}={}) {
  const calls=[];
- const admin={from:table=>({select(){return this;},eq(){return this;},async maybeSingle(){return {data:table==='profiles'?{role:'student'}:table==='assignments'?{id:'a',course_id:'c',is_published:true}:table==='enrollments'?{id:'e'}:null};}}),rpc:async(name,args)=>{calls.push({name,args});return fail?{error:{message:'Submission is locked'}}:{data:{status:'submitted',attempt_number:1}};}};
+ const admin={from:table=>({select(){return this;},or(){return this;},eq(){return this;},async maybeSingle(){return {data:table==='profiles'?{role:'student'}:table==='assignments'?{id:'a',course_id:'c',is_published:true}:table==='enrollments'?{id:'e'}:null};}}),rpc:async(name,args)=>{calls.push({name,args});return fail?{error:{message:'Submission is locked'}}:{data:{status:'submitted',attempt_number:1}};}};
  const mocks={'next/cache':{revalidatePath(){}},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})}};
  const loaded={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(new URL('../app/actions/assignment-submissions.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:loaded,exports:loaded.exports,require:n=>mocks[n],URL});return {calls,...loaded.exports};
 }
