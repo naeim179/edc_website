@@ -59,6 +59,7 @@ export default function DisplaySettings() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isArabic = language === "ar";
+  const settingsLabel = isArabic ? "اللغة والمظهر" : "Language & appearance";
 
   // مستخدمون قدامى حفظوا الثيم بالتخزين المحلي فقط: نطبقه مرة ونحفظه بالكوكي
   useEffect(() => {
@@ -126,9 +127,7 @@ export default function DisplaySettings() {
       <button
         type="button"
         onClick={togglePanel}
-        aria-label={
-          isArabic ? "إعدادات العرض" : "Display settings"
-        }
+        aria-label={settingsLabel}
         aria-expanded={open}
         aria-haspopup="dialog"
         className="yw-display-trigger flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 transition-colors"
@@ -139,15 +138,13 @@ export default function DisplaySettings() {
         }}
       >
         <SlidersIcon />
-        <span>{isArabic ? "اللغة والألوان" : "Language & theme"}</span>
+        <span>{settingsLabel}</span>
       </button>
 
       {open && (
         <div
           role="dialog"
-          aria-label={
-            isArabic ? "إعدادات العرض" : "Display settings"
-          }
+          aria-label={settingsLabel}
           dir={isArabic ? "rtl" : "ltr"}
           className="absolute end-0 top-full z-[200] mt-2 max-h-[calc(100dvh-5rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border p-4 shadow-xl"
           style={{
