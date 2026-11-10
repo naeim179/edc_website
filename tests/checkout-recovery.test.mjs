@@ -10,7 +10,7 @@ function load(file,mocks,env={}) {
  return loaded.exports;
 }
 function recovery({orders=[],attemptStatus='initiated',attemptFields={},outcome='pending',user='student',remembered,settleBeforePendingRead=false}={}) {
- const calls=[],cleared=[];
+ const calls=[],cleared=[],marked=[];
  const db={from:table=>{const filters=[];return {select(){return this;},eq(k,v){filters.push([k,v]);return this;},async maybeSingle(){
   if(table==='paytabs_payment_attempts')return {data:{status:attemptStatus,...attemptFields}};
   if(settleBeforePendingRead&&filters.some(([k,v])=>k==='status'&&v==='pending'))orders[0].status='paid';
@@ -20,10 +20,10 @@ function recovery({orders=[],attemptStatus='initiated',attemptFields={},outcome=
   'next/headers':{cookies:async()=>({get:()=>remembered?{value:remembered}:undefined})},
   '@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:user?{id:user}:null}})}})},
   '@/lib/supabase/admin':{createAdminClient:()=>db},
-  '@/lib/checkout-recovery-cookie':{checkoutCookieName:id=>'checkout-return-'+id,clearHostedCheckout:async id=>cleared.push(id)},
+  '@/lib/checkout-recovery-cookie':{rememberHostedCheckout:async(course,id)=>marked.push({course,id}),checkoutCookieName:id=>'checkout-return-'+id,clearHostedCheckout:async id=>cleared.push(id)},
   '@/lib/paytabs-reconciliation':{reconcileOwnedPaytabsOrder:async(id,owner)=>{calls.push({id,owner});const o=orders.find(x=>x.id===id);if(outcome==='paid')o.status='paid';if(outcome==='closed'){o.status='failed';o.paytabs_closed_cancelled_at='2026-11-10';}}},
  });
- return {...action,calls,cleared};
+ return {...action,calls,cleared,marked};
 }
 const pending=()=>({id:'a0000000-0000-4000-8000-000000000001',course_id:'course',user_id:'student',status:'pending',payment_method:'paytabs',source:'manual'});
 test('Returning without paying preserves the live attempt and uses owner-scoped provider reconciliation',async()=>{
@@ -82,4 +82,8 @@ test('A fresh hosted checkout can be resumed without exposing its provider URL',
 });
 test('An expired hosted checkout is not offered as a resume link',async()=>{
  const a=recovery({orders:[pending()],attemptFields:{created_at:new Date(Date.now()-5*60000).toISOString(),payment_url:'https://provider.example/expired'}});assert.equal((await a.inspectCheckoutPayment('course')).canResume,false);
+});
+
+test('An existing checkout from before the release receives an owner-checked return marker',async()=>{
+ const a=recovery({orders:[pending()]});await a.inspectCheckoutPayment('course');assert.deepEqual(a.marked,[{course:'course',id:'a0000000-0000-4000-8000-000000000001'}]);
 });

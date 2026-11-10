@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { reconcileOwnedPaytabsOrder } from "@/lib/paytabs-reconciliation";
-import { checkoutCookieName, clearHostedCheckout } from "@/lib/checkout-recovery-cookie";
+import { checkoutCookieName, clearHostedCheckout, rememberHostedCheckout } from "@/lib/checkout-recovery-cookie";
 
 export type CheckoutRecovery = {
   state: "ready" | "pending" | "paid" | "cliq" | "review" | "reschedule";
@@ -59,6 +59,7 @@ export async function inspectCheckoutPayment(courseId: string, watchedOrderId?: 
     return { state: privateRetry ? "reschedule" : "ready" };
   }
   if (pending.payment_method === "cliq") return { state: "cliq", orderId: pending.id };
+  if (pending.payment_method === "paytabs" && saved !== pending.id) await rememberHostedCheckout(courseId, pending.id);
   if (pending.payment_method !== "paytabs" || pending.source !== "manual") {
     return { state: "pending", orderId: pending.id };
   }
