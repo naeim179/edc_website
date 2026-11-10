@@ -171,6 +171,15 @@ export default function SubscriptionCheckout({
   const isArabic =
     language === "ar";
 
+  const [returnVersion, setReturnVersion] = useState(0);
+  useEffect(() => {
+    const restore = (event: PageTransitionEvent) => {
+      if (event.persisted) setReturnVersion(version => version + 1);
+    };
+    window.addEventListener("pageshow", restore);
+    return () => window.removeEventListener("pageshow", restore);
+  }, []);
+
   const days =
     isArabic
       ? DAYS_AR
@@ -933,6 +942,7 @@ export default function SubscriptionCheckout({
 
           <div className="mt-6">
             <BuyCourseButton
+              key={JSON.stringify([returnVersion, courseId, months, autoRenew, paymentMethod, couponValid ? couponCode : "", privateBookingId, payableTotalUsd])}
               courseId={
                 courseId
               }

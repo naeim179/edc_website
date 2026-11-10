@@ -135,7 +135,7 @@ test('Signed cancellation requires provider verification and returns the closed 
 
 for(const method of ['paytabs','cliq'])test(`An existing manual CliQ order reopens its cancellable page when selecting ${method}`,async()=>{
  const admin={from:table=>({select(){return this;},eq(){return this;},async maybeSingle(){return {data:table==='courses'?{id:'course',title:'cys',price:70,is_published:true,registration_open:true,course_type:'group'}:table==='orders'?{id:'pending-cliq',payment_method:'cliq',source:'manual'}:null};}})};
- const action=load('app/actions/orders.ts',{'@/lib/paytabs-reconciliation':{},'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},'next/cache':{revalidatePath(){}},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/paytabs':{},'@/lib/free-enrollment':{calculateFinalPrice:p=>p}});
+ const action=load('app/actions/orders.ts',{'@/lib/checkout-recovery-cookie':{},'@/lib/paytabs-reconciliation':{},'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},'next/cache':{revalidatePath(){}},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/paytabs':{},'@/lib/free-enrollment':{calculateFinalPrice:p=>p}});
  await assert.rejects(action.createOrder('course',1,false,method),/REDIRECT:\/checkout\/success\?order=pending-cliq&method=cliq/);
 });
 test('CliQ cancellation uses the authenticated RPC and never a caller-supplied user ID',async()=>{
@@ -158,3 +158,10 @@ for(const method of [undefined,'cliq'])test(`Checkout requires explicit selectio
 });
 
 test('A cancelled renewal claim never contacts the gateway',async()=>{const {calls,run}=renewal({cancelled:true});const response=await run();assert.equal((await response.json()).skipped,1);assert.ok(!calls.includes('gateway-request'));});
+
+test('Resuming the current PayTabs checkout reuses its hosted URL without initializing a second payment',async()=>{
+ let remembered=0;
+ const admin={from:table=>({select(){return this;},eq(){return this;},async maybeSingle(){return {data:table==='courses'?{id:'course',title:'cys',price:70,is_published:true,registration_open:true,course_type:'group'}:table==='orders'?{id:'own-pending',payment_method:'paytabs',source:'manual'}:table==='paytabs_payment_attempts'?{status:'initiated',created_at:new Date().toISOString(),payment_url:'https://provider.example/existing'}:null};}})};
+ const action=load('app/actions/orders.ts',{'@/lib/checkout-recovery-cookie':{rememberHostedCheckout:async()=>remembered++},'@/lib/paytabs-reconciliation':{reconcileOwnedPaytabsOrder:async()=> 'skipped'},'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},'next/cache':{revalidatePath(){}},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/paytabs':{createPaymentPage:async()=>{throw Error('Unexpected new gateway request');}},'@/lib/free-enrollment':{calculateFinalPrice:p=>p}});
+ await assert.rejects(action.createOrder('course',1,false,'paytabs'),/REDIRECT:https:\/\/provider.example\/existing/);assert.equal(remembered,1);
+});

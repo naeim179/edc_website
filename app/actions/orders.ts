@@ -1,5 +1,6 @@
 "use server";
 
+import { rememberHostedCheckout } from "@/lib/checkout-recovery-cookie";
 import { reconcileOwnedPaytabsOrder } from "@/lib/paytabs-reconciliation";
 
 import {
@@ -461,6 +462,7 @@ export async function createOrder(
       redirect(`/checkout/success?order=${existingPending.id}&method=cliq`);
     }
     if (existingPending.payment_method === "paytabs") {
+      await rememberHostedCheckout(courseId, existingPending.id);
       try {
         const state = await reconcileOwnedPaytabsOrder(existingPending.id, user.id);
         if (state === "closed" || state === "expired") {
@@ -495,7 +497,7 @@ export async function createOrder(
     ) {
       redirect(priorAttempt.payment_url);
     }
-    return { checkoutError: "PAYTABS_PENDING" as const };
+    return { checkoutError: "PAYTABS_PENDING" as const, orderId: existingPending.id };
   }
 
   let normalizedCouponCode:
@@ -949,6 +951,8 @@ export async function createOrder(
     throw new Error(attemptError?.message ?? "تعذر تثبيت محاولة الدفع");
   }
 
+  await rememberHostedCheckout(courseId, orderId);
+
   let paymentUrl: string;
   try {
     paymentUrl = await createPaymentPage({
@@ -969,7 +973,7 @@ export async function createOrder(
       .update({ status: "uncertain", updated_at: new Date().toISOString() })
       .eq("id", attemptId)
       .eq("status", "created");
-    return { checkoutError: "PAYMENT_INIT_UNCERTAIN" as const };
+    return { checkoutError: "PAYMENT_INIT_UNCERTAIN" as const, orderId };
   }
 
   const { data: saved, error: saveError } = await admin

@@ -23,3 +23,17 @@
 Sandbox behavior does not certify bank settlement, refunds, live credentials or live 3DS. Existing ambiguous historical payments were left untouched. Financial review tables and payment tokens remain inaccessible to browser roles. Existing Supabase advisor warnings about intentional public helper functions and Auth password protection are outside these payment repairs.
 
 Official test-card reference: https://support.paytabs.com/en/support/solutions/articles/60000712315-what-are-the-test-cards-available-to-perform-payments-
+
+## Browser Back and automatic checkout recovery
+
+Returning from the hosted card page now checks only the authenticated owner's course/order. An HttpOnly, checkout-scoped cookie remembers the handed-off order so a paid browser-history entry returns to the course instead of initiating a second subscription. Hints remain untrusted: every lookup includes both owner and course. A payment that settles between reads is checked again before authorizing a retry.
+
+While a card attempt remains unresolved, the selected payment method can be queued on the current checkout page. The visible page rechecks every 30 seconds and continues once the existing verified unpaid closure succeeds. Changing the method, duration, coupon, amount or private reservation discards the queued intent. Restoring a page from the browser cache resets stale transitions; a new tab or reload does not restore automatic purchase consent. Provider lookup failures keep the order and queued intent protected. Recent verification timestamps limit redundant provider calls across tabs.
+
+This does not treat Back, tab closure or client messages as proof of cancellation. PayTabs HPP does not offer a merchant API to cancel an active page before payment. The financial guards remain unchanged: a five-minute HPP lifetime and a 15-minute expiry/3DS margin for no-transaction recovery, including the known-approved canary; pending/hold/unknown results and review cases never release the checkout. The page explains the possible wait. Private reservations released during closure require fresh schedule selection. Existing manual CliQ requests/proofs remain protected.
+
+Validation covers ownership, malicious hints, cookie policy, callback/read races, approved and unpaid results, review cases, shared verification, and private rescheduling. Browser tests render the real checkout/button/hook with simulated provider boundaries to verify one queued continuation, changing/cancelling intent, network loss, paid navigation, and browser-cache restoration.
+
+Provider references: [integration capabilities](https://docs.paytabs.com/manuals/PT-API-Endpoints/Integration-Types-Manuals/-Landing-Page/) and [hosted-page expiry](https://docs.paytabs.com/manuals/PT-API-Endpoints/Integration-Types-Manuals/Request-Response-Parameters/Request-Parameter-Page-session-expiry/).
+
+Choosing PayTabs while the current hosted page is still within its safe resume window reuses the same checkout URL immediately. Waiting/queued continuation is for switching methods or replacing an expired page; it never creates a second live card session.
