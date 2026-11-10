@@ -135,7 +135,7 @@ test('Signed cancellation requires provider verification and returns the closed 
 
 for(const method of ['paytabs','cliq'])test(`An existing manual CliQ order reopens its cancellable page when selecting ${method}`,async()=>{
  const admin={from:table=>({select(){return this;},eq(){return this;},async maybeSingle(){return {data:table==='courses'?{id:'course',title:'cys',price:70,is_published:true,registration_open:true,course_type:'group'}:table==='orders'?{id:'pending-cliq',payment_method:'cliq',source:'manual'}:null};}})};
- const action=load('app/actions/orders.ts',{'@/lib/paytabs-reconciliation':{},'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},'next/cache':{revalidatePath(){}},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/paytabs':{},'@/lib/free-enrollment':{calculateFinalPrice:p=>p}});
+ const action=load('app/actions/orders.ts',{'@/lib/checkout-recovery-cookie':{},'@/lib/paytabs-reconciliation':{},'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},'next/cache':{revalidatePath(){}},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/paytabs':{},'@/lib/free-enrollment':{calculateFinalPrice:p=>p}});
  await assert.rejects(action.createOrder('course',1,false,method),/REDIRECT:\/checkout\/success\?order=pending-cliq&method=cliq/);
 });
 test('CliQ cancellation uses the authenticated RPC and never a caller-supplied user ID',async()=>{
