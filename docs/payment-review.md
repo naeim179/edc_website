@@ -35,3 +35,5 @@ This does not treat Back, tab closure or client messages as proof of cancellatio
 Validation covers ownership, malicious hints, cookie policy, callback/read races, approved and unpaid results, review cases, shared verification, and private rescheduling. Browser tests render the real checkout/button/hook with simulated provider boundaries to verify one queued continuation, changing/cancelling intent, network loss, paid navigation, and browser-cache restoration.
 
 Provider references: [integration capabilities](https://docs.paytabs.com/manuals/PT-API-Endpoints/Integration-Types-Manuals/-Landing-Page/) and [hosted-page expiry](https://docs.paytabs.com/manuals/PT-API-Endpoints/Integration-Types-Manuals/Request-Response-Parameters/Request-Parameter-Page-session-expiry/).
+
+Choosing PayTabs while the current hosted page is still within its safe resume window reuses the same checkout URL immediately. Waiting/queued continuation is for switching methods or replacing an expired page; it never creates a second live card session.

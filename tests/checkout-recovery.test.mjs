@@ -9,10 +9,10 @@ function load(file,mocks,env={}) {
  vm.runInNewContext(code,{module:loaded,exports:loaded.exports,require:n=>mocks[n],process:{env}});
  return loaded.exports;
 }
-function recovery({orders=[],attemptStatus='initiated',outcome='pending',user='student',remembered,settleBeforePendingRead=false}={}) {
+function recovery({orders=[],attemptStatus='initiated',attemptFields={},outcome='pending',user='student',remembered,settleBeforePendingRead=false}={}) {
  const calls=[],cleared=[];
  const db={from:table=>{const filters=[];return {select(){return this;},eq(k,v){filters.push([k,v]);return this;},async maybeSingle(){
-  if(table==='paytabs_payment_attempts')return {data:{status:attemptStatus}};
+  if(table==='paytabs_payment_attempts')return {data:{status:attemptStatus,...attemptFields}};
   if(settleBeforePendingRead&&filters.some(([k,v])=>k==='status'&&v==='pending'))orders[0].status='paid';
   return {data:orders.find(o=>filters.every(([k,v])=>o[k]===v))??null};
  }};}};
@@ -75,4 +75,11 @@ test('Malformed browser hints do not reach UUID database filters',async()=>{
 
 test('Recent verification is reused across tabs without repeating provider queries',async()=>{
  const a=recovery({orders:[{...pending(),paytabs_last_reconciled_at:new Date().toISOString()}]});assert.equal((await a.inspectCheckoutPayment('course')).state,'pending');assert.equal(a.calls.length,0);
+});
+
+test('A fresh hosted checkout can be resumed without exposing its provider URL',async()=>{
+ const a=recovery({orders:[pending()],attemptFields:{created_at:new Date().toISOString(),payment_url:'https://provider.example/private-session'}});const r=await a.inspectCheckoutPayment('course');assert.equal(r.canResume,true);assert.equal(JSON.stringify(r).includes('private-session'),false);
+});
+test('An expired hosted checkout is not offered as a resume link',async()=>{
+ const a=recovery({orders:[pending()],attemptFields:{created_at:new Date(Date.now()-5*60000).toISOString(),payment_url:'https://provider.example/expired'}});assert.equal((await a.inspectCheckoutPayment('course')).canResume,false);
 });

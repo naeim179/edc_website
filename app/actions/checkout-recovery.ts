@@ -9,6 +9,7 @@ import { checkoutCookieName, clearHostedCheckout } from "@/lib/checkout-recovery
 export type CheckoutRecovery = {
   state: "ready" | "pending" | "paid" | "cliq" | "review" | "reschedule";
   orderId?: string;
+  canResume?: boolean;
 };
 
 // Browser Back is a navigation event, never financial evidence. Only the
@@ -78,10 +79,12 @@ export async function inspectCheckoutPayment(courseId: string, watchedOrderId?: 
     return { state: current.private_booking_id ? "reschedule" : "ready" };
   }
   const { data: attempt, error: attemptError } = await db.from("paytabs_payment_attempts")
-    .select("status").eq("order_id", current.id).maybeSingle();
+    .select("status,created_at,payment_url").eq("order_id", current.id).maybeSingle();
   if (attemptError) throw new Error(attemptError.message);
   if (attempt?.status === "requires_review" || attempt?.status === "approved") {
     return { state: "review", orderId: current.id };
   }
-  return { state: "pending", orderId: current.id };
+  const age = new Date(attempt?.created_at ?? "").getTime();
+  const canResume = attempt?.status === "initiated" && Boolean(attempt.payment_url) && Number.isFinite(age) && Date.now() - age >= 0 && Date.now() - age < 4 * 60 * 1000;
+  return { state: "pending", orderId: current.id, canResume };
 }

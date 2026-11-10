@@ -63,7 +63,7 @@ export default function BuyCourseButton({
   }, [recovery.state, queued, disabled, pending, purchase, courseId]);
 
   function handleBuy() {
-    if (recovery.state === "pending") {
+    if (recovery.state === "pending" && !(paymentMethod === "paytabs" && recovery.canResume)) {
       queueActive.current = true;
       setQueued(true);
       void check();
@@ -82,7 +82,10 @@ export default function BuyCourseButton({
           ? (isArabic ? "جاري التحقق من حالة الدفع..." : "Checking payment status...")
           : queued
             ? (isArabic ? "المتابعة تلقائيًا بعد التحقق..." : "Continuing automatically after verification...")
-            : pending ? t.booking.paying : label ?? t.booking.continueToPayment}
+            : pending ? t.booking.paying
+              : recovery.state === "pending" && paymentMethod === "paytabs" && recovery.canResume
+                ? (isArabic ? "متابعة محاولة PayTabs الحالية" : "Resume PayTabs checkout")
+                : label ?? t.booking.continueToPayment}
       </button>
 
       {recovery.state === "pending" && (
