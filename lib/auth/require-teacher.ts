@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 
 export async function requireTeacher(){
@@ -9,16 +10,17 @@ export async function requireTeacher(){
   const {
     data:{
       user
-    }
+    },
+    error: authError
   } = await supabase.auth.getUser();
 
 
-  if(!user){
-    throw new Error("Unauthorized");
+  if(authError || !user){
+    redirect("/login");
   }
 
 
-  const { data: profile } =
+  const { data: profile, error: profileError } =
     await supabase
       .from("profiles")
       .select("role")
@@ -28,14 +30,16 @@ export async function requireTeacher(){
       )
       .maybeSingle();
 
+  if (profileError) {
+    throw new Error("Could not verify teacher access");
+  }
+
 
   if(
     profile?.role !== "teacher" &&
     profile?.role !== "admin"
   ){
-    throw new Error(
-      "Only teachers allowed"
-    );
+    redirect("/my-courses");
   }
 
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import MuxPlayer from "@mux/mux-player-react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type Props = {
   lessonId: string;
@@ -22,6 +23,7 @@ export default function LessonVideoPlayer({
   bunnyVideoId,
   title,
 }: Props) {
+  const { t } = useLanguage();
   const [muxAccess, setMuxAccess] = useState<{
     lessonId: string;
     token?: string;
@@ -64,7 +66,7 @@ export default function LessonVideoPlayer({
   if (!provider) {
     return (
       <div className="rounded-xl bg-gray-100 p-8 text-center text-gray-500">
-        لا يوجد فيديو لهذا الدرس
+        {t.lessonVideo.noVideo}
       </div>
     );
   }
@@ -94,14 +96,14 @@ export default function LessonVideoPlayer({
     if (currentAccess?.error) {
       return (
         <div className="aspect-video flex items-center justify-center rounded-xl bg-black p-6 text-center text-white" role="alert">
-          تعذر تشغيل الفيديو. تحقق من صلاحية الوصول وأعد تحميل الصفحة.
+          {t.lessonVideo.playbackError}
         </div>
       );
     }
     if (!muxToken) {
       return (
         <div className="aspect-video flex items-center justify-center rounded-xl bg-black text-white">
-          Loading video...
+          {t.lessonVideo.playbackLoading}
         </div>
       );
     }
@@ -141,7 +143,7 @@ export default function LessonVideoPlayer({
 
   return (
     <div className="rounded-xl bg-red-50 p-8 text-center text-red-600">
-      إعداد الفيديو غير مكتمل
+      {t.lessonVideo.incomplete}
     </div>
   );
 }

@@ -71,7 +71,7 @@ export default function LessonVideoFields({
 
   const [uploadState, setUploadState] =
     useState<UploadState>(
-      defaultMuxPlaybackId
+      defaultMuxPlaybackId || (defaultBunnyLibraryId && defaultBunnyVideoId)
         ? "ready"
         : "idle"
     );
@@ -303,7 +303,7 @@ export default function LessonVideoFields({
 
             reject(
               new Error(
-                `{t.lessonVideo.uploadFailed} إلى Mux (${xhr.status})`
+                `${t.lessonVideo.uploadFailed} (Mux: ${xhr.status})`
               )
             );
           };
@@ -444,7 +444,7 @@ export default function LessonVideoFields({
 
         throw new Error(
           error.error ||
-            "{t.lessonVideo.uploadFailed}"
+            t.lessonVideo.uploadFailed
         );
       }
 
@@ -601,9 +601,7 @@ export default function LessonVideoFields({
           />
 
           <p className="mt-2 text-xs text-slate-400">
-            يدعم روابط YouTube
-            العادية و Shorts و
-            youtu.be
+            {t.lessonVideo.youtubeSupport}
           </p>
         </div>
       ) : provider === "mux" ? (
@@ -614,9 +612,7 @@ export default function LessonVideoFields({
             </p>
 
             <p className="mt-1 text-xs leading-6 text-violet-700">
-              اختر الفيديو وسيتم
-              رفعه مباشرة من جهازك
-              إلى Mux.
+              {t.lessonVideo.uploadDirect}
             </p>
           </div>
 
@@ -643,15 +639,14 @@ export default function LessonVideoFields({
 
             <span className="mt-2 block font-bold text-slate-800">
               {muxBusy
-                ? "{t.lessonVideo.working}"
+                ? t.lessonVideo.working
                 : muxPlaybackId
-                  ? "{t.lessonVideo.replaceVideo}"
-                  : "{t.lessonVideo.chooseVideo}"}
+                  ? t.lessonVideo.replaceVideo
+                  : t.lessonVideo.chooseVideo}
             </span>
 
             <span className="mt-1 block text-xs text-slate-500">
-              MP4 أو أي صيغة فيديو
-              مدعومة
+              {t.lessonVideo.videoFormats}
             </span>
           </label>
 
@@ -664,8 +659,7 @@ export default function LessonVideoFields({
           {uploadState ===
             "creating" && (
             <div className="rounded-xl bg-white p-4 text-sm font-bold text-violet-700">
-              جاري تجهيز رابط
-              الرفع...
+              {t.lessonVideo.preparingUpload}
             </div>
           )}
 
@@ -701,8 +695,7 @@ export default function LessonVideoFields({
               </p>
 
               <p className="mt-1 text-sm text-blue-700">
-                Mux يعالج الفيديو
-                الآن. لا تغلق الصفحة.
+                {t.lessonVideo.processing}
               </p>
             </div>
           )}
@@ -716,8 +709,7 @@ export default function LessonVideoFields({
                 </p>
 
                 <p className="mt-1 text-sm text-emerald-700">
-                  تم حفظ بيانات
-                  التشغيل تلقائيًا.
+                  {t.lessonVideo.saved}
                 </p>
               </div>
             )}
@@ -739,11 +731,7 @@ export default function LessonVideoFields({
             uploadState ===
               "idle" && (
               <p className="text-xs font-medium text-violet-700">
-                يجب رفع الفيديو
-                وانتظار ظهور
-                &quot;الفيديو
-                جاهز&quot; قبل حفظ
-                الدرس.
+                {t.lessonVideo.needUpload}
               </p>
             )}
         </div>
@@ -780,10 +768,10 @@ export default function LessonVideoFields({
 
             <span className="mt-2 block font-bold text-slate-800">
               {muxBusy
-                ? "{t.lessonVideo.working}"
+                ? t.lessonVideo.working
                 : bunnyVideoId
-                  ? "{t.lessonVideo.replaceVideo}"
-                  : "{t.lessonVideo.chooseVideo}"}
+                  ? t.lessonVideo.replaceVideo
+                  : t.lessonVideo.chooseVideo}
             </span>
 
             <span className="mt-1 block text-xs text-slate-500">

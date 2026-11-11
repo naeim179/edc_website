@@ -1,297 +1,42 @@
+import { notFound } from "next/navigation";
 import AppShell from "@/components/AppShell";
-import LessonForm from "@/components/admin/LessonForm";
-import LessonVideoFields from "@/components/lessons/LessonVideoFields";
-import DeleteLessonButton from "@/components/admin/DeleteLessonButton";
-import { updateLesson } from "@/app/actions/admin-lessons";
+import LessonManager from "@/components/lessons/LessonManager";
+import { createLesson, updateLesson, deleteLesson } from "@/app/actions/admin-lessons";
 import { canManageCourse } from "@/lib/auth/can-manage-course";
 import { createClient } from "@/lib/supabase/server";
-import { translations } from "@/lib/i18n";
 
-export default async function LessonsPage({
-  params,
-}: {
-  params: Promise<{
-    id: string;
-    sectionId: string;
-  }>;
+export default async function LessonsPage({ params }: {
+  params: Promise<{ id: string; sectionId: string }>;
 }) {
   const { id, sectionId } = await params;
-  const t = translations.ar;
-
-  const allowed = await canManageCourse(id);
-
-  if (!allowed) {
-    return null;
-  }
+  if (!(await canManageCourse(id))) notFound();
 
   const supabase = await createClient();
+  const { data: section, error: sectionError } = await supabase
+    .from("sections").select("title")
+    .eq("id", sectionId).eq("course_id", id).maybeSingle();
+  if (sectionError) throw new Error("Could not load lesson section");
+  if (!section) notFound();
 
-
-  const { data: section } = await supabase
-    .from("sections")
-    .select("title")
-    .eq("id", sectionId)
-    .maybeSingle();
-
-
-  const { data: lessons } = await supabase
+  const { data: lessons, error: lessonsError } = await supabase
     .from("lessons")
-    .select(`
-      id,
-      title,
-      order_index,
-      content_url,
-      video_provider,
-      youtube_video_id,
-      mux_asset_id,
-      mux_playback_id,
-      lesson_type,
-      live_platform,
-      live_schedule,
-      is_free_preview
-    `)
-    .eq("section_id", sectionId)
-    .order("order_index");
-
+    .select("id,title,order_index,content_url,video_provider,youtube_video_id,mux_asset_id,mux_playback_id,bunny_library_id,bunny_video_id,lesson_type,live_platform,live_schedule,is_free_preview")
+    .eq("section_id", sectionId).order("order_index");
+  if (lessonsError) throw new Error("Could not load lessons");
 
   return (
     <AppShell>
-
-      <div
-        className="max-w-6xl mx-auto w-full space-y-6"
-        dir="rtl"
-      >
-
-
-        <section className="bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8">
-
-          <h1 className="text-3xl font-bold">
-            {t.admin.manageLessons}
-          </h1>
-
-          <p className="mt-2 text-blue-100">
-            {t.admin.section}: {section?.title}
-          </p>
-
-        </section>
-
-
-
-        <LessonForm
-          sectionId={sectionId}
-          courseId={id}
-        />
-
-
-
-        {lessons && lessons.length > 0 ? (
-
-          <div className="grid md:grid-cols-2 gap-5">
-
-
-            {lessons.map((lesson) => {
-
-              const updateAction =
-                updateLesson.bind(
-                  null,
-                  lesson.id,
-                  id,
-                  sectionId
-                );
-
-
-              return (
-
-                <div
-                  key={lesson.id}
-                  className="bg-white rounded-[26px] border border-slate-100 shadow-sm p-5 space-y-5"
-                >
-
-
-                  <div className="flex justify-between items-start">
-
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        lesson.is_free_preview
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      {lesson.is_free_preview
-                        ? t.admin.freePreview
-                        : t.admin.locked}
-                    </span>
-
-
-                    <h2 className="text-lg font-bold text-slate-800">
-                      {lesson.title}
-                    </h2>
-
-                  </div>
-
-
-
-                  <form
-                    action={updateAction}
-                    className="space-y-4"
-                  >
-
-
-                    <div>
-
-                      <label className="block text-sm font-bold mb-2 text-slate-600">
-                        {t.admin.lessonTitle}
-                      </label>
-
-                      <input
-                        name="title"
-                        defaultValue={lesson.title}
-                        className="w-full bg-slate-50 border rounded-xl px-4 py-3 text-right"
-                        required
-                      />
-
-                    </div>
-
-
-
-                    <input
-                      type="hidden"
-                      name="lesson_type"
-                      value={lesson.lesson_type ?? "recorded"}
-                    />
-
-                    {lesson.lesson_type === "live" ? (
-                      <>
-                        <div>
-                          <label className="block text-sm font-bold mb-2 text-slate-600">
-                            {t.admin.platform}
-                          </label>
-
-                          <input
-                            name="live_platform"
-                            defaultValue={lesson.live_platform ?? ""}
-                            className="w-full bg-slate-50 border rounded-xl px-4 py-3"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-bold mb-2 text-slate-600">
-                            {t.admin.sessionUrl}
-                          </label>
-
-                          <input
-                            name="content_url"
-                            defaultValue={lesson.content_url ?? ""}
-                            className="w-full bg-slate-50 border rounded-xl px-4 py-3"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-bold mb-2 text-slate-600">
-                            {t.admin.sessionDate}
-                          </label>
-
-                          <input
-                            name="live_schedule"
-                            defaultValue={lesson.live_schedule ?? ""}
-                            className="w-full bg-slate-50 border rounded-xl px-4 py-3"
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <LessonVideoFields
-                        courseId={id}
-                        defaultProvider={
-                          lesson.video_provider === "mux"
-                            ? "mux"
-                            : "youtube"
-                        }
-                        defaultYoutubeUrl={
-                          lesson.content_url ?? ""
-                        }
-                        defaultMuxPlaybackId={
-                          lesson.mux_playback_id ?? ""
-                        }
-                        defaultMuxAssetId={
-                          lesson.mux_asset_id ?? ""
-                        }
-                      />
-                    )}
-
-
-
-                    <div>
-
-                      <label className="block text-sm font-bold mb-2 text-slate-600">
-                        {t.admin.lessonOrder}
-                      </label>
-
-                      <input
-                        name="order_index"
-                        type="number"
-                        defaultValue={lesson.order_index}
-                        className="w-full bg-slate-50 border rounded-xl px-4 py-3"
-                      />
-
-                    </div>
-
-
-
-                    <label className="flex justify-end gap-2 items-center text-sm font-bold text-slate-700">
-
-                      {t.admin.freePreview}
-
-                      <input
-                        type="checkbox"
-                        name="is_free_preview"
-                        defaultChecked={
-                          lesson.is_free_preview
-                        }
-                      />
-
-                    </label>
-
-
-
-                    <button
-                      type="submit"
-                      className="w-full bg-[#124b8a] hover:bg-[#0d3b6e] text-white py-3 rounded-xl font-bold"
-                    >
-                      {t.admin.saveChanges}
-                    </button>
-
-
-                  </form>
-
-
-
-                  <DeleteLessonButton
-                    id={lesson.id}
-                    courseId={id}
-                    sectionId={sectionId}
-                  />
-
-
-                </div>
-
-              );
-
-            })}
-
-
-          </div>
-
-        ) : (
-
-          <div className="bg-white rounded-2xl border p-10 text-center text-slate-500">
-            {t.admin.noLessons}
-          </div>
-
-        )}
-
-
-      </div>
-
+      <LessonManager
+        courseId={id}
+        sectionTitle={section.title}
+        backHref={`/admin/courses/${id}/sections`}
+        createAction={createLesson.bind(null, sectionId, id)}
+        lessons={(lessons ?? []).map(lesson => ({
+          ...lesson,
+          updateAction: updateLesson.bind(null, lesson.id, id, sectionId),
+          deleteAction: deleteLesson.bind(null, lesson.id, id, sectionId),
+        }))}
+      />
     </AppShell>
   );
 }

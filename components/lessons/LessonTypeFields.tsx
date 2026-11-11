@@ -11,22 +11,23 @@ export default function LessonTypeFields({courseId}: {courseId: string}) {
   return (
     <>
       <div>
-        <label className="block mb-2 font-bold">
-          نوع الدرس
+        <label htmlFor={`lesson-type-${courseId}`} className="block mb-2 font-bold">
+          {t.lessonType.type}
         </label>
 
         <select
+          id={`lesson-type-${courseId}`}
           name="lesson_type"
           value={type}
           onChange={(e) => setType(e.target.value)}
           className="w-full border rounded-xl px-4 py-3"
         >
           <option value="recorded">
-            درس مسجل
+            {t.lessonType.recorded}
           </option>
 
           <option value="live">
-            درس مباشر
+            {t.lessonType.live}
           </option>
         </select>
       </div>
@@ -35,11 +36,12 @@ export default function LessonTypeFields({courseId}: {courseId: string}) {
       {type === "live" && (
         <>
           <div>
-            <label className="block mb-2 font-bold">
-              منصة البث
+            <label htmlFor={`lesson-platform-${courseId}`} className="block mb-2 font-bold">
+              {t.lessonType.platform}
             </label>
 
             <select
+              id={`lesson-platform-${courseId}`}
               name="live_platform"
               defaultValue="zoom"
               className="w-full border rounded-xl px-4 py-3"
@@ -63,11 +65,12 @@ export default function LessonTypeFields({courseId}: {courseId: string}) {
           </div>
 
           <div>
-            <label className="block mb-2 font-bold">
-              رابط الجلسة
+            <label htmlFor={`lesson-url-${courseId}`} className="block mb-2 font-bold">
+              {t.lessonType.sessionLink}
             </label>
 
             <input
+              id={`lesson-url-${courseId}`}
               name="content_url"
               placeholder={t.lessonType.sessionPlaceholder}
               className="w-full border rounded-xl px-4 py-3"
@@ -75,11 +78,12 @@ export default function LessonTypeFields({courseId}: {courseId: string}) {
           </div>
 
           <div>
-            <label className="block mb-2 font-bold">
-              موعد الجلسة
+            <label htmlFor={`lesson-schedule-${courseId}`} className="block mb-2 font-bold">
+              {t.lessonType.schedule}
             </label>
 
             <input
+              id={`lesson-schedule-${courseId}`}
               name="live_schedule"
               placeholder={t.lessonType.schedulePlaceholder}
               className="w-full border rounded-xl px-4 py-3"

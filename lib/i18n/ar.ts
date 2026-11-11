@@ -202,7 +202,12 @@ export const ar = {
 
 
 
+  lessonEditor: {
+    order: "ترتيب الدرس",
+    confirmDelete: "هل تريد حذف الدرس؟",
+  },
   lessonType: {
+    platform: "منصة البث",
     type: "نوع الدرس",
     recorded: "درس مسجل",
     live: "درس مباشر",
@@ -430,6 +435,10 @@ export const ar = {
 
 
   lessonVideo: {
+    noVideo: "لا يوجد فيديو لهذا الدرس",
+    playbackLoading: "جارٍ تحميل الفيديو...",
+    playbackError: "تعذر تشغيل الفيديو. تحقق من صلاحية الوصول وأعد تحميل الصفحة.",
+    incomplete: "إعداد الفيديو غير مكتمل",
     source: "مصدر الفيديو",
     youtube: "YouTube",
     youtubeDescription: "رابط فيديو",
