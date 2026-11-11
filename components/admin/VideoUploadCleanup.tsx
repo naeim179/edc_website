@@ -18,21 +18,22 @@ export default function VideoUploadCleanup({ uploads }: { uploads: Row[] }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Row | null>(null);
   const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState("");
+  const [failed, setFailed] = useState(false);
+  const feedback = failed
+    ? ar
+      ? "تعذر التنظيف. قد يكون الفيديو ارتبط بدرس، أو لم تنتهِ المهلة، أو تعذر الاتصال بالمزوّد. لم يُحذف السجل المحلي كأنه نجح."
+      : "Cleanup failed: the video may be linked, still within its grace period, or its provider unavailable. The local record was not marked as deleted."
+    : "";
   async function remove() {
     if (!selected || busy) return;
     setBusy(true);
-    setFeedback("");
+    setFailed(false);
     try {
       await removeStaleVideoUpload(selected.id);
       setSelected(null);
       router.refresh();
     } catch {
-      setFeedback(
-        ar
-          ? "تعذر التنظيف. قد يكون الفيديو ارتبط بدرس، أو لم تنتهِ المهلة، أو تعذر الاتصال بالمزوّد. لم يُحذف السجل المحلي كأنه نجح."
-          : "Cleanup failed: the video may be linked, still within its grace period, or its provider unavailable. The local record was not marked as deleted.",
-      );
+      setFailed(true);
     } finally {
       setBusy(false);
     }
@@ -81,7 +82,7 @@ export default function VideoUploadCleanup({ uploads }: { uploads: Row[] }) {
               disabled={busy}
               className="min-h-11 rounded-xl border border-red-500 px-4 py-2 font-bold text-red-700"
               onClick={() => {
-                setFeedback("");
+                setFailed(false);
                 setSelected(row);
               }}
             >
