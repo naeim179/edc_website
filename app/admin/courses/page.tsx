@@ -10,12 +10,16 @@ export default async function AdminCoursesPage({
 }: {
   searchParams: Promise<SearchValues>;
 }) {
-  await requirePermission("manage_courses");
+  const access = await requirePermission("manage_courses");
   const filters = listFilters(await searchParams);
   const data = await loadCoursePage(await createClient(), filters, true);
   return (
     <AppShell>
-      <AdminCoursesContent data={data} filters={filters} />
+      <AdminCoursesContent
+        data={data}
+        filters={filters}
+        canCleanup={access.isSuper}
+      />
     </AppShell>
   );
 }

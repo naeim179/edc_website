@@ -1,21 +1,32 @@
 "use client";
-
-import { ChangeEvent, useState, useId } from "react";
+import { useEffect, useRef, useState, useId, type ChangeEvent } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
+import {
+  MAX_VIDEO_BYTES,
+  VIDEO_UPLOAD_TIMEOUT_MS,
+  VIDEO_PROCESSING_TIMEOUT_MS,
+  VIDEO_POLL_INTERVAL_MS,
+  validateVideoFile,
+  type UploadProvider,
+} from "@/lib/video-upload-policy";
 
-type VideoProvider =
-  | "youtube"
-  | "mux"
-  | "bunny";
-
-type UploadState =
+type VideoProvider = "youtube" | UploadProvider;
+type State =
   | "idle"
   | "creating"
   | "uploading"
   | "processing"
   | "ready"
   | "error";
-
+type Pending = { id: string; provider: UploadProvider; processing: boolean };
+type Status = {
+  ready: boolean;
+  assetId?: string;
+  playbackId?: string;
+  videoId?: string;
+  libraryId?: string;
+  code?: string;
+};
 type Props = {
   courseId: string;
   defaultProvider?: VideoProvider;
@@ -26,12 +37,6 @@ type Props = {
   defaultBunnyVideoId?: string;
 };
 
-function sleep(ms: number) {
-  return new Promise((resolve) =>
-    setTimeout(resolve, ms)
-  );
-}
-
 export default function LessonVideoFields({
   courseId,
   defaultProvider = "youtube",
@@ -41,780 +46,457 @@ export default function LessonVideoFields({
   defaultBunnyLibraryId = "",
   defaultBunnyVideoId = "",
 }: Props) {
-
-  const { t } = useLanguage();
-  const youtubeFieldId = useId();
-
-  const [provider, setProvider] =
-    useState<VideoProvider>(
-      defaultProvider
-    );
-
-  const [muxPlaybackId, setMuxPlaybackId] =
-    useState(
-      defaultMuxPlaybackId
-    );
-
-  const [muxAssetId, setMuxAssetId] =
-    useState(
-      defaultMuxAssetId
-    );
-
-  const [bunnyLibraryId, setBunnyLibraryId] =
-    useState(
-      defaultBunnyLibraryId
-    );
-
-  const [bunnyVideoId, setBunnyVideoId] =
-    useState(
-      defaultBunnyVideoId
-    );
-
-  const [uploadState, setUploadState] =
-    useState<UploadState>(
-      defaultMuxPlaybackId || (defaultBunnyLibraryId && defaultBunnyVideoId)
-        ? "ready"
-        : "idle"
-    );
-
-  const [progress, setProgress] =
-    useState(0);
-
-  const [fileName, setFileName] =
-    useState("");
-
-  const [errorMessage, setErrorMessage] =
-    useState("");
-
-  async function pollMuxUpload(
-    uploadId: string
-  ) {
-    // تقريبًا 5 دقائق كحد أقصى.
-    for (
-      let attempt = 0;
-      attempt < 150;
-      attempt += 1
-    ) {
-      const response = await fetch(
-        `/api/mux/upload/${encodeURIComponent(
-          uploadId
-        )}?courseId=${encodeURIComponent(
-          courseId
-        )}`,
-        {
-          cache: "no-store",
+  const { language, t } = useLanguage();
+  const ar = language === "ar";
+  const fieldId = useId();
+  const root = useRef<HTMLDivElement>(null);
+  const controller = useRef<AbortController | null>(null);
+  const xhr = useRef<XMLHttpRequest | null>(null);
+  const generation = useRef(0);
+  const mounted = useRef(true);
+  const [provider, setProvider] = useState<VideoProvider>(defaultProvider);
+  const [muxPlaybackId, setMuxPlaybackId] = useState(defaultMuxPlaybackId);
+  const [muxAssetId, setMuxAssetId] = useState(defaultMuxAssetId);
+  const [bunnyLibraryId, setBunnyLibraryId] = useState(defaultBunnyLibraryId);
+  const [bunnyVideoId, setBunnyVideoId] = useState(defaultBunnyVideoId);
+  const [state, setState] = useState<State>(
+    (defaultProvider === "mux" && defaultMuxPlaybackId) ||
+      (defaultProvider === "bunny" &&
+        defaultBunnyLibraryId &&
+        defaultBunnyVideoId)
+      ? "ready"
+      : "idle",
+  );
+  const [pending, setPending] = useState<Pending | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [fileName, setFileName] = useState("");
+  const [error, setError] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+  const busy =
+    ["creating", "uploading", "processing"].includes(state) || cancelling;
+  const url = (id: string) =>
+    `/api/video-uploads/${encodeURIComponent(id)}?courseId=${encodeURIComponent(courseId)}`;
+  const message = (code: string) =>
+    (
+      ({
+        UPLOAD_NOT_VIDEO: t.lessonVideo.notVideo,
+        UPLOAD_PENDING: t.lessonVideo.needUpload,
+        UPLOAD_CANCELLATION_UNCONFIRMED: ar
+          ? "توقّف النقل، لكن تعذر تأكيد الإلغاء. أعد محاولة الإلغاء قبل رفع ملف جديد."
+          : "Transfer stopped, but cancellation could not be confirmed. Retry cancellation before selecting another file.",
+        UPLOAD_EMPTY: ar
+          ? "الفيديو فارغ. اختر ملفًا يحتوي بيانات."
+          : "The video is empty. Choose a file containing data.",
+        UPLOAD_TOO_LARGE: ar
+          ? "حجم الفيديو يتجاوز الحد المسموح: ٩٠ ميبيبايت."
+          : "This video exceeds the 90 MiB limit.",
+        UPLOAD_SIZE_MISMATCH: ar
+          ? "حجم الملف المستلم لا يطابق الملف المختار. ألغِ المحاولة وأعد الرفع."
+          : "The received size does not match the selected file. Cancel this attempt and upload again.",
+        UPLOAD_DAILY_LIMIT: ar
+          ? "وصلت إلى حد ١٠ محاولات رفع خلال ٢٤ ساعة. جرّب لاحقًا."
+          : "You reached 10 upload attempts within 24 hours. Try again later.",
+        UPLOAD_ACTIVE_LIMIT: ar
+          ? "توجد محاولتا رفع نشطتان للحساب أو الدورة. أكملهما أو ألغِهما أولًا."
+          : "Two uploads are active for this account or course. Complete or cancel them first.",
+        UPLOAD_COURSE_LIMIT: ar
+          ? "وصلت المرفوعات الجديدة للدورة إلى حصتها. اطلب من المدير مراجعة الرفعات المتروكة."
+          : "New uploads for this course reached their allowance. Ask an administrator to review abandoned uploads.",
+        UPLOAD_UNAUTHORIZED: ar
+          ? "لم تعد لديك صلاحية رفع فيديو لهذه الدورة."
+          : "You no longer have permission to upload to this course.",
+        UPLOAD_NOT_CONFIGURED: ar
+          ? "مزوّد الفيديو غير مهيأ حاليًا. تواصل مع المدير."
+          : "The video provider is not configured. Contact an administrator.",
+        UPLOAD_EXPIRED: ar
+          ? "انتهت مهلة هذه المحاولة. ألغِها ثم اختر الفيديو مجددًا."
+          : "This upload attempt expired. Cancel it and select the video again.",
+        UPLOAD_CANCELLED: t.lessonVideo.uploadCancelled,
+        UPLOAD_FAILED: ar
+          ? "فشل رفع الفيديو أو معالجته. ألغِ المحاولة ثم أعد الرفع."
+          : "Video upload or processing failed. Cancel this attempt and upload again.",
+        UPLOAD_TIMEOUT: ar
+          ? "انتهت مهلة الرفع. تحقق من اتصالك وألغِ المحاولة قبل إعادة الرفع."
+          : "Upload timed out. Check your connection and cancel this attempt before retrying.",
+        PROCESSING_PAUSED: ar
+          ? "المعالجة قد تكون مستمرة. اضغط «تحقق مجددًا» لمتابعة نفس الفيديو دون رفعه مرة أخرى."
+          : "Processing may still be running. Select “Check again” to resume this video without uploading it again.",
+      }) as Record<string, string>
+    )[code] ??
+    (ar
+      ? "تعذر إكمال العملية. جرّب مجددًا أو تواصل مع المدير."
+      : "Unable to complete the operation. Try again or contact an administrator.");
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      controller.current?.abort();
+      xhr.current?.abort();
+    };
+  }, []);
+  useEffect(() => {
+    const form = root.current?.closest("form");
+    const guard = (event: Event) => {
+      if (busy || pending) {
+        event.preventDefault();
+        setError("UPLOAD_PENDING");
+      }
+    };
+    const leave = (event: BeforeUnloadEvent) => {
+      if (busy || pending) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    form?.addEventListener("submit", guard, true);
+    window.addEventListener("beforeunload", leave);
+    return () => {
+      form?.removeEventListener("submit", guard, true);
+      window.removeEventListener("beforeunload", leave);
+    };
+  }, [busy, pending]);
+  async function check(p: Pending, token: number, signal: AbortSignal) {
+    const deadline = Date.now() + VIDEO_PROCESSING_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+      signal.throwIfAborted();
+      const response = await fetch(url(p.id), {
+        signal: AbortSignal.any([signal, AbortSignal.timeout(40_000)]),
+        cache: "no-store",
+      });
+      const data: Status = await response.json();
+      if (!response.ok)
+        throw new Error(
+          response.status >= 500
+            ? "PROCESSING_PAUSED"
+            : (data.code ?? "UPLOAD_FAILED"),
+        );
+      if (data.ready) {
+        if (
+          (p.provider === "mux" && (!data.assetId || !data.playbackId)) ||
+          (p.provider === "bunny" && (!data.videoId || !data.libraryId))
+        )
+          throw new Error("UPLOAD_FAILED");
+        if (mounted.current && generation.current === token) {
+          if (p.provider === "mux") {
+            setMuxAssetId(data.assetId!);
+            setMuxPlaybackId(data.playbackId!);
+          } else {
+            setBunnyVideoId(data.videoId!);
+            setBunnyLibraryId(data.libraryId!);
+          }
+          setPending(null);
+          setState("ready");
+          setError("");
         }
-      );
-
-      const data = (await response.json()) as {
-        uploadStatus?: string;
-        assetId?: string | null;
-        playbackId?: string | null;
-        assetStatus?: string | null;
-        ready?: boolean;
-        error?: string | null;
-      };
-
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            t.lessonVideo.checkStatusFailed
-        );
-      }
-
-      if (data.error) {
-        throw new Error(
-          data.error
-        );
-      }
-
-      if (
-        data.ready &&
-        data.assetId &&
-        data.playbackId
-      ) {
-        setMuxAssetId(
-          data.assetId
-        );
-
-        setMuxPlaybackId(
-          data.playbackId
-        );
-
-        setUploadState(
-          "ready"
-        );
-
         return;
       }
-
-      if (
-        data.uploadStatus ===
-          "errored" ||
-        data.uploadStatus ===
-          "cancelled" ||
-        data.uploadStatus ===
-          "timed_out" ||
-        data.assetStatus ===
-          "errored"
-      ) {
-        throw new Error(
-          t.lessonVideo.muxFailed
-        );
-      }
-
-      await sleep(2000);
-    }
-
-    throw new Error(
-      t.lessonVideo.processingTimeout
-    );
-  }
-
-  async function handleMuxFile(
-    event: ChangeEvent<HTMLInputElement>
-  ) {
-    const file =
-      event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (
-      !file.type.startsWith(
-        "video/"
-      )
-    ) {
-      setUploadState(
-        "error"
-      );
-
-      setErrorMessage(
-        t.lessonVideo.notVideo
-      );
-
-      return;
-    }
-
-    try {
-      setFileName(file.name);
-      setErrorMessage("");
-      setProgress(0);
-
-      // إذا كان الدرس يحتوي فيديو قديم،
-      // لا نستبدل الـIDs إلا بعد نجاح الفيديو الجديد.
-      setUploadState(
-        "creating"
-      );
-
-      /*
-       * 1) نطلب من السيرفر
-       * Signed Direct Upload URL.
-       */
-      const createResponse =
-        await fetch(
-          "/api/mux/upload",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              courseId,
-            }),
-          }
-        );
-
-      const createData =
-        (await createResponse.json()) as {
-          uploadId?: string;
-          uploadUrl?: string;
-          error?: string;
+      await new Promise<void>((resolve, reject) => {
+        const onAbort = () => {
+          clearTimeout(timer);
+          reject(new Error("UPLOAD_CANCELLED"));
         };
-
-      if (
-        !createResponse.ok ||
-        !createData.uploadId ||
-        !createData.uploadUrl
-      ) {
-        throw new Error(
-          createData.error ||
-            t.lessonVideo.prepareUploadFailed
-        );
-      }
-
-      /*
-       * 2) الملف يذهب من المتصفح
-       * مباشرة إلى Mux.
-       */
-      setUploadState(
-        "uploading"
-      );
-
-      await new Promise<void>(
-        (resolve, reject) => {
-          const xhr =
-            new XMLHttpRequest();
-
-          xhr.open(
-            "PUT",
-            createData.uploadUrl!,
-            true
-          );
-
-          if (file.type) {
-            xhr.setRequestHeader(
-              "Content-Type",
-              file.type
-            );
-          }
-
-          xhr.upload.onprogress = (
-            progressEvent
-          ) => {
-            if (
-              !progressEvent.lengthComputable
-            ) {
-              return;
-            }
-
-            const percent =
-              Math.round(
-                (progressEvent.loaded /
-                  progressEvent.total) *
-                  100
-              );
-
-            setProgress(
-              percent
-            );
-          };
-
-          xhr.onload = () => {
-            if (
-              xhr.status >= 200 &&
-              xhr.status < 300
-            ) {
-              setProgress(100);
-              resolve();
-              return;
-            }
-
-            reject(
-              new Error(
-                `${t.lessonVideo.uploadFailed} (Mux: ${xhr.status})`
-              )
-            );
-          };
-
-          xhr.onerror = () => {
-            reject(
-              new Error(
-                t.lessonVideo.connectionLost
-              )
-            );
-          };
-
-          xhr.onabort = () => {
-            reject(
-              new Error(
-                t.lessonVideo.uploadCancelled
-              )
-            );
-          };
-
-          xhr.send(file);
-        }
-      );
-
-      /*
-       * 3) الرفع انتهى.
-       * ننتظر Mux حتى ينشئ ويعالج Asset.
-       */
-      setUploadState(
-        "processing"
-      );
-
-      await pollMuxUpload(
-        createData.uploadId
-      );
-    } catch (error) {
-      console.error(
-        "MUX_UPLOAD_ERROR",
-        error
-      );
-
-      setUploadState(
-        "error"
-      );
-
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : t.lessonVideo.uploadError
-      );
+        const timer = setTimeout(() => {
+          signal.removeEventListener("abort", onAbort);
+          resolve();
+        }, VIDEO_POLL_INTERVAL_MS);
+        signal.addEventListener("abort", onAbort, { once: true });
+      });
     }
+    throw new Error("PROCESSING_PAUSED");
   }
-
-
-  async function handleBunnyFile(
-    event: ChangeEvent<HTMLInputElement>
-  ) {
-    const file =
-      event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (
-      !file.type.startsWith("video/")
-    ) {
-      setUploadState("error");
-      setErrorMessage(
-        t.lessonVideo.notVideo
-      );
-      return;
-    }
-
+  async function choose(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || busy || pending || provider === "youtube") return;
     try {
-      setFileName(file.name);
-      setErrorMessage("");
-      setProgress(0);
-      setUploadState("creating");
-
-      const createResponse =
-        await fetch(
-          "/api/bunny/upload",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              courseId,
-            }),
+      validateVideoFile(file.size, file.type);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "UPLOAD_NOT_VIDEO");
+      return;
+    }
+    const selectedProvider = provider;
+    const token = ++generation.current;
+    const abort = new AbortController();
+    controller.current = abort;
+    setFileName(file.name);
+    setError("");
+    setProgress(0);
+    setState("creating");
+    try {
+      const response = await fetch(`/api/${selectedProvider}/upload`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId, size: file.size, type: file.type }),
+        signal: AbortSignal.any([abort.signal, AbortSignal.timeout(40_000)]),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.uploadId)
+        throw new Error(data.code ?? "UPLOAD_FAILED");
+      if (!mounted.current || generation.current !== token) return;
+      const p: Pending = {
+        id: data.uploadId,
+        provider: selectedProvider,
+        processing: false,
+      };
+      setPending(p);
+      setState("uploading");
+      await new Promise<void>((resolve, reject) => {
+        const request = new XMLHttpRequest();
+        xhr.current = request;
+        request.open("PUT", url(p.id));
+        request.setRequestHeader("Content-Type", file.type);
+        request.timeout = VIDEO_UPLOAD_TIMEOUT_MS + 30_000;
+        request.upload.onprogress = (e) => {
+          if (
+            e.lengthComputable &&
+            mounted.current &&
+            generation.current === token
+          )
+            setProgress(Math.round((e.loaded / e.total) * 100));
+        };
+        request.onload = () => {
+          if (request.status >= 200 && request.status < 300) {
+            resolve();
+            return;
           }
-        );
-
-      const createData =
-        await createResponse.json();
-
-      if (
-        !createResponse.ok ||
-        !createData.videoId
-      ) {
-        throw new Error(
-          createData.error ||
-            t.lessonVideo.prepareBunnyFailed
-        );
-      }
-
-      const videoId =
-        createData.videoId;
-
-      const libraryId =
-        createData.libraryId;
-
-      setBunnyVideoId(videoId);
-      setBunnyLibraryId(libraryId);
-
-      setUploadState("uploading");
-
-      const uploadResponse =
-        await fetch(
-          `/api/bunny/upload/${videoId}`,
-          {
-            method: "PUT",
-            headers: {
-              "x-course-id":
-                courseId,
-              "Content-Type":
-                file.type,
-            },
-            body: file,
-          }
-        );
-
-      if (!uploadResponse.ok) {
-        const error =
-          await uploadResponse.json();
-
-        throw new Error(
-          error.error ||
-            t.lessonVideo.uploadFailed
-        );
-      }
-
+          let code = "UPLOAD_FAILED";
+          try {
+            code = JSON.parse(request.responseText).code ?? code;
+          } catch {}
+          reject(new Error(code));
+        };
+        request.onerror = () => reject(new Error("PROCESSING_PAUSED"));
+        request.ontimeout = () => reject(new Error("UPLOAD_TIMEOUT"));
+        request.onabort = () => reject(new Error("UPLOAD_CANCELLED"));
+        request.send(file);
+      });
+      if (!mounted.current || generation.current !== token) return;
       setProgress(100);
-      setUploadState("ready");
-
-    } catch (error) {
-      console.error(
-        "BUNNY_UPLOAD_ERROR",
-        error
-      );
-
-      setUploadState("error");
-
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : t.lessonVideo.uploadError
-      );
+      p.processing = true;
+      setPending({ ...p });
+      setState("processing");
+      await check(p, token, abort.signal);
+    } catch (e) {
+      if (mounted.current && generation.current === token) {
+        setState("error");
+        setError(e instanceof Error ? e.message : "UPLOAD_FAILED");
+      }
     }
   }
-
-  const muxBusy =
-    uploadState ===
-      "creating" ||
-    uploadState ===
-      "uploading" ||
-    uploadState ===
-      "processing";
-
+  async function resume() {
+    if (!pending || busy) return;
+    const token = ++generation.current;
+    const abort = new AbortController();
+    controller.current = abort;
+    setError("");
+    setState("processing");
+    try {
+      await check(pending, token, abort.signal);
+    } catch (e) {
+      if (mounted.current && generation.current === token) {
+        setState("error");
+        setError(e instanceof Error ? e.message : "PROCESSING_PAUSED");
+      }
+    }
+  }
+  async function cancel() {
+    if (!pending || cancelling) return;
+    generation.current++;
+    controller.current?.abort();
+    xhr.current?.abort();
+    setCancelling(true);
+    setState("error");
+    try {
+      const response = await fetch(url(pending.id), {
+        method: "DELETE",
+        signal: AbortSignal.timeout(40_000),
+      });
+      if (!response.ok) throw new Error();
+      setPending(null);
+      setState("idle");
+      setError("UPLOAD_CANCELLED");
+      setProgress(0);
+      setFileName("");
+    } catch {
+      setError("UPLOAD_CANCELLATION_UNCONFIRMED");
+    } finally {
+      setCancelling(false);
+    }
+  }
+  const hasVideo =
+    provider === "mux" ? Boolean(muxPlaybackId) : Boolean(bunnyVideoId);
   return (
-    <div className="space-y-4">
-      <input
-        type="hidden"
-        name="video_provider"
-        value={provider}
-      />
-
-      <input
-        type="hidden"
-        name="mux_asset_id"
-        value={muxAssetId}
-      />
-
-      <input
-        type="hidden"
-        name="mux_playback_id"
-        value={muxPlaybackId}
-      />
-
-      <input
-        type="hidden"
-        name="bunny_library_id"
-        value={bunnyLibraryId}
-      />
-
-      <input
-        type="hidden"
-        name="bunny_video_id"
-        value={bunnyVideoId}
-      />
-
+    <div ref={root} className="space-y-4">
+      <input type="hidden" name="video_provider" value={provider} />
+      <input type="hidden" name="mux_asset_id" value={muxAssetId} />
+      <input type="hidden" name="mux_playback_id" value={muxPlaybackId} />
+      <input type="hidden" name="bunny_library_id" value={bunnyLibraryId} />
+      <input type="hidden" name="bunny_video_id" value={bunnyVideoId} />
       <div>
-        <p className="mb-2 text-sm font-bold text-slate-700">
-          {t.lessonVideo.source}
-        </p>
-
-        <div role="group" aria-label={t.lessonVideo.source} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <button
-            type="button"
-            disabled={muxBusy}
-            onClick={() =>
-              setProvider(
-                "youtube"
-              )
-            }
-            aria-pressed={provider === "youtube"}
-            className={`rounded-xl border p-4 text-center transition ${
-              provider ===
-              "youtube"
-                ? "border-[#124b8a] bg-blue-50 text-[#124b8a] ring-2 ring-blue-100"
-                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-            } disabled:cursor-not-allowed disabled:opacity-50`}
-          >
-            <span className="block font-bold">
-              YouTube
-            </span>
-
-            <span className="mt-1 block text-xs">
-              {t.lessonVideo.youtubeDescription}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            disabled={muxBusy}
-            onClick={() =>
-              setProvider("mux")
-            }
-            aria-pressed={provider === "mux"}
-            className={`rounded-xl border p-4 text-center transition ${
-              provider === "mux"
-                ? "border-[#124b8a] bg-blue-50 text-[#124b8a] ring-2 ring-blue-100"
-                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-            } disabled:cursor-not-allowed disabled:opacity-50`}
-          >
-            <span className="block font-bold">
-              Mux
-            </span>
-
-            <span className="mt-1 block text-xs">
-              {t.lessonVideo.protectedVideo}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            disabled={muxBusy}
-            onClick={() =>
-              setProvider("bunny")
-            }
-            aria-pressed={provider === "bunny"}
-            className={`rounded-xl border p-4 text-center transition ${
-              provider === "bunny"
-                ? "border-[#124b8a] bg-blue-50 text-[#124b8a] ring-2 ring-blue-100"
-                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-            } disabled:cursor-not-allowed disabled:opacity-50`}
-          >
-            <span className="block font-bold">
-              Bunny
-            </span>
-
-            <span className="mt-1 block text-xs">
-              {t.lessonVideo.protectedVideo}
-            </span>
-          </button>
+        <p className="mb-2 text-sm font-bold">{t.lessonVideo.source}</p>
+        <div
+          role="group"
+          aria-label={t.lessonVideo.source}
+          className="grid gap-3 sm:grid-cols-3"
+        >
+          {(["youtube", "mux", "bunny"] as VideoProvider[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              disabled={busy || Boolean(pending)}
+              aria-pressed={provider === p}
+              onClick={() => {
+                setProvider(p);
+                setError("");
+                setFileName("");
+                setState(
+                  (p === "mux" && muxPlaybackId) ||
+                    (p === "bunny" && bunnyVideoId)
+                    ? "ready"
+                    : "idle",
+                );
+              }}
+              className={`min-h-11 rounded-xl border p-4 text-center disabled:opacity-60 ${provider === p ? "border-[var(--brand-ink)] bg-[var(--brand-bg)] font-bold" : "border-[var(--brand-border)] bg-[var(--brand-surface)]"}`}
+            >
+              {p === "youtube" ? "YouTube" : p === "mux" ? "Mux" : "Bunny"}
+              <span className="mt-1 block text-xs">
+                {p === "youtube"
+                  ? t.lessonVideo.youtubeDescription
+                  : p === "mux"
+                    ? t.lessonVideo.protectedVideo
+                    : ar
+                      ? "رفع فيديو"
+                      : "Video upload"}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
-
-      {provider ===
-      "youtube" ? (
+      {provider === "youtube" ? (
         <div>
-          <label htmlFor={youtubeFieldId} className="mb-2 block text-sm font-bold text-slate-700">
+          <label htmlFor={fieldId} className="mb-2 block text-sm font-bold">
             {t.lessonVideo.youtubeUrl}
           </label>
-
           <input
-            id={youtubeFieldId}
-            name="youtube_url"
+            id={fieldId}
             type="url"
+            name="youtube_url"
             required
-            defaultValue={
-              defaultYoutubeUrl
-            }
-            placeholder="https://www.youtube.com/watch?v=..."
-            className="w-full rounded-xl border px-4 py-3 text-left"
+            defaultValue={defaultYoutubeUrl}
             dir="ltr"
+            placeholder={t.lessonVideo.youtubePlaceholder}
+            className="w-full rounded-xl border px-4 py-3"
           />
-
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-2 text-xs text-[var(--brand-text-muted)]">
             {t.lessonVideo.youtubeSupport}
           </p>
         </div>
-      ) : provider === "mux" ? (
-        <div className="space-y-4 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-5">
-          <div>
-            <p className="font-bold text-[var(--brand-text)]">
-              {t.lessonVideo.muxVideo}
-            </p>
-
-            <p className="mt-1 text-xs leading-6 text-[var(--brand-text-muted)]">
-              {t.lessonVideo.uploadDirect}
-            </p>
-          </div>
-
-          <label
-            className={`relative block cursor-pointer focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-[var(--brand-ink)] rounded-xl border-2 border-dashed border-violet-200 bg-white p-6 text-center transition hover:border-violet-400 ${
-              muxBusy
-                ? "pointer-events-none opacity-60"
-                : ""
-            }`}
-          >
-            <input
-              type="file"
-              accept="video/*"
-              className="sr-only"
-              disabled={muxBusy}
-              onChange={
-                handleMuxFile
-              }
-            />
-
-            <span className="block text-2xl">
-              🎬
-            </span>
-
-            <span className="mt-2 block font-bold text-slate-800">
-              {muxBusy
-                ? t.lessonVideo.working
-                : muxPlaybackId
-                  ? t.lessonVideo.replaceVideo
-                  : t.lessonVideo.chooseVideo}
-            </span>
-
-            <span className="mt-1 block text-xs text-slate-500">
-              {t.lessonVideo.videoFormats}
-            </span>
-          </label>
-
-          {fileName && (
-            <div className="rounded-xl bg-white p-3 text-sm text-slate-700">
-              {fileName}
-            </div>
-          )}
-
-          {uploadState ===
-            "creating" && (
-            <div className="rounded-xl bg-white p-4 text-sm font-bold text-[var(--brand-text-muted)]">
-              {t.lessonVideo.preparingUpload}
-            </div>
-          )}
-
-          {uploadState ===
-            "uploading" && (
-            <div className="space-y-2 rounded-xl bg-white p-4">
-              <div className="flex items-center justify-between text-sm font-bold text-slate-700">
-                <span>
-                  {t.lessonVideo.uploading}
-                </span>
-
-                <span dir="ltr">
-                  {progress}%
-                </span>
-              </div>
-
-              <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-violet-600 transition-all"
-                  style={{
-                    width: `${progress}%`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {uploadState ===
-            "processing" && (
-            <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
-              <p className="font-bold text-blue-800">
-                ✅ {t.lessonVideo.uploaded}
-              </p>
-
-              <p className="mt-1 text-sm text-blue-700">
-                {t.lessonVideo.processing}
-              </p>
-            </div>
-          )}
-
-          {uploadState ===
-            "ready" &&
-            muxPlaybackId && (
-              <div className="rounded-xl border border-[var(--brand-success)] bg-[var(--brand-success-bg)] p-4">
-                <p className="font-bold text-[var(--brand-success)]">
-                  ✅ {t.lessonVideo.ready}
-                </p>
-
-                <p className="mt-1 text-sm text-[var(--brand-success)]">
-                  {t.lessonVideo.saved}
-                </p>
-              </div>
-            )}
-
-          {uploadState ===
-            "error" && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-              <p className="font-bold text-red-700">
-                ❌ {t.lessonVideo.uploadFailed}
-              </p>
-
-              <p className="mt-1 text-sm text-red-600">
-                {errorMessage}
-              </p>
-            </div>
-          )}
-
-          {!muxPlaybackId &&
-            uploadState ===
-              "idle" && (
-              <p className="text-xs font-medium text-[var(--brand-text-muted)]">
-                {t.lessonVideo.needUpload}
-              </p>
-            )}
-        </div>
       ) : (
-        <div className="space-y-4 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-5">
-          <div>
-            <p className="font-bold text-[var(--brand-text)]">
-              {t.lessonVideo.bunnyVideo}
-            </p>
-
-            <p className="mt-1 text-xs leading-6 text-[var(--brand-text-muted)]">
-              {t.lessonVideo.uploadBunny}
-            </p>
-          </div>
-
+        <div
+          className="space-y-4 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-5"
+          aria-busy={busy}
+        >
+          <p className="font-bold">
+            {provider === "mux"
+              ? t.lessonVideo.muxVideo
+              : t.lessonVideo.bunnyVideo}
+          </p>
+          <p
+            id={`${fieldId}-limits`}
+            className="text-sm leading-7 text-[var(--brand-text-muted)]"
+          >
+            {ar
+              ? `الحد ${MAX_VIDEO_BYTES / 1048576} ميبيبايت للملف. محاولتا رفع نشطتان، و١٠ محاولات خلال ٢٤ ساعة للحساب. حصة المرفوعات الجديدة للدورة ٢ جيبيبايت.`
+              : `Up to ${MAX_VIDEO_BYTES / 1048576} MiB per file. Two active uploads and 10 attempts per account within 24 hours. New uploads have a 2 GiB allowance per course.`}
+          </p>
           <label
-            className={`relative block cursor-pointer focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-[var(--brand-ink)] rounded-xl border-2 border-dashed border-orange-200 bg-white p-6 text-center transition hover:border-orange-400 ${
-              muxBusy
-                ? "pointer-events-none opacity-60"
-                : ""
-            }`}
+            className={`relative block rounded-xl border-2 border-dashed border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-center focus-within:outline-2 focus-within:outline-offset-4 ${busy || pending ? "opacity-60" : "cursor-pointer"}`}
           >
             <input
               type="file"
               accept="video/*"
               className="sr-only"
-              disabled={muxBusy}
-              onChange={handleBunnyFile}
+              aria-describedby={`${fieldId}-limits`}
+              disabled={busy || Boolean(pending)}
+              onChange={choose}
             />
-
-            <span className="block text-2xl">
-              🐰
-            </span>
-
-            <span className="mt-2 block font-bold text-slate-800">
-              {muxBusy
+            <span className="block font-bold">
+              {busy
                 ? t.lessonVideo.working
-                : bunnyVideoId
+                : hasVideo
                   ? t.lessonVideo.replaceVideo
                   : t.lessonVideo.chooseVideo}
             </span>
-
-            <span className="mt-1 block text-xs text-slate-500">
+            <span className="mt-2 block text-xs text-[var(--brand-text-muted)]">
               {t.lessonVideo.videoFormats}
             </span>
           </label>
-
-          {fileName && (
-            <div className="rounded-xl bg-white p-3 text-sm text-slate-700">
-              {fileName}
+          {fileName && <p className="break-all text-sm">{fileName}</p>}
+          {state === "creating" && (
+            <p role="status">{t.lessonVideo.preparingUpload}</p>
+          )}
+          {state === "uploading" && (
+            <div role="status">
+              <p>
+                {t.lessonVideo.uploading} {progress}%
+              </p>
+              <progress
+                max={100}
+                value={progress}
+                aria-label={t.lessonVideo.uploading}
+                className="mt-2 h-3 w-full accent-[var(--brand-ink)]"
+              />
             </div>
           )}
-
-          {uploadState === "uploading" && (
-            <div className="rounded-xl bg-white p-4">
-              {t.lessonVideo.uploading} {progress}%
+          {state === "processing" && (
+            <p role="status" className="text-[var(--brand-text-muted)]">
+              {t.lessonVideo.processing}
+            </p>
+          )}
+          {state === "ready" && hasVideo && (
+            <div
+              role="status"
+              className="rounded-xl border border-[var(--brand-border)] p-4"
+            >
+              <p className="font-bold">{t.lessonVideo.ready}</p>
+              <p className="mt-2 text-sm">{t.lessonVideo.saved}</p>
             </div>
           )}
-
-          {uploadState === "ready" &&
-            bunnyVideoId && (
-              <div className="rounded-xl border border-[var(--brand-success)] bg-[var(--brand-success-bg)] p-4">
-                <p className="font-bold text-[var(--brand-success)]">
-                  ✅ {t.lessonVideo.ready}
-                </p>
-              </div>
-            )}
-
-          {uploadState === "error" && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-              <p className="font-bold text-red-700">
-                ❌ {t.lessonVideo.uploadFailed}
-              </p>
-
-              <p className="mt-1 text-sm text-red-600">
-                {errorMessage}
-              </p>
+          {error && (
+            <p role="alert" className="leading-7 text-red-700">
+              {message(error)}
+            </p>
+          )}
+          {pending && (
+            <div className="flex flex-wrap gap-3">
+              {state === "error" && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void resume()}
+                  className="min-h-11 rounded-xl border border-[var(--brand-border)] px-4 py-2 font-bold"
+                >
+                  {ar ? "تحقق مجددًا" : "Check again"}
+                </button>
+              )}
+              <button
+                type="button"
+                disabled={cancelling}
+                onClick={() => void cancel()}
+                className="min-h-11 rounded-xl border border-[var(--brand-border)] px-4 py-2 font-bold"
+              >
+                {cancelling
+                  ? t.lessonVideo.working
+                  : ar
+                    ? "إلغاء محاولة الرفع"
+                    : "Cancel upload attempt"}
+              </button>
             </div>
+          )}
+          {!hasVideo && state === "idle" && (
+            <p className="text-xs text-[var(--brand-text-muted)]">
+              {t.lessonVideo.needUpload}
+            </p>
           )}
         </div>
       )}
