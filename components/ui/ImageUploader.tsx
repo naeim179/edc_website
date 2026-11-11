@@ -92,13 +92,13 @@ export default function ImageUploader({
         />
       )}
 
-      <label className="inline-flex cursor-pointer items-center rounded-xl bg-[#087a54] px-4 py-2 text-white font-bold">
+      <label className="relative inline-flex cursor-pointer items-center rounded-xl bg-[#087a54] px-4 py-2 text-white font-bold focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-[var(--brand-ink)]">
         {uploading ? uploadingLabel : label}
 
         <input
           type="file"
           accept="image/*"
-          className="hidden"
+          className="sr-only"
           onChange={handleUpload}
           disabled={uploading}
         />

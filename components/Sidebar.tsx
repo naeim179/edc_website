@@ -4,7 +4,7 @@ import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
 import {
 usePathname } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   BookIcon,
@@ -57,6 +57,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const { language, t } = useLanguage();
+  const sidebarRef = useRef<HTMLElement>(null);
 
   const isAdmin = role === "admin";
   const isTeacher = role === "teacher";
@@ -67,9 +68,19 @@ export default function Sidebar({
       return;
     }
 
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const items = () => Array.from(sidebarRef.current?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled),[tabindex="0"]') ?? []).filter(el => el.getClientRects().length > 0);
+    (items()[0] ?? sidebarRef.current)?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         onClose?.();
+      }
+      if (event.key === "Tab") {
+        const links = items(); const first = links[0]; const last = links[links.length-1];
+        if (!first) { event.preventDefault(); sidebarRef.current?.focus(); }
+        else if (event.shiftKey && (document.activeElement === first || !sidebarRef.current?.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && (document.activeElement === last || !sidebarRef.current?.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
       }
     };
 
@@ -91,6 +102,7 @@ export default function Sidebar({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
       media.removeEventListener("change", onMediaChange);
+      if (previousFocus?.isConnected) previousFocus.focus();
     };
   }, [open, onClose]);
 
@@ -265,6 +277,11 @@ export default function Sidebar({
       />
 
       <aside
+        ref={sidebarRef}
+        role={open ? "dialog" : undefined}
+        aria-modal={open ? true : undefined}
+        aria-label={text.menu}
+        tabIndex={-1}
         id="app-sidebar"
         dir={isArabic ? "rtl" : "ltr"}
         className={`yw-sidebar fixed inset-y-0 start-0 z-50 w-72 max-w-[85vw] transition-[transform,visibility] duration-300 motion-reduce:transition-none lg:sticky lg:inset-auto lg:top-5 lg:z-auto lg:h-[calc(100vh-2rem)] lg:w-72 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:self-start lg:visible ${

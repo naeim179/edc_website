@@ -177,6 +177,8 @@ export default function AppShellClient({
       className={`yw-shell yw-personal-ui ${role !== "admin" && role !== "teacher" ? "yw-student-shell" : ""}`}
     >
 
+      <a href="#main-content" className="yw-skip-link">{isArabic ? "تجاوز إلى المحتوى" : "Skip to content"}</a>
+
       <Sidebar
         role={role}
         isAuthenticated={isAuthenticated}
@@ -188,6 +190,8 @@ export default function AppShellClient({
 
 
       <main
+        id="main-content"
+        tabIndex={-1}
         className="yw-main"
       >
 
@@ -198,6 +202,7 @@ export default function AppShellClient({
           role={role}
           avatarUrl={avatarUrl}
           onMenuClick={openMenu}
+          menuOpen={menuOpen}
         />
       </div>
 

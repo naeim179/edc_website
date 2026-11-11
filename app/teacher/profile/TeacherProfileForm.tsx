@@ -41,7 +41,7 @@ export default function TeacherProfileForm({
       <div>
 
         <label className="block font-bold mb-2">
-          صورة المدرس
+          {t.teacherProfile.image}
         </label>
 
         <ImageUploader
@@ -56,6 +56,7 @@ export default function TeacherProfileForm({
             }
           }}
           folder="teachers"
+          label={t.teacherProfile.image}
         />
 
         <input
@@ -69,11 +70,12 @@ export default function TeacherProfileForm({
 
       <div>
 
-        <label className="block font-bold mb-2">
-          التخصص
+        <label htmlFor="teacher-specialization" className="block font-bold mb-2">
+          {t.teacherProfile.specialization}
         </label>
 
         <input
+          id="teacher-specialization"
           name="specialization"
           defaultValue={profile?.specialization ?? ""}
           placeholder={t.teacherProfile.specializationPlaceholder}
@@ -85,11 +87,12 @@ export default function TeacherProfileForm({
 
       <div>
 
-        <label className="block font-bold mb-2">
-          سنوات الخبرة
+        <label htmlFor="teacher-experience" className="block font-bold mb-2">
+          {t.teacherProfile.experience}
         </label>
 
         <input
+          id="teacher-experience"
           name="experience_years"
           type="number"
           min="0"
@@ -104,11 +107,12 @@ export default function TeacherProfileForm({
 
       <div>
 
-        <label className="block font-bold mb-2">
-          نبذة عن المدرس
+        <label htmlFor="teacher-bio" className="block font-bold mb-2">
+          {t.teacherProfile.bio}
         </label>
 
         <textarea
+          id="teacher-bio"
           name="bio"
           defaultValue={profile?.bio ?? ""}
           rows={5}
@@ -122,7 +126,7 @@ export default function TeacherProfileForm({
         type="submit"
         className="bg-[#087a54] text-white px-6 py-3 rounded-xl font-bold"
       >
-        حفظ الملف الشخصي
+        {t.teacherProfile.save}
       </button>
 
 

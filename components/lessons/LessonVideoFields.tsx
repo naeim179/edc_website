@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useState, useId } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type VideoProvider =
@@ -43,6 +43,7 @@ export default function LessonVideoFields({
 }: Props) {
 
   const { t } = useLanguage();
+  const youtubeFieldId = useId();
 
   const [provider, setProvider] =
     useState<VideoProvider>(
@@ -512,7 +513,7 @@ export default function LessonVideoFields({
           {t.lessonVideo.source}
         </p>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div role="group" aria-label={t.lessonVideo.source} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <button
             type="button"
             disabled={muxBusy}
@@ -521,6 +522,7 @@ export default function LessonVideoFields({
                 "youtube"
               )
             }
+            aria-pressed={provider === "youtube"}
             className={`rounded-xl border p-4 text-center transition ${
               provider ===
               "youtube"
@@ -543,6 +545,7 @@ export default function LessonVideoFields({
             onClick={() =>
               setProvider("mux")
             }
+            aria-pressed={provider === "mux"}
             className={`rounded-xl border p-4 text-center transition ${
               provider === "mux"
                 ? "border-[#124b8a] bg-blue-50 text-[#124b8a] ring-2 ring-blue-100"
@@ -564,6 +567,7 @@ export default function LessonVideoFields({
             onClick={() =>
               setProvider("bunny")
             }
+            aria-pressed={provider === "bunny"}
             className={`rounded-xl border p-4 text-center transition ${
               provider === "bunny"
                 ? "border-[#124b8a] bg-blue-50 text-[#124b8a] ring-2 ring-blue-100"
@@ -584,11 +588,12 @@ export default function LessonVideoFields({
       {provider ===
       "youtube" ? (
         <div>
-          <label className="mb-2 block text-sm font-bold text-slate-700">
+          <label htmlFor={youtubeFieldId} className="mb-2 block text-sm font-bold text-slate-700">
             {t.lessonVideo.youtubeUrl}
           </label>
 
           <input
+            id={youtubeFieldId}
             name="youtube_url"
             type="url"
             required
@@ -605,19 +610,19 @@ export default function LessonVideoFields({
           </p>
         </div>
       ) : provider === "mux" ? (
-        <div className="space-y-4 rounded-2xl border border-violet-100 bg-violet-50 p-5">
+        <div className="space-y-4 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-5">
           <div>
-            <p className="font-bold text-violet-950">
+            <p className="font-bold text-[var(--brand-text)]">
               {t.lessonVideo.muxVideo}
             </p>
 
-            <p className="mt-1 text-xs leading-6 text-violet-700">
+            <p className="mt-1 text-xs leading-6 text-[var(--brand-text-muted)]">
               {t.lessonVideo.uploadDirect}
             </p>
           </div>
 
           <label
-            className={`block cursor-pointer rounded-xl border-2 border-dashed border-violet-200 bg-white p-6 text-center transition hover:border-violet-400 ${
+            className={`relative block cursor-pointer focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-[var(--brand-ink)] rounded-xl border-2 border-dashed border-violet-200 bg-white p-6 text-center transition hover:border-violet-400 ${
               muxBusy
                 ? "pointer-events-none opacity-60"
                 : ""
@@ -626,7 +631,7 @@ export default function LessonVideoFields({
             <input
               type="file"
               accept="video/*"
-              className="hidden"
+              className="sr-only"
               disabled={muxBusy}
               onChange={
                 handleMuxFile
@@ -658,7 +663,7 @@ export default function LessonVideoFields({
 
           {uploadState ===
             "creating" && (
-            <div className="rounded-xl bg-white p-4 text-sm font-bold text-violet-700">
+            <div className="rounded-xl bg-white p-4 text-sm font-bold text-[var(--brand-text-muted)]">
               {t.lessonVideo.preparingUpload}
             </div>
           )}
@@ -703,12 +708,12 @@ export default function LessonVideoFields({
           {uploadState ===
             "ready" &&
             muxPlaybackId && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                <p className="font-bold text-emerald-800">
+              <div className="rounded-xl border border-[var(--brand-success)] bg-[var(--brand-success-bg)] p-4">
+                <p className="font-bold text-[var(--brand-success)]">
                   ✅ {t.lessonVideo.ready}
                 </p>
 
-                <p className="mt-1 text-sm text-emerald-700">
+                <p className="mt-1 text-sm text-[var(--brand-success)]">
                   {t.lessonVideo.saved}
                 </p>
               </div>
@@ -730,25 +735,25 @@ export default function LessonVideoFields({
           {!muxPlaybackId &&
             uploadState ===
               "idle" && (
-              <p className="text-xs font-medium text-violet-700">
+              <p className="text-xs font-medium text-[var(--brand-text-muted)]">
                 {t.lessonVideo.needUpload}
               </p>
             )}
         </div>
       ) : (
-        <div className="space-y-4 rounded-2xl border border-orange-100 bg-orange-50 p-5">
+        <div className="space-y-4 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-5">
           <div>
-            <p className="font-bold text-orange-950">
+            <p className="font-bold text-[var(--brand-text)]">
               {t.lessonVideo.bunnyVideo}
             </p>
 
-            <p className="mt-1 text-xs leading-6 text-orange-700">
+            <p className="mt-1 text-xs leading-6 text-[var(--brand-text-muted)]">
               {t.lessonVideo.uploadBunny}
             </p>
           </div>
 
           <label
-            className={`block cursor-pointer rounded-xl border-2 border-dashed border-orange-200 bg-white p-6 text-center transition hover:border-orange-400 ${
+            className={`relative block cursor-pointer focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-[var(--brand-ink)] rounded-xl border-2 border-dashed border-orange-200 bg-white p-6 text-center transition hover:border-orange-400 ${
               muxBusy
                 ? "pointer-events-none opacity-60"
                 : ""
@@ -757,7 +762,7 @@ export default function LessonVideoFields({
             <input
               type="file"
               accept="video/*"
-              className="hidden"
+              className="sr-only"
               disabled={muxBusy}
               onChange={handleBunnyFile}
             />
@@ -793,8 +798,8 @@ export default function LessonVideoFields({
 
           {uploadState === "ready" &&
             bunnyVideoId && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                <p className="font-bold text-emerald-800">
+              <div className="rounded-xl border border-[var(--brand-success)] bg-[var(--brand-success-bg)] p-4">
+                <p className="font-bold text-[var(--brand-success)]">
                   ✅ {t.lessonVideo.ready}
                 </p>
               </div>

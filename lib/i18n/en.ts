@@ -52,6 +52,7 @@ export const en = {
   },
 
   auth: {
+    newPasswordMin: "New password must be at least 8 characters",
     identifier: "Username or email",
     identifierRequired: "Username or email is required",
     username: "Username",

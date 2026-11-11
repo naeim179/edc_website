@@ -1,5 +1,7 @@
 "use server";
 
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
+
 import { revalidatePath } from "next/cache";
 
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -90,10 +92,10 @@ export async function createTeacher(
   }
 
   if (
-    password.length < 6
+    password.length < MIN_PASSWORD_LENGTH
   ) {
     throw new Error(
-      "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+      "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
     );
   }
 
@@ -220,10 +222,10 @@ export async function updateTeacherAccount(
 
   if (
     password &&
-    password.length < 6
+    password.length < MIN_PASSWORD_LENGTH
   ) {
     throw new Error(
-      "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+      "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
     );
   }
 

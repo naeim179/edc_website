@@ -1,5 +1,7 @@
 "use client";
 
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
+
 import Link from "next/link";
 
 import {
@@ -1029,7 +1031,7 @@ export default function TeacherAdminManager({
                 <input
                   name="password"
                   type="password"
-                  minLength={6}
+                  minLength={MIN_PASSWORD_LENGTH}
                   placeholder={
                     isArabic
                       ? "اتركها فارغة لعدم التغيير"

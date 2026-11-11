@@ -1,48 +1,31 @@
 import AppShell from "@/components/AppShell";
 import CoursesContent from "@/components/CoursesContent";
-import { fetchCatalogCourses } from "@/lib/course-catalog";
+import { catalogItems, loadCoursePage } from "@/lib/course-pages";
+import { listFilters, type SearchValues } from "@/lib/list-pages";
 import { getStudentCoursesSafe } from "@/lib/student-courses";
 import { createClient } from "@/lib/supabase/server";
 
-type CoursesPageProps = {
-  searchParams: Promise<{
-    q?: string;
-  }>;
-};
-
 export default async function CoursesPage({
   searchParams,
-}: CoursesPageProps) {
-  const { q } = await searchParams;
-  const searchQuery = q?.trim().toLowerCase() ?? "";
-
+}: {
+  searchParams: Promise<SearchValues>;
+}) {
+  const filters = listFilters(await searchParams);
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const studentCourses = user
-    ? await getStudentCoursesSafe(supabase, user.id)
-    : [];
-
-  const courses = await fetchCatalogCourses(supabase, studentCourses);
-
-  const filteredCourses = searchQuery
-    ? courses.filter((course) =>
-        [course.title, course.category ?? "", course.instructor ?? ""]
-          .join(" ")
-          .toLowerCase()
-          .includes(searchQuery)
-      )
-    : courses;
-
+  const [data, mine] = await Promise.all([
+    loadCoursePage(supabase, filters),
+    user ? getStudentCoursesSafe(supabase, user.id) : Promise.resolve([]),
+  ]);
   return (
     <AppShell>
       <CoursesContent
-        courses={filteredCourses}
-        searchQuery={searchQuery}
-        searchText={q ?? ""}
+        courses={catalogItems(data, mine)}
+        categories={data.categories}
+        filters={filters}
+        pageInfo={data}
       />
     </AppShell>
   );

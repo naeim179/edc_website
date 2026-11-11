@@ -1,5 +1,7 @@
 "use client";
 
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
+
 import { createTeacher } from "@/app/actions/teachers";
 import { useTransition } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -30,6 +32,7 @@ export default function TeacherCreateForm() {
 
 
       <input
+        aria-label={t.admin.teacherName}
         name="fullName"
         placeholder={t.admin.teacherName}
         required
@@ -38,6 +41,7 @@ export default function TeacherCreateForm() {
 
 
       <input
+        aria-label={t.admin.email}
         name="email"
         type="email"
         placeholder={t.admin.email}
@@ -47,6 +51,9 @@ export default function TeacherCreateForm() {
 
 
       <input
+        aria-label={t.admin.password}
+        minLength={MIN_PASSWORD_LENGTH}
+        autoComplete="new-password"
         name="password"
         type="password"
         placeholder={t.admin.password}

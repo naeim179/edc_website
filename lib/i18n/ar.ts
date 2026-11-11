@@ -50,6 +50,7 @@ export const ar = {
   },
 
   auth: {
+    newPasswordMin: "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل",
     identifier: "اسم المستخدم أو البريد الإلكتروني",
     identifierRequired: "اسم المستخدم أو البريد الإلكتروني مطلوب",
     username: "اسم المستخدم",

@@ -1,5 +1,7 @@
 "use client";
 
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
+
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -70,9 +72,9 @@ export default function RegisterPage() {
 
     if (!password) {
       newErrors.password = t.auth.passwordRequired;
-    } else if (password.length < 6) {
+    } else if (password.length < MIN_PASSWORD_LENGTH) {
       newErrors.password =
-        t.auth.passwordMin;
+        t.auth.newPasswordMin;
     }
 
     if (password !== confirmPassword) {

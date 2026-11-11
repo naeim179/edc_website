@@ -93,7 +93,8 @@ export default function CourseForm({
         </label>
 
         <input
-          name="title"
+          aria-label="اسم الدورة"
+            name="title"
           required
           defaultValue={course?.title ?? ""}
           placeholder="مثال: Cyber Security"
@@ -107,7 +108,8 @@ export default function CourseForm({
         </label>
 
         <textarea
-          name="description"
+          aria-label="وصف الدورة"
+            name="description"
           rows={4}
           defaultValue={course?.description ?? ""}
           className="w-full rounded-xl border px-4 py-3"
@@ -120,7 +122,8 @@ export default function CourseForm({
         </label>
 
         <input
-          name="category"
+          aria-label="التصنيف"
+            name="category"
           defaultValue={course?.category ?? ""}
           placeholder="Programming"
           className="w-full rounded-xl border px-4 py-3"
@@ -300,7 +303,8 @@ export default function CourseForm({
               </label>
 
               <input
-                name="course_price"
+                aria-label="السعر الأساسي بالدولار"
+            name="course_price"
                 type="number"
                 min="0"
                 step="0.01"
@@ -322,7 +326,8 @@ export default function CourseForm({
                 </label>
 
                 <select
-                  name="discount_type"
+                  aria-label="نوع الخصم"
+            name="discount_type"
                   value={discountType}
                   onChange={(e) =>
                     setDiscountType(
@@ -347,7 +352,8 @@ export default function CourseForm({
                 </label>
 
                 <input
-                  name="discount_value"
+                  aria-label="قيمة الخصم"
+            name="discount_value"
                   type="number"
                   min="0"
                   max={

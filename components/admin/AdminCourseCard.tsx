@@ -5,7 +5,7 @@ import Link from "next/link";
 import DeleteCourseButton from "@/components/admin/DeleteCourseButton";
 import { useLanguage } from "@/components/LanguageProvider";
 
-type Course = {
+export type Course = {
   id: string;
   title: string;
   category: string | null;
@@ -17,18 +17,22 @@ type Course = {
   is_published: boolean | null;
   created_at: string;
 
-  sections: {
+  lesson_count?: number;
+  section_count?: number;
+  enrollment_count?: number;
+  instructor?: string | null;
+  sections?: {
     id: string;
     lessons: {
       id: string;
     }[];
   }[] | null;
 
-  enrollments: {
+  enrollments?: {
     id: string;
   }[] | null;
 
-  course_instructors:
+  course_instructors?:
     | {
         teacher_id: string;
         teacher:
@@ -65,17 +69,17 @@ export default function AdminCourseCard({
   const isArabic =
     language === "ar";
 
-  const sections = course.sections?.length ?? 0;
+  const sections = course.section_count ?? course.sections?.length ?? 0;
 
   const lessons =
-    course.sections?.reduce(
+    course.lesson_count ?? course.sections?.reduce(
       (total, section) =>
         total + section.lessons.length,
       0
     ) ?? 0;
 
   const students =
-    course.enrollments?.length ?? 0;
+    course.enrollment_count ?? course.enrollments?.length ?? 0;
 
   const instructorRelation =
     Array.isArray(course.course_instructors)
@@ -91,7 +95,7 @@ export default function AdminCourseCard({
       : teacherRelation;
 
   const teacher =
-    teacherProfile?.full_name?.trim() ||
+    course.instructor?.trim() || teacherProfile?.full_name?.trim() ||
     t.adminCourseCard.noTeacher;
 
 

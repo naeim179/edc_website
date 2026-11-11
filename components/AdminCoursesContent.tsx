@@ -1,419 +1,173 @@
 "use client";
-
 import Link from "next/link";
 import AdminCourseCard from "@/components/admin/AdminCourseCard";
 import { useLanguage } from "@/components/LanguageProvider";
-import { useMemo, useState } from "react";
-
-type Course = {
-  id: string;
-  title: string;
-  category: string | null;
-  image_url: string | null;
-  price: number | null;
-  currency: string | null;
-  is_free: boolean | null;
-  course_type: "group" | "private" | null;
-  is_published: boolean | null;
-  created_at: string;
-  sections: {
-    id: string;
-    lessons: {
-      id: string;
-    }[];
-  }[] | null;
-
-  enrollments: {
-    id: string;
-  }[] | null;
-
-  course_instructors:
-    | {
-        teacher_id: string;
-        teacher:
-          | {
-              full_name: string | null;
-            }
-          | {
-              full_name: string | null;
-            }[]
-          | null;
-      }[]
-    | {
-        teacher_id: string;
-        teacher:
-          | {
-              full_name: string | null;
-            }
-          | {
-              full_name: string | null;
-            }[]
-          | null;
-      }
-    | null;
-};
-
-type Props = {
-  courses: Course[];
-};
+import Pagination from "@/components/ui/Pagination";
+import type { CourseListPage, ListFilters } from "@/lib/list-pages";
 
 export default function AdminCoursesContent({
-  courses,
-}: Props) {
-
+  data,
+  filters,
+}: {
+  data: CourseListPage;
+  filters: ListFilters;
+}) {
   const { language, t } = useLanguage();
-  const isArabic = language === "ar";
-
-
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<
-    "all" | "published" | "draft"
-  >("all");
-
-
-  const [courseTypeFilter, setCourseTypeFilter] = useState<
-    "all" | "group" | "private"
-  >("all");
-
-
-  const [sort, setSort] = useState<
-    "latest" | "students" | "lessons"
-  >("latest");
-
-
-  const filteredCourses = useMemo(() => {
-
-    const result = courses.filter((course) => {
-
-      const matchesSearch =
-        course.title
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        (course.category ?? "")
-          .toLowerCase()
-          .includes(search.toLowerCase());
-
-
-      const matchesFilter =
-        filter === "all"
-          ? true
-          : filter === "published"
-            ? course.is_published
-            : !course.is_published;
-
-
-      const matchesType =
-        courseTypeFilter === "all"
-          ? true
-          : course.course_type === courseTypeFilter;
-
-
-      return (
-        matchesSearch &&
-        matchesFilter &&
-        matchesType
-      );
-
-    });
-
-
-    return result.sort((a, b) => {
-
-      if (sort === "students") {
-        return (
-          (b.enrollments?.length ?? 0) -
-          (a.enrollments?.length ?? 0)
-        );
-      }
-
-
-      if (sort === "lessons") {
-
-        const aLessons =
-          a.sections?.reduce(
-            (sum, section) =>
-              sum + section.lessons.length,
-            0
-          ) ?? 0;
-
-
-        const bLessons =
-          b.sections?.reduce(
-            (sum, section) =>
-              sum + section.lessons.length,
-            0
-          ) ?? 0;
-
-
-        return bLessons - aLessons;
-      }
-
-
-      return (
-        new Date(b.created_at).getTime() -
-        new Date(a.created_at).getTime()
-      );
-
-    });
-
-  }, [
-    courses,
-    search,
-    filter,
-    courseTypeFilter,
-    sort
-  ]);
-
-
-  const totalCourses = courses.length;
-
-  const publishedCourses =
-    courses.filter((course) => course.is_published).length;
-
-  const draftCourses =
-    courses.filter((course) => !course.is_published).length;
-
-  const totalStudents =
-    courses.reduce(
-      (sum, course) =>
-        sum + (course.enrollments?.length ?? 0),
-      0
-    );
-
-  const totalLessons =
-    courses.reduce(
-      (sum, course) =>
-        sum +
-        (course.sections?.reduce(
-          (s, section) =>
-            s + section.lessons.length,
-          0
-        ) ?? 0),
-      0
-    );
-
-
+  const ar = language === "ar";
+  const field = "w-full rounded-xl border bg-[var(--brand-surface)] px-4 py-3";
   return (
     <div
-      className="max-w-7xl mx-auto w-full space-y-6"
-      dir={isArabic ? "rtl" : "ltr"}
+      className="mx-auto w-full max-w-7xl space-y-6"
+      dir={ar ? "rtl" : "ltr"}
     >
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
-        <div className="bg-white rounded-2xl border p-5">
-          <div className="text-2xl font-bold">
-            {totalCourses}
-          </div>
-          <div className="text-sm text-slate-500">
-            {isArabic ? "كل الدورات" : "Total Courses"}
-          </div>
-        </div>
-
-
-        <div className="bg-white rounded-2xl border p-5">
-          <div className="text-2xl font-bold text-emerald-600">
-            {publishedCourses}
-          </div>
-          <div className="text-sm text-slate-500">
-            {isArabic ? "منشورة" : "Published"}
-          </div>
-        </div>
-
-
-        <div className="bg-white rounded-2xl border p-5">
-          <div className="text-2xl font-bold text-slate-600">
-            {draftCourses}
-          </div>
-          <div className="text-sm text-slate-500">
-            {isArabic ? "مسودات" : "Drafts"}
-          </div>
-        </div>
-
-
-        <div className="bg-white rounded-2xl border p-5">
-          <div className="text-2xl font-bold text-blue-600">
-            {totalStudents}
-          </div>
-          <div className="text-sm text-slate-500">
-            {isArabic ? "الطلاب" : "Students"}
-          </div>
-        </div>
-
-      </div>
-
-
-      <section className="yw-page-banner yw-banner-blue bg-gradient-to-l from-[#124b8a] to-[#1f5aa6] rounded-[28px] text-white p-8 shadow-sm">
-
-        <div className="flex items-center justify-between gap-4">
-
-          <Link
-            href="/admin/courses/new"
-            className="bg-white text-[#124b8a] px-5 py-3 rounded-xl font-bold"
+      <h1 className="text-2xl font-bold">{t.admin.manageCoursesTitle}</h1>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[
+          [ar ? "كل الدورات" : "Total courses", data.summary.courses],
+          [ar ? "منشور" : "Published", data.summary.published],
+          [ar ? "مسودة" : "Drafts", data.summary.draft],
+          [ar ? "التسجيلات" : "Enrollments", data.summary.students],
+        ].map(([label, value]) => (
+          <div
+            key={label}
+            className="rounded-2xl border bg-[var(--brand-surface)] p-5"
           >
-            + {t.admin.addCourseButton}
-          </Link>
-
-
-          <div>
-            <h1 className="text-3xl font-bold">
-              {t.admin.manageCourses}
-            </h1>
-
-            <p className="mt-2 text-blue-100">
-              {t.admin.manageCoursesText}
+            <p className="text-sm text-[var(--brand-text-muted)]">{label}</p>
+            <p className="text-2xl font-bold">
+              {Number(value ?? 0).toLocaleString(ar ? "ar-JO" : "en-US")}
             </p>
           </div>
-
-        </div>
-
-      </section>
-
-
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-
-        <div className="bg-white rounded-2xl border p-5">
-          <p className="text-sm text-slate-500">Courses</p>
-          <p className="text-2xl font-bold">
-            {totalCourses}
-          </p>
-        </div>
-
-
-        <div className="bg-white rounded-2xl border p-5">
-          <p className="text-sm text-slate-500">Published</p>
-          <p className="text-2xl font-bold text-emerald-600">
-            {publishedCourses}
-          </p>
-        </div>
-
-
-        <div className="bg-white rounded-2xl border p-5">
-          <p className="text-sm text-slate-500">Draft</p>
-          <p className="text-2xl font-bold text-slate-600">
-            {draftCourses}
-          </p>
-        </div>
-
-
-        <div className="bg-white rounded-2xl border p-5">
-          <p className="text-sm text-slate-500">Students</p>
-          <p className="text-2xl font-bold text-blue-600">
-            {totalStudents}
-          </p>
-        </div>
-
-
-        <div className="bg-white rounded-2xl border p-5">
-          <p className="text-sm text-slate-500">Lessons</p>
-          <p className="text-2xl font-bold text-purple-600">
-            {totalLessons}
-          </p>
-        </div>
-
+        ))}
       </div>
-
-
-      <div className="bg-white rounded-2xl border p-5 flex flex-col md:flex-row gap-4">
-
-        <input
-          value={search}
-          onChange={(e)=>setSearch(e.target.value)}
-          placeholder="Search courses..."
-          className="flex-1 border rounded-xl px-4 py-3"
-        />
-
-
-        <select
-          value={filter}
-          onChange={(e)=>
-            setFilter(
-              e.target.value as
-                | "all"
-                | "published"
-                | "draft"
-            )
-          }
-          className="border rounded-xl px-4 py-3"
-        >
-          <option value="all">All</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-        </select>
-
-
-        <select
-          value={courseTypeFilter}
-          onChange={(e)=>
-            setCourseTypeFilter(
-              e.target.value as
-                | "all"
-                | "group"
-                | "private"
-            )
-          }
-          className="border rounded-xl px-4 py-3"
-        >
-          <option value="all">All Types</option>
-          <option value="group">Group</option>
-          <option value="private">Private</option>
-        </select>
-
-      </div>
-
-
-      <div className="flex justify-end">
-
-        <select
-          value={sort}
-          onChange={(e)=>
-            setSort(
-              e.target.value as
-                | "latest"
-                | "students"
-                | "lessons"
-            )
-          }
-          className="border rounded-xl px-4 py-3 bg-white"
-        >
-          <option value="latest">
-            Latest
-          </option>
-
-          <option value="students">
-            Most Students
-          </option>
-
-          <option value="lessons">
-            Most Lessons
-          </option>
-
-        </select>
-
-      </div>
-
-
-      {filteredCourses.length ? (
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          {filteredCourses.map((course) => (
-            <AdminCourseCard
-              key={course.id}
-              course={course}
-            />
+      <Link
+        href="/admin/courses/new"
+        className="inline-flex min-h-11 items-center rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-[var(--brand-on-ink)]"
+      >
+        {t.admin.addCourse}
+      </Link>
+      <form
+        key={JSON.stringify(filters)}
+        action="/admin/courses"
+        method="get"
+        className="grid gap-4 rounded-2xl border bg-[var(--brand-surface)] p-5 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        <div className="sm:col-span-2 lg:col-span-4">
+          <label
+            htmlFor="admin-course-search"
+            className="mb-2 block font-semibold"
+          >
+            {ar ? "البحث عن دورة أو مدرب" : "Search course or instructor"}
+          </label>
+          <input
+            id="admin-course-search"
+            name="q"
+            type="search"
+            maxLength={120}
+            defaultValue={filters.q}
+            className={field}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="admin-course-status"
+            className="mb-2 block font-semibold"
+          >
+            {ar ? "حالة النشر" : "Publication status"}
+          </label>
+          <select
+            id="admin-course-status"
+            name="status"
+            defaultValue={filters.status}
+            className={field}
+          >
+            <option value="all">{ar ? "الكل" : "All"}</option>
+            <option value="published">{ar ? "منشور" : "Published"}</option>
+            <option value="draft">{ar ? "مسودة" : "Draft"}</option>
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="admin-course-type"
+            className="mb-2 block font-semibold"
+          >
+            {ar ? "نوع الدورة" : "Course type"}
+          </label>
+          <select
+            id="admin-course-type"
+            name="type"
+            defaultValue={filters.type}
+            className={field}
+          >
+            <option value="all">{ar ? "كل الأنواع" : "All types"}</option>
+            <option value="group">{ar ? "قروب" : "Group"}</option>
+            <option value="private">{ar ? "خاص" : "Private"}</option>
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="admin-course-sort"
+            className="mb-2 block font-semibold"
+          >
+            {ar ? "الترتيب" : "Sort"}
+          </label>
+          <select
+            id="admin-course-sort"
+            name="sort"
+            defaultValue={filters.sort}
+            className={field}
+          >
+            <option value="latest">{ar ? "الأحدث" : "Newest"}</option>
+            <option value="students">
+              {ar ? "الأكثر طلابًا" : "Most students"}
+            </option>
+            <option value="lessons">
+              {ar ? "الأكثر دروسًا" : "Most lessons"}
+            </option>
+          </select>
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <button
+            type="submit"
+            className="min-h-11 rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-[var(--brand-on-ink)]"
+          >
+            {ar ? "بحث وفلترة" : "Search"}
+          </button>
+          <Link href="/admin/courses" className="py-3 underline">
+            {ar ? "مسح الفلاتر" : "Clear filters"}
+          </Link>
+        </div>
+      </form>
+      <h2
+        id="list-results"
+        tabIndex={-1}
+        className="scroll-mt-5 text-xl font-bold"
+      >
+        {ar ? "نتائج الدورات" : "Course results"} (
+        {data.total.toLocaleString(ar ? "ar-JO" : "en-US")})
+      </h2>
+      {data.items.length ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {data.items.map((course) => (
+            <AdminCourseCard key={course.id} course={course} />
           ))}
-
         </div>
-
       ) : (
-
-        <div className="bg-white rounded-2xl p-10 text-center border">
-          {t.admin.noCoursesAvailable}
-        </div>
-
+        <p role="status" className="rounded-2xl border p-8 text-center">
+          {ar
+            ? "لا توجد دورات مطابقة للفلاتر."
+            : "No courses match your filters."}
+        </p>
       )}
-
+      <Pagination
+        {...data}
+        pathname="/admin/courses"
+        query={{
+          q: filters.q,
+          status: filters.status,
+          type: filters.type,
+          sort: filters.sort,
+        }}
+      />
     </div>
   );
 }
