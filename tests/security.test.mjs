@@ -26,6 +26,85 @@ function query(result) {
   return new Proxy({}, { get: (_, key) => key === "maybeSingle"
     ? async () => result : () => query(result) });
 }
+
+function courseAccess({ user = { id: "assigned-teacher" }, profile = { role: "teacher" }, assigned = true, authError = null, profileError = null, assignmentError = null } = {}) {
+  const state = { user, profile, assigned, authError, profileError, assignmentError };
+  const client = {
+    auth: { getUser: async () => ({ data: { user: state.user }, error: state.authError }) },
+    from(table) {
+      const builder = {
+        select() { return this; }, eq() { return this; },
+        async single() { return { data: state.profile, error: state.profileError }; },
+        async maybeSingle() { return { data: state.assigned ? { id: "old-assignment" } : null, error: state.assignmentError }; },
+      };
+      assert.ok(["profiles", "course_instructors"].includes(table));
+      return builder;
+    },
+  };
+  const { canManageCourse } = load("lib/auth/can-manage-course.ts", {
+    "@/lib/supabase/server": { createClient: async () => client },
+  });
+  return { state, canManageCourse };
+}
+
+test("Course management is revoked during an existing session even if the assignment remains", async () => {
+  const { state, canManageCourse } = courseAccess();
+  assert.equal(await canManageCourse("course"), true);
+  state.profile = { role: "student" };
+  assert.equal(await canManageCourse("course"), false);
+  state.profile = { role: "teacher" };
+  state.assigned = false;
+  assert.equal(await canManageCourse("course"), false);
+});
+
+for (const [name, profile, expected] of [
+  ["assigned teacher", { role: "teacher" }, true],
+  ["student with an old assignment", { role: "student" }, false],
+  ["missing profile", null, false],
+  ["super admin", { role: "admin", is_super_admin: true }, true],
+  ["course admin", { role: "admin", permissions: ["manage_courses"] }, true],
+  ["limited admin with an old assignment", { role: "admin", permissions: ["view_orders"] }, false],
+]) {
+  test(`Course management permissions: ${name}`, async () => {
+    assert.equal(await courseAccess({ profile }).canManageCourse("course"), expected);
+  });
+}
+
+test("An admin loses course access immediately when the permission is removed", async () => {
+  const { state, canManageCourse } = courseAccess({ profile: { role: "admin", permissions: ["manage_courses"] } });
+  assert.equal(await canManageCourse("course"), true);
+  state.profile = { role: "admin", permissions: [] };
+  assert.equal(await canManageCourse("course"), false);
+});
+
+test("Course management fails closed for missing identity and failed authorization queries", async () => {
+  for (const options of [
+    { user: null },
+    { authError: { message: "invalid session" } },
+    { profileError: { message: "unavailable" } },
+    { assignmentError: { message: "unavailable" } },
+  ]) assert.equal(await courseAccess(options).canManageCourse("course"), false);
+});
+
+test("A demoted teacher cannot invoke a lesson edit or prepare an upload with an old assignment", async () => {
+  const { canManageCourse } = courseAccess({ profile: { role: "student" } });
+  let privilegedClients = 0, providerRequests = 0;
+  const mocks = {
+    "@/lib/auth/can-manage-course": { canManageCourse },
+    "@/lib/supabase/admin": { createAdminClient() { privilegedClients++; throw new Error("Must not access privileged data"); } },
+    "@/lib/lesson-video": {},
+    "next/cache": { revalidatePath() {} },
+  };
+  const actions = load("app/actions/teacher-content.ts", mocks);
+  await assert.rejects(actions.teacherUpdateLesson("lesson", "course", "section", new FormData()), /Unauthorized/);
+  const route = load("app/api/bunny/upload/route.ts", mocks, {
+    BUNNY_LIBRARY_ID: "test-library", BUNNY_API_KEY: "test-only",
+  }, { fetch() { providerRequests++; throw new Error("Must not contact provider"); } });
+  assert.equal((await route.POST({ json: async () => ({ courseId: "course" }) })).status, 403);
+  assert.equal(privilegedClients, 0);
+  assert.equal(providerRequests, 0);
+});
+
 const lessonId = "30000000-0000-4000-8000-000000000001";
 const videoId = "40000000-0000-4000-8000-000000000001";
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
