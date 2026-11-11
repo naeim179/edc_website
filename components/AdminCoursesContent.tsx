@@ -8,9 +8,11 @@ import type { CourseListPage, ListFilters } from "@/lib/list-pages";
 export default function AdminCoursesContent({
   data,
   filters,
+  canCleanup = false,
 }: {
   data: CourseListPage;
   filters: ListFilters;
+  canCleanup?: boolean;
 }) {
   const { language, t } = useLanguage();
   const ar = language === "ar";
@@ -21,6 +23,16 @@ export default function AdminCoursesContent({
       dir={ar ? "rtl" : "ltr"}
     >
       <h1 className="text-2xl font-bold">{t.admin.manageCoursesTitle}</h1>
+      {canCleanup && (
+        <Link
+          href="/admin/video-uploads"
+          className="inline-flex min-h-11 items-center rounded-xl border border-[var(--brand-border)] px-4 py-2 font-bold underline underline-offset-4"
+        >
+          {ar
+            ? "مراجعة رفعات الفيديو المتروكة"
+            : "Review abandoned video uploads"}
+        </Link>
+      )}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           [ar ? "كل الدورات" : "Total courses", data.summary.courses],

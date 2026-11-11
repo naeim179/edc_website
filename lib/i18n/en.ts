@@ -471,9 +471,9 @@ export const en = {
     preparingUpload: "Preparing upload link...",
     uploading: "Uploading video",
     uploaded: "File uploaded",
-    processing: "Mux is processing the video now. Do not close the page.",
+    processing: "The video is processing. Wait for “Video Ready” before saving the lesson.",
     ready: "Video Ready",
-    saved: "Playback data saved automatically.",
+    saved: "Playback details are ready. Save the lesson to apply the change.",
     uploadFailed: "Video upload failed",
 
     checkStatusFailed: "Unable to check video status",

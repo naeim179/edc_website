@@ -33,7 +33,7 @@ const baseLesson = {
 };
 function manager(language) {
   const languageMock = { useLanguage: () => ({ language, t: i18n[language] }) };
-  const video = load("components/lessons/LessonVideoFields.tsx", { "@/components/LanguageProvider": languageMock });
+  const video = load("components/lessons/LessonVideoFields.tsx", { "@/components/LanguageProvider": languageMock, "@/lib/video-upload-policy": load("lib/video-upload-policy.ts") });
   const type = load("components/lessons/LessonTypeFields.tsx", {
     "@/components/LanguageProvider": languageMock,
     "@/components/lessons/LessonVideoFields": video,

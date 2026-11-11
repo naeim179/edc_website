@@ -18,7 +18,7 @@ function load(file, mocks = {}, env = {}, globals = {}) {
   vm.runInNewContext(output, {
     module: loadedModule, exports: loadedModule.exports,
     require: name => mocks[name] ?? (name === "next/server" ? { NextResponse: Response } : require(name)),
-    process: { env }, URL, console: { ...console, error() {} }, ...globals,
+    process: { env }, URL, Response,Request,TextDecoder,AbortSignal,btoa, console: { ...console, error() {} }, ...globals,
   }, { filename: file });
   return loadedModule.exports;
 }
@@ -97,16 +97,17 @@ test("A demoted teacher cannot invoke a lesson edit or prepare an upload with an
   };
   const actions = load("app/actions/teacher-content.ts", mocks);
   await assert.rejects(actions.teacherUpdateLesson("lesson", "course", "section", new FormData()), /Unauthorized/);
-  const route = load("app/api/bunny/upload/route.ts", mocks, {
+  const env = {
     BUNNY_LIBRARY_ID: "test-library", BUNNY_API_KEY: "test-only",
-  }, { fetch() { providerRequests++; throw new Error("Must not contact provider"); } });
-  assert.equal((await route.POST({ json: async () => ({ courseId: "course" }) })).status, 403);
+  };
+  const upload = load("lib/video-uploads.ts",{...mocks,"@/lib/video-upload-policy":load("lib/video-upload-policy.ts"),"@/lib/supabase/server":{}},env,{fetch(){providerRequests++;throw new Error("Must not contact provider");}});
+  const route = load("app/api/bunny/upload/route.ts",{"@/lib/video-uploads":upload});
+  assert.equal((await route.POST(new Request("https://test.invalid/api/bunny/upload",{method:"POST",body:JSON.stringify({courseId:"course",size:1,type:"video/mp4"})}))).status,403);
   assert.equal(privilegedClients, 0);
   assert.equal(providerRequests, 0);
 });
 
 const lessonId = "30000000-0000-4000-8000-000000000001";
-const videoId = "40000000-0000-4000-8000-000000000001";
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const muxEnv = { MUX_SIGNING_KEY_ID: "test-key", MUX_SIGNING_PRIVATE_KEY: privateKey.export({ type: "pkcs8", format: "pem" }) };
 function muxRoute({ lesson = null, allowed = false, rpcError = null } = {}) {
@@ -145,54 +146,15 @@ test("Mux fails closed when the access check fails", async () => {
   assert.equal((await post({ json: async () => ({ lessonId }) })).status, 500);
 });
 
-function bunnyRoute({ courseAllowed = true, ownership = null, error = null } = {}) {
-  const calls = [];
-  const filters = {};
-  const ownershipQuery = {
-    select() { return this; },
-    eq(key, value) { filters[key] = value; return this; },
-    async maybeSingle() { return { data: ownership, error }; },
-  };
-  const route = load("app/api/bunny/upload/[videoId]/route.ts", {
-    "@/lib/auth/can-manage-course": { canManageCourse: async () => courseAllowed },
-    "@/lib/supabase/admin": { createAdminClient: () => ({ from: () => ownershipQuery }) },
-  }, { BUNNY_LIBRARY_ID: "library", BUNNY_API_KEY: "test-only" }, {
-    fetch: async (url, options) => { calls.push({ url, options }); return { ok: true }; },
-  });
-  return { put: () => route.PUT({ headers: new Headers({ "x-course-id": "owned-course" }), body: null }, { params: Promise.resolve({ videoId }) }), calls, filters };
-}
-test("Bunny refuses a user without course management access", async () => {
-  const { put, calls } = bunnyRoute({ courseAllowed: false });
-  assert.equal((await put()).status, 403);
-  assert.equal(calls.length, 0);
-});
-test("Bunny refuses an unknown or foreign video without contacting Bunny", async () => {
-  const { put, calls, filters } = bunnyRoute();
-  assert.equal((await put()).status, 403);
-  assert.equal(calls.length, 0);
-  assert.deepEqual(filters, { video_id: videoId, course_id: "owned-course", library_id: "library" });
-});
-test("Bunny fails closed when ownership storage is unavailable", async () => {
-  const { put, calls } = bunnyRoute({ error: { message: "offline" } });
-  assert.equal((await put()).status, 500);
-  assert.equal(calls.length, 0);
-});
-test("Bunny forwards an upload after both course and video authorization", async () => {
-  const { put, calls } = bunnyRoute({ ownership: { video_id: videoId } });
-  assert.equal((await put()).status, 200);
-  assert.equal(calls.length, 1);
-  assert.equal(calls[0].options.method, "PUT");
-});
-test("Bunny does not issue an upload target when ownership cannot be persisted", async () => {
-  const route = load("app/api/bunny/upload/route.ts", {
-    "@/lib/auth/can-manage-course": { canManageCourse: async () => true },
-    "@/lib/supabase/admin": { createAdminClient: () => ({ from: () => ({ insert: async () => ({ error: { message: "offline" } }) }) }) },
-  }, { BUNNY_LIBRARY_ID: "library", BUNNY_API_KEY: "test-only" }, {
-    fetch: async () => ({ ok: true, json: async () => ({ guid: videoId }) }),
-  });
-  const response = await route.POST({ json: async () => ({ courseId: "owned-course" }) });
-  assert.equal(response.status, 500);
-  assert.equal((await response.json()).videoId, undefined);
+test("Legacy Bunny upload targets cannot bypass size reservations, even with old ownership",async()=>{
+ for(const allowed of [false,true]){
+  let calls=0;
+  const route=load("app/api/bunny/upload/[videoId]/route.ts",{
+   "@/lib/auth/can-manage-course":{canManageCourse:async()=>allowed},
+  },{}, {fetch(){calls++;throw new Error("No unreserved provider upload");}});
+  const response=await route.PUT(new Request("https://test.invalid/api/bunny/upload/old",{method:"PUT",headers:{"x-course-id":"course"}}));
+  assert.equal(response.status,allowed?410:403);assert.equal(calls,0);
+ }
 });
 
 const { getImageObjectPath } = load("lib/storage-images.ts");
