@@ -204,6 +204,10 @@ export const en = {
 
 
 
+  lessonEditor: {
+    order: "Lesson order",
+    confirmDelete: "Delete this lesson?",
+  },
   lessonType: {
     type: "Lesson Type",
     recorded: "Recorded Lesson",
@@ -442,6 +446,10 @@ export const en = {
 
 
   lessonVideo: {
+    noVideo: "No video is available for this lesson",
+    playbackLoading: "Loading video...",
+    playbackError: "Unable to play this video. Check your access and reload the page.",
+    incomplete: "Video setup is incomplete",
     source: "Video Source",
     youtube: "YouTube",
     youtubeDescription: "Video Link",
