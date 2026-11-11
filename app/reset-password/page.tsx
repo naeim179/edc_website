@@ -1,5 +1,7 @@
 "use client";
 
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -33,9 +35,9 @@ export default function ResetPasswordPage() {
     setMessage("");
     setError("");
 
-    if (password.length < 6) {
+    if (password.length < MIN_PASSWORD_LENGTH) {
       setError(
-        t.auth.passwordMin
+        t.auth.newPasswordMin
       );
       return;
     }

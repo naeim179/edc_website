@@ -1,5 +1,7 @@
 "use client";
 
+import { MIN_PASSWORD_LENGTH } from "@/lib/password-policy";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -46,8 +48,9 @@ export default function ChangePasswordForm() {
     setError("");
     setMessage("");
 
-    if (password.length < 6) {
-      setError(t.auth.passwordMin);
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(t.auth.newPasswordMin);
+      e.currentTarget.querySelector<HTMLInputElement>("input")?.focus();
       return;
     }
 
@@ -98,21 +101,26 @@ export default function ChangePasswordForm() {
       </p>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+        <div id="change-password-error" role="alert" className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-600">
           {error}
         </div>
       )}
 
       {message && (
-        <div className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-700">
+        <div role="status" className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-700">
           {message}
         </div>
       )}
 
       {!sent ? (
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form noValidate onSubmit={handleSubmit} className="space-y-5">
           <input
             type="password"
+            aria-label={t.auth.newPassword}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "change-password-error" : undefined}
+            minLength={MIN_PASSWORD_LENGTH}
+            autoComplete="new-password"
             placeholder={t.auth.newPassword}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -122,6 +130,11 @@ export default function ChangePasswordForm() {
 
           <input
             type="password"
+            aria-label={t.auth.confirmNewPassword}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "change-password-error" : undefined}
+            minLength={MIN_PASSWORD_LENGTH}
+            autoComplete="new-password"
             placeholder={t.auth.confirmNewPassword}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}

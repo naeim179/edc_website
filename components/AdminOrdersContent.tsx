@@ -4,6 +4,10 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateOrderStatus } from "@/app/actions/admin-orders";
+import Link from "next/link";
+import Pagination from "@/components/ui/Pagination";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import type { PageInfo, ListFilters } from "@/lib/list-pages";
 
 
 type Order = {
@@ -24,6 +28,9 @@ type Order = {
 
 type Props = {
   orders: Order[];
+  pageInfo: PageInfo;
+  filters: ListFilters;
+  canReview: boolean;
 };
 
 function formatDate(
@@ -59,7 +66,7 @@ function formatDate(
 }
 
 export default function AdminOrdersContent({
-  orders,
+  orders, pageInfo, filters, canReview,
 }: Props) {
   const { language, t } = useLanguage();
 
@@ -104,12 +111,6 @@ export default function AdminOrdersContent({
     }
   }
 
-  const [filter, setFilter] =
-    useState<"all" | "pending" | "paid" | "failed">("all");
-
-  const [search, setSearch] =
-    useState("");
-
   function getStatusLabel(status: string) {
     if (status === "pending") {
       return isArabic ? "قيد الانتظار" : "Pending";
@@ -142,71 +143,18 @@ export default function AdminOrdersContent({
       className="max-w-6xl mx-auto w-full space-y-6"
       dir={isArabic ? "rtl" : "ltr"}
     >
-      {review && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4">
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="cliq-dialog-title"
-            aria-describedby="cliq-dialog-description"
-            onKeyDown={(event) => {
-              if (event.key === "Escape" && !busy) setReview(null);
-            }}
-            className="w-full max-w-md rounded-3xl border border-[#E8E1D4] bg-white p-6 text-start shadow-2xl sm:p-8"
-          >
-            <h2
-              id="cliq-dialog-title"
-              className="text-xl font-bold text-[#1B4B43]"
-            >
-              {review.decision === "paid"
-                ? (isArabic ? "تأكيد دفع CliQ" : "Confirm CliQ payment")
-                : (isArabic ? "رفض إثبات CliQ" : "Reject CliQ proof")}
-            </h2>
-
-            <p
-              id="cliq-dialog-description"
-              className="mt-4 leading-7 text-slate-600"
-            >
-              {review.decision === "paid"
-                ? (isArabic
-                    ? "هل تحققت من وصول التحويل الفعلي إلى حسابك البنكي؟ التأكيد سيؤدي إلى تفعيل اشتراك الطالب."
-                    : "Have you verified the actual bank transfer? Confirming will activate the student's subscription.")
-                : (isArabic
-                    ? "هل تريد رفض هذا الإثبات؟ لن يتم تفعيل الاشتراك."
-                    : "Reject this payment proof? The subscription will not be activated.")}
-            </p>
-
-            <div className="mt-6 flex flex-wrap justify-end gap-3">
-              <button
-                type="button"
-                autoFocus
-                disabled={Boolean(busy)}
-                onClick={() => setReview(null)}
-                className="rounded-xl border border-slate-300 px-5 py-3 font-bold text-slate-700 disabled:opacity-50"
-              >
-                {isArabic ? "إلغاء" : "Cancel"}
-              </button>
-
-              <button
-                type="button"
-                disabled={Boolean(busy)}
-                onClick={() => void confirmReview()}
-                className={`rounded-xl px-5 py-3 font-bold text-white disabled:opacity-50 ${
-                  review.decision === "paid"
-                    ? "bg-emerald-700 hover:bg-emerald-800"
-                    : "bg-red-700 hover:bg-red-800"
-                }`}
-              >
-                {busy
-                  ? (isArabic ? "جارٍ التنفيذ..." : "Processing...")
-                  : review.decision === "paid"
-                    ? (isArabic ? "تأكيد الدفع" : "Confirm payment")
-                    : (isArabic ? "رفض الإثبات" : "Reject proof")}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      <ConfirmDialog
+        open={Boolean(review)} busy={Boolean(busy)}
+        title={review?.decision === "paid" ? (isArabic ? "تأكيد دفع CliQ" : "Confirm CliQ payment") : (isArabic ? "رفض إثبات CliQ" : "Reject CliQ proof")}
+        description={review?.decision === "paid"
+          ? (isArabic ? "هل تحققت من وصول التحويل الفعلي إلى حسابك البنكي؟ التأكيد سيؤدي إلى تفعيل اشتراك الطالب." : "Have you verified the actual bank transfer? Confirming will activate the student's subscription.")
+          : (isArabic ? "هل تريد رفض هذا الإثبات؟ لن يتم تفعيل الاشتراك." : "Reject this payment proof? The subscription will not be activated.")}
+        confirmText={review?.decision === "paid" ? (isArabic ? "تأكيد الدفع" : "Confirm payment") : (isArabic ? "رفض الإثبات" : "Reject proof")}
+        cancelText={isArabic ? "إلغاء" : "Cancel"}
+        tone={review?.decision === "paid" ? "warning" : "danger"}
+        onCancel={() => { if (!busy) setReview(null); }}
+        onConfirm={() => void confirmReview()}
+      >{feedback && <p role="alert">{feedback}</p>}</ConfirmDialog>
 
       <div className="bg-white rounded-2xl border p-6 text-right">
         <h1 className="text-2xl font-bold">
@@ -238,61 +186,18 @@ export default function AdminOrdersContent({
         </div>
       )}
 
-      <div className="bg-[var(--brand-surface)] rounded-2xl border p-5 flex flex-wrap gap-3 justify-between">
-
-        <input
-          value={search}
-          onChange={(e)=>setSearch(e.target.value)}
-          placeholder={isArabic ? "ابحث عن طالب أو دورة..." : "Search student or course..."}
-          className="rounded-xl border px-4 py-2"
-        />
-
-        <div className="flex gap-2 flex-wrap">
-          {[
-            ["all", isArabic ? "الكل" : "All"],
-            ["pending", isArabic ? "قيد الانتظار" : "Pending"],
-            ["paid", isArabic ? "مدفوع" : "Paid"],
-            ["failed", isArabic ? "فشل" : "Failed"],
-          ].map(([key,label])=>(
-            <button
-              key={key}
-              onClick={() =>
-                setFilter(
-                  key as "all" | "pending" | "paid" | "failed"
-                )
-              }
-              className={
-                `rounded-xl px-4 py-2 font-bold border ${
-                  filter===key
-                  ? "bg-[#1B4B43] text-white"
-                  : "bg-white"
-                }`
-              }
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-      </div>
+      <form key={JSON.stringify(filters)} action="/admin/orders" method="get" className="grid gap-4 rounded-2xl border bg-[var(--brand-surface)] p-5 sm:grid-cols-[1fr_180px_auto]">
+        <div><label htmlFor="order-search" className="mb-2 block font-semibold">{isArabic ? "البحث عن طالب أو دورة أو رقم طلب" : "Search student, course or order ID"}</label><input id="order-search" name="q" type="search" maxLength={120} defaultValue={filters.q} className="w-full rounded-xl border px-4 py-3" /></div>
+        <div><label htmlFor="order-status" className="mb-2 block font-semibold">{isArabic ? "حالة الدفع" : "Payment status"}</label><select id="order-status" name="status" defaultValue={filters.status} className="w-full rounded-xl border px-4 py-3">
+          <option value="all">{isArabic ? "الكل" : "All"}</option><option value="pending">{isArabic ? "قيد الانتظار" : "Pending"}</option><option value="paid">{isArabic ? "مدفوع" : "Paid"}</option><option value="failed">{isArabic ? "فشل" : "Failed"}</option>
+        </select></div>
+        <div className="flex flex-wrap items-end gap-3"><button type="submit" className="min-h-11 rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-[var(--brand-on-ink)]">{isArabic ? "بحث وفلترة" : "Search"}</button><Link href="/admin/orders" className="py-3 underline">{isArabic ? "مسح الفلاتر" : "Clear filters"}</Link></div>
+      </form>
+      <h2 id="list-results" tabIndex={-1} className="scroll-mt-5 text-xl font-bold">{isArabic ? "نتائج الطلبات" : "Order results"} ({pageInfo.total.toLocaleString(isArabic ? "ar-JO" : "en-US")})</h2>
 
       <div className="space-y-4">
         {orders.length > 0 ? (
           orders
-          .filter((order) => {
-            const matches =
-              filter === "all" ||
-              order.status === filter;
-
-            const text =
-              `${order.studentName ?? ""} ${order.courses?.[0]?.title ?? ""}`
-              .toLowerCase();
-
-            return (
-              matches &&
-              text.includes(search.toLowerCase())
-            );
-          })
           .map((order) => {
             const courseTitle =
               order.courses?.[0]?.title ??
@@ -301,7 +206,7 @@ export default function AdminOrdersContent({
             return (
               <div
                 key={order.id}
-                className="bg-[var(--brand-surface)] rounded-2xl border p-6 shadow-sm hover:shadow-md transition-shadow text-right"
+                className="bg-[var(--brand-surface)] rounded-2xl border p-6 shadow-sm hover:shadow-md transition-shadow text-start"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
@@ -359,7 +264,7 @@ export default function AdminOrdersContent({
                       </span>
                     )}
 
-                    {order.status === "pending" && (
+                    {order.status === "pending" && canReview && (
                       <>
                         <button
                           type="button"
@@ -396,6 +301,7 @@ export default function AdminOrdersContent({
           </div>
         )}
       </div>
+      <Pagination {...pageInfo} pathname="/admin/orders" query={{q:filters.q,status:filters.status}} />
     </div>
   );
 }

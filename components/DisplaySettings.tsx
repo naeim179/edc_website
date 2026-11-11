@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, useId, type ReactNode } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   EyeIcon,
@@ -57,6 +57,8 @@ export default function DisplaySettings() {
   const [theme, setTheme] = useState<AppTheme>("dark");
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
 
   const isArabic = language === "ar";
   const settingsLabel = isArabic ? "اللغة والمظهر" : "Language & appearance";
@@ -92,9 +94,11 @@ export default function DisplaySettings() {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpen(false);
+        triggerRef.current?.focus();
       }
     };
 
+    containerRef.current?.querySelector<HTMLElement>('[role="dialog"] button')?.focus();
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKey);
 
@@ -123,13 +127,17 @@ export default function DisplaySettings() {
     }`;
 
   return (
-    <div className="yw-display-settings relative z-[100]" ref={containerRef}>
+    <div className="yw-display-settings relative z-[100]" ref={containerRef} onBlur={event => {
+      if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node)) setOpen(false);
+    }}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={togglePanel}
         aria-label={settingsLabel}
         aria-expanded={open}
         aria-haspopup="dialog"
+        aria-controls={open ? panelId : undefined}
         className="yw-display-trigger flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 transition-colors"
         style={{
           borderColor: "var(--brand-border)",
@@ -143,6 +151,7 @@ export default function DisplaySettings() {
 
       {open && (
         <div
+          id={panelId}
           role="dialog"
           aria-label={settingsLabel}
           dir={isArabic ? "rtl" : "ltr"}

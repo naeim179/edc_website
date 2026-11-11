@@ -130,6 +130,7 @@ export default function StaffManager({ admins }: { admins: Admin[] }) {
         <p className="mt-1 text-xs text-[#1B4B43]/60">{s.addHint}</p>
 
         <input
+          aria-label={s.emailPlaceholder}
           type="email"
           dir="ltr"
           value={email}

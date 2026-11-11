@@ -212,6 +212,7 @@ export default function AdminStudentsContent({
       >
         <div className="grid lg:grid-cols-[1fr_230px_auto] gap-3">
           <input
+            aria-label={isArabic ? "البحث عن طالب" : "Search students"}
             type="search"
             name="q"
             defaultValue={
@@ -226,6 +227,7 @@ export default function AdminStudentsContent({
           />
 
           <select
+            aria-label={isArabic ? "حالة الطالب" : "Student status"}
             name="status"
             defaultValue={
               status

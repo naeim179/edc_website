@@ -100,6 +100,7 @@ export default function UsernameCard({
         {editing ? (
           <div className="flex flex-col gap-3 sm:flex-row">
             <input
+              aria-label={m.title}
               type="text"
               dir="ltr"
               autoCapitalize="none"
@@ -155,6 +156,7 @@ export default function UsernameCard({
 
         {message && (
           <p
+            role={message.type === "error" ? "alert" : "status"}
             className={`mt-3 text-sm ${
               message.type === "error" ? "text-red-500" : "text-green-600"
             }`}

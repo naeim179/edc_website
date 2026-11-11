@@ -1,55 +1,21 @@
 import AppShell from "@/components/AppShell";
 import AdminCoursesContent from "@/components/AdminCoursesContent";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requirePermission } from "@/lib/auth/admin-access";
 import { createClient } from "@/lib/supabase/server";
+import { loadCoursePage } from "@/lib/course-pages";
+import { listFilters, type SearchValues } from "@/lib/list-pages";
 
-export default async function AdminCoursesPage() {
-  await requireAdmin();
-
-  const supabase = await createClient();
-
-  const { data: courses, error } = await supabase
-    .from("courses")
-    .select(`
-      id,
-      title,
-      category,
-      image_url,
-      price,
-      currency,
-      is_free,
-      course_type,
-      is_published,
-      created_at,
-      sections(
-        id,
-        lessons(
-          id
-        )
-      ),
-      enrollments(
-        id
-      ),
-      course_instructors(
-        teacher_id,
-        teacher:profiles(
-          full_name
-        )
-      )
-    `)
-    .order("created_at", {
-      ascending: false,
-    });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
+export default async function AdminCoursesPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchValues>;
+}) {
+  await requirePermission("manage_courses");
+  const filters = listFilters(await searchParams);
+  const data = await loadCoursePage(await createClient(), filters, true);
   return (
     <AppShell>
-      <AdminCoursesContent
-        courses={courses ?? []}
-      />
+      <AdminCoursesContent data={data} filters={filters} />
     </AppShell>
   );
 }

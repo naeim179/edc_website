@@ -3,6 +3,7 @@
 import type {
   ReactNode,
 } from "react";
+import { useModalFocus } from "./useModalFocus";
 
 type Props = {
   open: boolean;
@@ -29,6 +30,7 @@ export default function ConfirmDialog({
   onCancel,
   children,
 }: Props) {
+  const {ref,id} = useModalFocus(open,onCancel,busy);
   if (!open) {
     return null;
   }
@@ -36,17 +38,16 @@ export default function ConfirmDialog({
   const confirmClass =
     tone === "danger"
       ? "bg-red-600 hover:bg-red-700"
-      : "bg-amber-500 hover:bg-amber-600";
+      : "bg-amber-800 hover:bg-amber-900";
 
   return (
     <div
       className="fixed inset-0 z-[190] flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
     >
       <button
         type="button"
-        aria-label="Close dialog"
+        aria-label={cancelText}
+        tabIndex={-1}
         onClick={() => {
           if (!busy) {
             onCancel();
@@ -55,7 +56,7 @@ export default function ConfirmDialog({
         className="absolute inset-0 cursor-default bg-black/60 backdrop-blur-sm"
       />
 
-      <div className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border bg-[var(--brand-surface)] shadow-2xl">
+      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} tabIndex={-1} className="relative z-10 max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border bg-[var(--brand-surface)] shadow-2xl">
         <div className="p-6">
           <div
             className={
@@ -67,11 +68,11 @@ export default function ConfirmDialog({
             !
           </div>
 
-          <h3 className="text-xl font-black text-[var(--brand-text)]">
+          <h3 id={`${id}-title`} className="text-xl font-black text-[var(--brand-text)]">
             {title}
           </h3>
 
-          <p className="mt-3 text-sm leading-7 text-[var(--brand-text-muted)]">
+          <p id={`${id}-description`} className="mt-3 text-sm leading-7 text-[var(--brand-text-muted)]">
             {description}
           </p>
 

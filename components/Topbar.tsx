@@ -22,6 +22,7 @@ type TopbarProps = {
   avatarUrl: string | null;
   /** يفتح القائمة الجانبية على الجوال */
   onMenuClick?: () => void;
+  menuOpen?: boolean;
 };
 
 export default function Topbar({
@@ -30,6 +31,7 @@ export default function Topbar({
   role,
   avatarUrl,
   onMenuClick,
+  menuOpen = false,
 }: TopbarProps) {
   const router = useRouter();
   const { language, t } = useLanguage();
@@ -79,6 +81,7 @@ export default function Topbar({
           onClick={onMenuClick}
           aria-label={isArabic ? "فتح القائمة" : "Open menu"}
           aria-controls="app-sidebar"
+          aria-expanded={menuOpen}
           className="
             flex
             h-11

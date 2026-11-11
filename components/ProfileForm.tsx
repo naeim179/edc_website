@@ -139,12 +139,13 @@ export default function ProfileForm({
 
         <div>
 
-          <label className="block text-sm font-bold text-slate-700 mb-2">
-            الاسم الكامل
+          <label htmlFor="profile-name" className="block text-sm font-bold text-slate-700 mb-2">
+            {isArabic ? "الاسم الكامل" : "Full name"}
           </label>
 
 
           <input
+            id="profile-name"
             name="full_name"
             defaultValue={
               profile.full_name ?? ""
@@ -161,12 +162,13 @@ export default function ProfileForm({
 
         <div>
 
-          <label className="block text-sm font-bold text-slate-700 mb-2">
-            رقم الهاتف
+          <label htmlFor="profile-phone" className="block text-sm font-bold text-slate-700 mb-2">
+            {isArabic ? "رقم الهاتف" : "Phone number"}
           </label>
 
 
           <input
+            id="profile-phone"
             name="phone"
             type="tel"
             defaultValue={
@@ -187,7 +189,7 @@ export default function ProfileForm({
 
       {message && (
 
-        <div className="rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 px-5 py-3 text-sm font-bold">
+        <div role="status" className="rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 px-5 py-3 text-sm font-bold">
 
           {message}
 
@@ -200,7 +202,7 @@ export default function ProfileForm({
 
       {error && (
 
-        <div className="rounded-xl bg-red-50 border border-red-100 text-red-600 px-5 py-3 text-sm font-bold">
+        <div role="alert" className="rounded-xl bg-red-50 border border-red-100 text-red-600 px-5 py-3 text-sm font-bold">
 
           {error}
 

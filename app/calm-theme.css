@@ -286,3 +286,34 @@ html[data-theme] body.yw-design-system .yw-auth-language > button[aria-pressed="
 .yw-design-system .yw-chat-thread[data-compact-chat] .yw-chat-compose-hint:has(+ .yw-chat-compact-file) { display: none; }
 .yw-design-system .yw-chat-thread[data-compact-chat] .yw-chat-compact-file { display: flex; }
 .yw-design-system .yw-chat-thread[data-compact-chat] > form { padding-block: 8px; }
+
+/* Readable controls and status colours across all three workspace themes. */
+:root { --calm-control-border: #6c8390; }
+html[data-theme="dark"] { --calm-control-border: #688b9e; }
+html[data-theme="eye"] { --calm-control-border: #8d8776; }
+html[data-theme] body.yw-design-system .yw-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),textarea,select) {
+  border-color: var(--calm-control-border) !important;
+}
+html[data-theme] body.yw-design-system .yw-shell :is(input,textarea)::placeholder { opacity: 1 !important; }
+.yw-shell :is(a,button,input,select,textarea,[tabindex]):focus-visible,
+.yw-display-settings :is(button,[tabindex]):focus-visible {
+  outline: 3px solid var(--calm-accent) !important;
+  outline-offset: 4px !important;
+  scroll-margin-block: 100px;
+}
+.yw-shell [id="list-results"] { scroll-margin-top: 30px; }
+.yw-shell label { line-height: 1.7; }
+.yw-shell :is(input,select,textarea)::placeholder { opacity: 1 !important; }
+.yw-shell :is(button,a)[aria-disabled="true"] { cursor: default; }
+.yw-skip-link { position: fixed; z-index: 300; top: 12px; inset-inline-start: 12px; transform: translateY(-200%); padding: 12px 20px; border-radius: 10px; background: var(--calm-accent); color: var(--calm-on-accent); }
+.yw-skip-link:focus { transform: none; }
+html[data-theme="dark"] .yw-shell :is(.bg-emerald-50,.bg-green-50) { background-color: #16362d !important; }
+html[data-theme="dark"] .yw-shell :is(.text-emerald-600,.text-emerald-700,.text-emerald-800,.text-green-600,.text-green-700) { color: #8ddbb5 !important; }
+html[data-theme="dark"] .yw-shell :is(.bg-red-50,.bg-red-100) { background-color: #3a2025 !important; }
+html[data-theme="dark"] .yw-shell :is(.text-red-600,.text-red-700,.text-red-800) { color: #ffb4b4 !important; }
+html[data-theme="dark"] .yw-shell :is(.bg-amber-50,.bg-amber-100) { background-color: #39321e !important; }
+html[data-theme="dark"] .yw-shell :is(.text-amber-600,.text-amber-700,.text-amber-800) { color: #efcf82 !important; }
+html[data-theme="dark"] .yw-shell :is(.text-blue-600,.text-blue-700,.text-blue-800) { color: #b0dcff !important; }
+@media (prefers-reduced-motion: reduce) {
+  .yw-shell *, .yw-display-settings * { transition-duration: 0s !important; scroll-behavior: auto !important; }
+}
