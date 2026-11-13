@@ -317,3 +317,43 @@ html[data-theme="dark"] .yw-shell :is(.text-blue-600,.text-blue-700,.text-blue-8
 @media (prefers-reduced-motion: reduce) {
   .yw-shell *, .yw-display-settings * { transition-duration: 0s !important; scroll-behavior: auto !important; }
 }
+
+/* Public information uses the same spacing and colour tokens in every theme. */
+.yw-site-footer { width: min(1240px, calc(100% - 48px)); margin: 48px auto 0; padding: 28px 0; border-top: 1px solid var(--calm-border); color: var(--calm-muted); font-size: 14px; line-height: 1.8; }
+.yw-site-footer-brand { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.yw-site-footer nav { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-bottom: 16px; }
+.yw-site-footer nav small { font-size: 12px; }
+.yw-site-footer a, .yw-information-content a, .yw-checkout-policies a { color: var(--calm-accent); text-decoration: underline; text-underline-offset: 4px; overflow-wrap: anywhere; }
+.yw-site-footer a:hover, .yw-information-content a:hover, .yw-checkout-policies a:hover { color: var(--calm-hover); }
+.yw-site-footer a:focus-visible, .yw-information a:focus-visible, .yw-checkout-policies a:focus-visible { outline: 2px solid var(--calm-accent); outline-offset: 5px; border-radius: 3px; }
+.yw-site-footer-shell { width: auto; margin-inline: 24px; padding-bottom: 40px; }
+.yw-shell:has(.yw-guest-landing) .yw-shell-footer { display: none; }
+.yw-information { min-height: 100vh; background: var(--calm-bg); color: var(--calm-text); }
+.yw-information-header { width: min(1240px, calc(100% - 48px)); margin: auto; display: flex; align-items: center; gap: 24px; padding-block: 20px; border-bottom: 1px solid var(--calm-border); }
+.yw-information-header nav { display: flex; flex-wrap: wrap; gap: 12px; margin-inline-end: auto; }
+.yw-information-header nav a { padding: 10px 14px; border: 1px solid var(--calm-border); border-radius: 10px; background: var(--calm-surface); font-size: 14px; }
+.yw-information-content { width: min(840px, calc(100% - 48px)); margin: 48px auto; line-height: 2; font-size: 16px; overflow-wrap: anywhere; }
+.yw-information-content h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.6; margin-bottom: 24px; }
+.yw-information-eyebrow { color: var(--calm-accent); font-size: 13px; letter-spacing: 1px; }
+.yw-information-intro { font-size: 18px; margin-bottom: 28px; }
+.yw-information-content section { margin-top: 28px; }
+.yw-information-content h2 { font-size: 21px; font-weight: 600; margin-bottom: 8px; }
+.yw-information-content section p, .yw-information-contact { color: var(--calm-muted); }
+.yw-information-contact { margin-top: 36px; }
+.yw-policy-notice { border: 1px solid var(--calm-border); border-inline-start: 4px solid var(--calm-accent); border-radius: 10px; background: var(--calm-surface); padding: 16px 20px; margin-bottom: 28px; }
+.yw-information-email { display: inline-block; font-weight: 600; }
+.yw-checkout-policies { margin-top: 24px; border-top: 1px solid var(--calm-border); padding-top: 16px; font-size: 14px; line-height: 1.8; color: var(--calm-text); }
+.yw-checkout-policies > p { font-weight: 600; }
+.yw-checkout-policies nav { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-block: 8px; }
+.yw-checkout-policies small { display: block; font-size: 12px; color: var(--calm-muted); }
+.yw-agreement-preview { border: 1px solid var(--calm-border); border-radius: 12px; background: var(--calm-surface); padding: 24px; }
+.yw-agreement-preview label { display: flex; align-items: start; gap: 12px; }
+.yw-agreement-preview input { margin-top: 10px; flex-shrink: 0; }
+@media (max-width: 640px) {
+  .yw-information-header { gap: 12px; flex-wrap: wrap; }
+  .yw-information-header .yw-brand-logo { width: 60px; height: 60px; }
+  .yw-information-header nav { gap: 8px; }
+  .yw-information-header nav a { padding: 8px 10px; }
+  .yw-information-content { margin-block: 28px; }
+  .yw-site-footer-shell { padding-bottom: 100px; }
+}

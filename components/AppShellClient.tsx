@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { useLanguage } from "@/components/LanguageProvider";
+import SiteFooter from "@/components/SiteFooter";
 import Sidebar from "@/components/Sidebar";
 import MobileNavigation from "@/components/MobileNavigation";
 import Topbar from "@/components/Topbar";
@@ -219,7 +220,7 @@ export default function AppShellClient({
         >
           {children}
         </section>
-
+        <div className="yw-shell-footer"><SiteFooter shell /></div>
 
       </main>
       {role !== "admin" && role !== "teacher" && <MobileNavigation isAuthenticated={isAuthenticated} />}

@@ -152,7 +152,7 @@ for(const status of ['C','D','P','A'])test(`On-demand verification preserves pay
 });
 for(const method of [undefined,'cliq'])test(`Checkout requires explicit selection and preserves return method ${method}`,()=>{
  const React=require('react');const {renderToStaticMarkup}=require('react-dom/server');
- const component=load('components/SubscriptionCheckout.tsx',{'next/link':{__esModule:true,default:({children,href})=>React.createElement('a',{href},children)},'@/app/actions/coupons':{},'@/components/LanguageProvider':{useLanguage:()=>({language:'ar'})},'@/components/BuyCourseButton':{__esModule:true,default:props=>React.createElement('button',{'data-method':props.paymentMethod,disabled:props.disabled},props.label)}}).default;
+ const component=load('components/SubscriptionCheckout.tsx',{'next/link':{__esModule:true,default:({children,href})=>React.createElement('a',{href},children)},'@/components/CheckoutPolicyLinks':{__esModule:true,default:()=>null},'@/app/actions/coupons':{},'@/components/LanguageProvider':{useLanguage:()=>({language:'ar'})},'@/components/BuyCourseButton':{__esModule:true,default:props=>React.createElement('button',{'data-method':props.paymentMethod,disabled:props.disabled},props.label)}}).default;
  const html=renderToStaticMarkup(React.createElement(component,{courseId:'course',title:'cys',monthlyPriceUsd:70,courseType:'group',isRenewal:false,registrationOpen:true,initialPaymentMethod:method}));
  if(method){assert.match(html,/data-method="cliq"/);assert.doesNotMatch(html,/اختر طريقة الدفع أولًا/);}else{assert.match(html,/اختر طريقة الدفع أولًا/);assert.match(html,/disabled=""/);}
 });
