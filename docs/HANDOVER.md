@@ -146,3 +146,7 @@ Original source and pre-rollout function/policy definitions are retained on
 `e3ca9d7c6bc403712324755b8d5acf95dc1782fb`. This is source/schema recovery,
 not a full customer-data or Storage backup. Previous Cloudflare version:
 `4e2e4f38-fd8b-4f51-bb64-c63d9dc7fb0d`.
+
+## تجهيز مراجعة الدفع والسياسات
+
+راجع [قائمة جاهزية PayTabs](PAYTABS-READINESS.md) للصفحات الجاهزة، ومسودات السياسات، والبيانات التجارية المطلوبة والمؤجل. تبقى السياسات مسودات إلى اعتماد صاحب النشاط؛ ولا تُفعّل موافقة شراء ملزمة بناءً عليها. معاينة الموافقة متاحة في `/policy-review` وغير مفعّلة في الدفع.

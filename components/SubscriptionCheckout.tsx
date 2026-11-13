@@ -11,6 +11,7 @@ import {
   validateCoupon,
 } from "@/app/actions/coupons";
 
+import CheckoutPolicyLinks from "@/components/CheckoutPolicyLinks";
 import BuyCourseButton from "@/components/BuyCourseButton";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -940,6 +941,7 @@ export default function SubscriptionCheckout({
             )}
           </div>
 
+          <CheckoutPolicyLinks />
           <div className="mt-6">
             <BuyCourseButton
               key={JSON.stringify([returnVersion, courseId, months, autoRenew, paymentMethod, couponValid ? couponCode : "", privateBookingId, payableTotalUsd])}

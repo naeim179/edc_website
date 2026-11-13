@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import SiteFooter from "@/components/SiteFooter";
 import Image from "next/image";
 import BrandLogo from "@/components/BrandLogo";
 import DisplaySettings from "@/components/DisplaySettings";
@@ -159,7 +160,7 @@ function GuestLanding({ courses, ar }: { courses: CatalogCourse[]; ar: boolean }
         <section id="how-it-works" className="yw-public-how"><div className="yw-public-section-heading"><div><p className="yw-public-kicker">{ar ? "البداية أبسط مما تتخيّل" : "Starting is simpler than you think"}</p><h2>{ar ? "ثلاث خطوات. وطريقك يبدأ." : "Three steps. A new beginning."}</h2></div></div><div className="yw-public-steps">{steps.map((step, index) => <article key={step.title}><span>0{index + 1}</span><h3>{step.title}</h3><p>{step.text}</p></article>)}</div></section>
         <section className="yw-public-join"><div><p>{ar ? "استثمر في خطوتك القادمة" : "Invest in your next step"}</p><h2>{ar ? "عندك هدف؟ خلّينا نبدأ الطريق." : "Have a goal? Start your journey."}</h2></div><Link href="/register" className="yw-public-button">{ar ? "أنشئ حسابك" : "Create your account"}<ArrowIcon width={18} height={18} className="rtl:rotate-180" /></Link></section>
       </div>
-      <footer className="yw-public-footer"><Link href="/" aria-label="Your Way Academy"><BrandLogo variant="compact" /></Link><p>{ar ? "تعلّم على طريقتك، وتقدّم بخطواتك." : "Learn your way. Progress at your pace."}</p><Link href="/courses">{ar ? "الدورات" : "Courses"}</Link><Link href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link></footer>
+      <SiteFooter />
     </div>
   );
 }
