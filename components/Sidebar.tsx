@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LifeBuoy } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import {
 usePathname } from "next/navigation";
@@ -16,6 +17,7 @@ import {
   UserIcon,
   UsersIcon,
   MessageIcon,
+
 } from "@/components/icons";
 
 type SidebarProps = {
@@ -233,7 +235,17 @@ export default function Sidebar({
           : []),
       ];
 
+  if (isAuthenticated) {
+    const position = items.findIndex(item => item.href === "/profile");
+    items.splice(position < 0 ? items.length : position,0,{
+      href: isAdmin ? "/admin/support" : "/support",
+      label: isArabic ? (isAdmin ? "إدارة الشكاوى" : "الدعم والشكاوى") : (isAdmin ? "Manage complaints" : "Support & complaints"),
+      icon: <LifeBuoy width={20} height={20} />,
+    });
+  }
+
   const permissionByHref: Record<string, string> = {
+    "/admin/support": "manage_support",
     "/admin/courses": "manage_courses",
     "/admin/teachers": "manage_teachers",
     "/admin/orders": "view_orders",

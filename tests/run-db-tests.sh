@@ -46,5 +46,6 @@ psql_local < tests/concurrency-regression.sql
 psql_local < tests/private-students.sql
 psql_local < tests/list-pagination.sql
 psql_local < tests/video-upload-regression.sql
+psql_local < tests/support-regression.sql
 python3 tests/concurrency-races.py "$db_container"
 echo 'All migrations and database security checks passed.'

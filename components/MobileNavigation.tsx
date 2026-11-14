@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LifeBuoy } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/components/LanguageProvider";
 import { BookIcon, CapIcon, HomeIcon, UserIcon } from "@/components/icons";
@@ -13,6 +14,7 @@ export default function MobileNavigation({ isAuthenticated }: { isAuthenticated:
     { href: "/", label: ar ? "الرئيسية" : "Home", icon: HomeIcon },
     { href: "/courses", label: ar ? "الدورات" : "Courses", icon: BookIcon },
     ...(isAuthenticated ? [{ href: "/my-courses", label: ar ? "دوراتي" : "My courses", icon: CapIcon }] : []),
+    ...(isAuthenticated ? [{ href: "/support", label: ar ? "الدعم" : "Support", icon: LifeBuoy }] : []),
     { href: isAuthenticated ? "/profile" : "/login", label: ar ? (isAuthenticated ? "حسابي" : "الدخول") : (isAuthenticated ? "Account" : "Sign in"), icon: UserIcon },
   ];
   return <nav className="yw-mobile-nav" aria-label={ar ? "التنقل السريع" : "Quick navigation"}>{items.map(({ href, label, icon: Icon }) => {

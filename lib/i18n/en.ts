@@ -867,6 +867,7 @@ export const en = {
       manage_assignments: { label: "Manage assignments", hint: "Create, delete and review course assignments and student submissions" },
       view_orders: { label: "Manage Payments", hint: "View and manage orders and payment operations" },
       moderate_messages: { label: "Moderate messages", hint: "View and manage conversations" },
+      manage_support: { label: "Manage complaints", hint: "Review complaints, reply and assign support staff" },
     },
   },
 

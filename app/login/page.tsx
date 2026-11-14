@@ -234,6 +234,7 @@ export default function LoginPage() {
             {t.auth.createAccount}
           </Link>
         </div>
+        <p className="mt-4 text-center text-sm text-white/80"><Link href="/contact" className="underline decoration-[#d6b56c] underline-offset-4">{isArabic ? "مشكلة بتسجيل الدخول؟ تواصل معنا" : "Trouble signing in? Contact us"}</Link></p>
       </div>
     </div>
   );
