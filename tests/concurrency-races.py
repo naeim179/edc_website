@@ -74,3 +74,19 @@ assert sql("select count(*) from lessons where bunny_video_id='race-video';") ==
 sql(f"update lesson_video_uploads set state='reserved',provider_upload_id='claim-race-'||id::text where course_id='{course}' and id<>'{upload}';")
 claim=sql(f"select id from lesson_video_uploads where course_id='{course}' and state='reserved' limit 1;")
 race('upload_transfer_claim', f"select claim_lesson_video_upload('{claim}','{course}')", f"do $$ begin begin perform claim_lesson_video_upload('{claim}','{course}');raise exception 'Upload target reused';exception when others then if sqlerrm<>'UPLOAD_NOT_AVAILABLE' then raise;end if;end;end $$;")
+
+# Support transactions serialize duplicate submissions, staff edits and file linking.
+support_owner='e9000000-0000-4000-8000-000000000001'
+support_staff='e9000000-0000-4000-8000-000000000002'
+support_request='e9100000-0000-4000-8000-000000000001'
+sql(f"insert into auth.users(id,email) values('{support_owner}','support-race@test.invalid'),('{support_staff}','support-staff-race@test.invalid');update profiles set role='admin',permissions=array['manage_support'] where id='{support_staff}';")
+first=f"set local role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',true);select support_create_ticket('{support_request}','Concurrent complaint','Description for a concurrent complaint.','other')"
+second=f"set role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',false);select support_create_ticket('{support_request}','Concurrent complaint','Description for a concurrent complaint.','other')"
+race('support_duplicate_create',first,second)
+support_ticket=sql(f"select id from support_tickets where request_id='{support_request}';")
+assert sql(f"select count(*) from support_tickets where request_id='{support_request}';")=='1'
+race('support_stale_management',f"set local role authenticated;select set_config('request.jwt.claim.sub','{support_staff}',true);select support_update_ticket('{support_ticket}',1,'in_progress','high')",f"set role authenticated;select set_config('request.jwt.claim.sub','{support_staff}',false);do $$ begin begin perform support_update_ticket('{support_ticket}',1,'resolved','normal');raise exception 'Stale support update accepted';exception when others then if sqlerrm<>'SUPPORT_STALE' then raise;end if;end;end $$;")
+assert sql(f"select status||':'||priority from support_tickets where id='{support_ticket}';")=='in_progress:high'
+attachment=sql(f"set role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',false);select support_reserve_file('{support_ticket}','proof.pdf','application/pdf',8)->>'id';").splitlines()[-1]
+sql(f"set role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',false);insert into storage.objects(bucket_id,name) select 'support-files',path from support_attachments where id='{attachment}';select support_finish_file('{attachment}');")
+race('support_link_wins',f"set local role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',true);select support_reply('{support_ticket}',gen_random_uuid(),'Attached proof',false,array['{attachment}'::uuid])",f"set role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',false);do $$ begin begin perform support_finish_file('{attachment}',true);raise exception 'Linked support file cancelled';exception when insufficient_privilege then null;end;end $$;")
