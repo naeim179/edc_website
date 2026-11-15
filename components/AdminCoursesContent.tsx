@@ -111,8 +111,8 @@ export default function AdminCoursesContent({
             className={field}
           >
             <option value="all">{ar ? "كل الأنواع" : "All types"}</option>
-            <option value="group">{ar ? "قروب" : "Group"}</option>
-            <option value="private">{ar ? "خاص" : "Private"}</option>
+            <option value="group">{ar ? "جماعية" : "Group"}</option>
+            <option value="private">{ar ? "خاصة" : "Private"}</option>
           </select>
         </div>
         <div>
@@ -142,10 +142,10 @@ export default function AdminCoursesContent({
             type="submit"
             className="min-h-11 rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-[var(--brand-on-ink)]"
           >
-            {ar ? "بحث وفلترة" : "Search"}
+            {ar ? "البحث والتصفية" : "Search"}
           </button>
           <Link href="/admin/courses" className="py-3 underline">
-            {ar ? "مسح الفلاتر" : "Clear filters"}
+            {ar ? "إلغاء التصفية" : "Clear filters"}
           </Link>
         </div>
       </form>
@@ -166,7 +166,7 @@ export default function AdminCoursesContent({
       ) : (
         <p role="status" className="rounded-2xl border p-8 text-center">
           {ar
-            ? "لا توجد دورات مطابقة للفلاتر."
+            ? "لا توجد دورات مطابقة لمعايير التصفية."
             : "No courses match your filters."}
         </p>
       )}

@@ -63,7 +63,7 @@ export default function StartConversationButton({
       className="rounded-xl bg-[#087a54] px-5 py-2.5 font-bold text-white disabled:opacity-50"
     >
       {isPending
-        ? (language === "ar" ? "جاري الفتح..." : "Opening...")
+        ? (language === "ar" ? "جارٍ الفتح..." : "Opening...")
         : (language === "ar" ? "تواصل مع المدرس" : "Contact instructor")}
     </button>
     {errorMessage && <p role="alert" className="mt-2 text-sm text-red-500">{errorMessage}</p>}

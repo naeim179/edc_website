@@ -40,7 +40,7 @@ export default async function AdminMessagesPage() {
             </Link>
           ))}
           {conversations.length === 0 && (
-            <p className="text-slate-500 py-8 text-center">{language === "ar" ? "لا يوجد محادثات بعد" : "No conversations yet"}</p>
+            <p className="text-slate-500 py-8 text-center">{language === "ar" ? "لا توجد محادثات حتى الآن" : "No conversations yet"}</p>
           )}
         </div>
       </div>

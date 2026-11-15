@@ -82,7 +82,7 @@ export default function ChangePasswordForm() {
   if (checkingUser) {
     return (
       <div className="flex justify-center py-16 text-sm text-slate-500">
-        جاري التحميل...
+        جارٍ التحميل...
       </div>
     );
   }

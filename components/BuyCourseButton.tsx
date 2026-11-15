@@ -79,7 +79,7 @@ export default function BuyCourseButton({
       <button type="button" disabled={pending || disabled || queued || blocked} onClick={handleBuy}
         className="w-full rounded-xl bg-[#C9704A] px-6 py-3.5 font-bold text-white transition hover:bg-[#B15F3B] disabled:cursor-not-allowed disabled:opacity-50">
         {recovery.state === "checking"
-          ? (isArabic ? "جاري التحقق من حالة الدفع..." : "Checking payment status...")
+          ? (isArabic ? "جارٍ التحقق من حالة الدفع..." : "Checking payment status...")
           : queued
             ? (isArabic ? "المتابعة تلقائيًا بعد التحقق..." : "Continuing automatically after verification...")
             : pending ? t.booking.paying

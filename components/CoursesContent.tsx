@@ -109,10 +109,10 @@ export default function CoursesContent({
             type="submit"
             className="min-h-11 rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-[var(--brand-on-ink)]"
           >
-            {ar ? "بحث وفلترة" : "Search"}
+            {ar ? "البحث والتصفية" : "Search"}
           </button>
           <Link href="/courses" className="py-3 underline underline-offset-4">
-            {ar ? "مسح الفلاتر" : "Clear filters"}
+            {ar ? "إلغاء التصفية" : "Clear filters"}
           </Link>
         </div>
       </form>
@@ -134,7 +134,7 @@ export default function CoursesContent({
         <div role="status" className="rounded-2xl border p-8 text-center">
           <p>
             {ar
-              ? "لا توجد دورات مطابقة للبحث والفلاتر."
+              ? "لا توجد دورات مطابقة للبحث ومعايير التصفية."
               : "No courses match your search and filters."}
           </p>
           <Link href="/courses" className="mt-3 inline-block underline">

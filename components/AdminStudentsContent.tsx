@@ -264,7 +264,7 @@ export default function AdminStudentsContent({
             className="rounded-xl bg-[#087a54] px-6 py-3 font-bold text-white hover:opacity-90"
           >
             {isArabic
-              ? "بحث وفلترة"
+              ? "البحث والتصفية"
               : "Search"}
           </button>
         </div>
@@ -278,7 +278,7 @@ export default function AdminStudentsContent({
               className="text-sm font-semibold underline text-[var(--brand-text-muted)]"
             >
               {isArabic
-                ? "مسح البحث والفلاتر"
+                ? "إلغاء البحث والتصفية"
                 : "Clear search and filters"}
             </Link>
           </div>
@@ -439,7 +439,7 @@ export default function AdminStudentsContent({
                     className="p-12 text-center text-[var(--brand-text-muted)]"
                   >
                     {isArabic
-                      ? "لا يوجد طلاب مطابقون للبحث أو الفلتر."
+                      ? "لا يوجد طلاب مطابقون للبحث أو معايير التصفية."
                       : "No students match the current search or filter."}
                   </td>
                 </tr>

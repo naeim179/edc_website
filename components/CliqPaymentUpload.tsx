@@ -56,12 +56,12 @@ export default function CliqPaymentUpload({ orderId, proofSubmitted = false, upl
       {uploadEnabled && <>
         <label htmlFor="cliq-payment-proof" className="mt-4 block text-sm">{ar ? "صورة إثبات التحويل" : "Transfer proof image"}</label>
         <input id="cliq-payment-proof" type="file" accept="image/*" disabled={Boolean(busy)} className="mt-2 block w-full min-w-0 text-sm" onChange={e => setFile(e.target.files?.[0] ?? null)} />
-        <button type="button" onClick={upload} disabled={!file || Boolean(busy)} className="mt-4 w-full rounded-xl bg-[#124b8a] px-5 py-3 font-bold text-white disabled:opacity-50">{busy === "upload" ? (ar ? "جاري الرفع..." : "Uploading...") : (ar ? "إرسال الإثبات" : "Submit proof")}</button>
+        <button type="button" onClick={upload} disabled={!file || Boolean(busy)} className="mt-4 w-full rounded-xl bg-[#124b8a] px-5 py-3 font-bold text-white disabled:opacity-50">{busy === "upload" ? (ar ? "جارٍ الرفع..." : "Uploading...") : (ar ? "إرسال الإثبات" : "Submit proof")}</button>
       </>}
       {!confirmCancel ? <button type="button" onClick={() => setConfirmCancel(true)} disabled={Boolean(busy)} className="mt-3 w-full rounded-xl border border-red-300 px-5 py-3 font-bold text-red-700 disabled:opacity-50">{ar ? "إلغاء طلب الدفع" : "Cancel payment request"}</button> : <div className="mt-4 rounded-xl border p-4">
         <p className="text-sm">{ar ? "لم تحوّل المبلغ وتريد إلغاء الطلب؟ إذا حوّلت بالفعل، لا تلغِ الطلب وتواصل مع الدعم. الإلغاء لا ينفذ استردادًا ماليًا." : "Cancel only if you have not transferred the money. If you already transferred, contact support. Cancellation does not issue a refund."}</p>
         <div className="mt-3 flex flex-wrap gap-3">
-          <button type="button" disabled={Boolean(busy)} onClick={cancel} className="rounded-xl bg-red-700 px-4 py-2 text-white disabled:opacity-50">{busy === "cancel" ? (ar ? "جاري الإلغاء..." : "Cancelling...") : (ar ? "تأكيد الإلغاء" : "Confirm cancellation")}</button>
+          <button type="button" disabled={Boolean(busy)} onClick={cancel} className="rounded-xl bg-red-700 px-4 py-2 text-white disabled:opacity-50">{busy === "cancel" ? (ar ? "جارٍ الإلغاء..." : "Cancelling...") : (ar ? "تأكيد الإلغاء" : "Confirm cancellation")}</button>
           <button type="button" disabled={Boolean(busy)} onClick={() => setConfirmCancel(false)} className="rounded-xl border px-4 py-2">{ar ? "رجوع" : "Keep request"}</button>
         </div>
       </div>}

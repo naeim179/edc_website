@@ -253,7 +253,7 @@ export default async function CheckoutSuccessPage({
 
               <div>
                 <p className="font-bold text-[#644A30]">
-                  حابب تحاول مرة ثانية؟
+                  هل ترغب في المحاولة مجددًا؟
                 </p>
                 <p className="mt-1 text-sm leading-7 text-[#967E60]">
                   بإمكانك بدء محاولة دفع جديدة.

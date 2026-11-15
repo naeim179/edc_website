@@ -111,7 +111,7 @@ export default function SectionForm({
         className="bg-[#087a54] text-white px-5 py-3 rounded-lg font-bold disabled:opacity-50"
       >
         {isPending
-          ? "جاري الإضافة..."
+          ? "جارٍ الإضافة..."
           : "إضافة قسم"}
       </button>
     </form>
