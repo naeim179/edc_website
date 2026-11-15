@@ -1400,7 +1400,7 @@ export default function MessageThread({
         {readOnly ? (
           <div className="shrink-0 border-t bg-[var(--brand-surface)] p-4 text-center text-sm text-[var(--brand-text-muted)]">
             {isArabic
-              ? "عرض فقط — الأدمن لا يمكنه إرسال رسائل في هذه المحادثة."
+              ? "هذه المحادثة متاحة للمسؤول للاطلاع فقط."
               : "Read only — admins cannot send messages in this conversation."}
           </div>
         ) : (

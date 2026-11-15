@@ -191,7 +191,7 @@ export default function AdminOrdersContent({
         <div><label htmlFor="order-status" className="mb-2 block font-semibold">{isArabic ? "حالة الدفع" : "Payment status"}</label><select id="order-status" name="status" defaultValue={filters.status} className="w-full rounded-xl border px-4 py-3">
           <option value="all">{isArabic ? "الكل" : "All"}</option><option value="pending">{isArabic ? "قيد الانتظار" : "Pending"}</option><option value="paid">{isArabic ? "مدفوع" : "Paid"}</option><option value="failed">{isArabic ? "فشل" : "Failed"}</option>
         </select></div>
-        <div className="flex flex-wrap items-end gap-3"><button type="submit" className="min-h-11 rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-[var(--brand-on-ink)]">{isArabic ? "بحث وفلترة" : "Search"}</button><Link href="/admin/orders" className="py-3 underline">{isArabic ? "مسح الفلاتر" : "Clear filters"}</Link></div>
+        <div className="flex flex-wrap items-end gap-3"><button type="submit" className="min-h-11 rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-[var(--brand-on-ink)]">{isArabic ? "البحث والتصفية" : "Search"}</button><Link href="/admin/orders" className="py-3 underline">{isArabic ? "إلغاء التصفية" : "Clear filters"}</Link></div>
       </form>
       <h2 id="list-results" tabIndex={-1} className="scroll-mt-5 text-xl font-bold">{isArabic ? "نتائج الطلبات" : "Order results"} ({pageInfo.total.toLocaleString(isArabic ? "ar-JO" : "en-US")})</h2>
 

@@ -304,7 +304,7 @@ export default function AssignmentsManager({
                 {(chosenCourse.students??[]).map(student=><option key={student.id} value={student.id}>{student.name}</option>)}
               </select>
             </label>}
-            {chosenCourse?.course_type === "group" && <p className="text-sm">{isArabic ? "هذا الواجب لجميع طلاب القروب." : "This assignment applies to all group students."}</p>}
+            {chosenCourse?.course_type === "group" && <p className="text-sm">{isArabic ? "هذا الواجب لجميع طلاب المجموعة." : "This assignment applies to all group students."}</p>}
 
             <label className="block">
               <span className="mb-2 block text-sm font-bold text-[#24332E]">

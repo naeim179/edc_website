@@ -18,10 +18,10 @@ export function createSupportPreview() {
    if (i<3 || i===5) owned.add(id);
    const initial: SupportDetail = {
     ticket: { id,number: 1048-i,title,category: i===0 ? "payment" : i===3 ? "technical" : i===5 ? "account" : "course",status: states[i],priority: i===0 ? "high" : "normal",created_at: date,updated_at: date,requester: i<3 || i===5 ? "سارة أحمد" : "عمر خالد",assignee: i===1 || i===2 ? "فريق الدعم" : null,assigned_to: i===1 || i===2 ? staffId : null,course_id: courseId,course_title: "أساسيات الأمن السيبراني",order_id: i===0 ? orderId : null,version: 1,unread: i===2 ? 1 : 0 },
-    messages: [{ id: crypto.randomUUID(),body: i===0 ? "أتممت خطوات الدفع للدورة، لكن الاشتراك لم يظهر ضمن دوراتي بعد. ممكن تتأكدوا من حالة العملية؟" : "مرحبًا، أحتاج مساعدة بخصوص هذه المشكلة في دورتي. شكرًا لكم.",internal: false,created_at: date,author: "requester",author_name: i<3 || i===5 ? "سارة أحمد" : "عمر خالد",files: [] }],
+    messages: [{ id: crypto.randomUUID(),body: i===0 ? "أتممت خطوات الدفع للدورة، لكن الاشتراك لم يظهر ضمن دوراتي بعد. يرجى التحقق من حالة العملية." : "مرحبًا، أحتاج مساعدة بخصوص هذه المشكلة في دورتي. شكرًا لكم.",internal: false,created_at: date,author: "requester",author_name: i<3 || i===5 ? "سارة أحمد" : "عمر خالد",files: [] }],
     hasMore: false,events: [{ id: crypto.randomUUID(),kind: "created",before_value: null,after_value: { status: "new" },created_at: date,actor_name: "سارة أحمد" }],staff: [{ id: staffId,name: "فريق الدعم" }],
    };
-   if (i===2) initial.messages.push({ id: crypto.randomUUID(),body: "أهلًا سارة، ممكن تحددي الموعد الذي ظهر عندك؟ سنراجع الجدول مع المدرّس.",internal: false,created_at: new Date(Date.now()-1800000).toISOString(),author: "support",author_name: "فريق الدعم",files: [] });
+   if (i===2) initial.messages.push({ id: crypto.randomUUID(),body: "مرحبًا سارة، يرجى تحديد الموعد الظاهر في حسابك. سنراجع الجدول مع المدرّس.",internal: false,created_at: new Date(Date.now()-1800000).toISOString(),author: "support",author_name: "فريق الدعم",files: [] });
    if (i===0) initial.messages.push({ id: crypto.randomUUID(),body: "ملاحظة داخلية تجريبية: نراجع مرجع العملية مع مسؤول المدفوعات قبل الرد.",internal: true,created_at: new Date(Date.now()-900000).toISOString(),author: "support",author_name: "فريق الدعم",files: [] });
    records.set(id,initial);
   });

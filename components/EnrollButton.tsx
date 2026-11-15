@@ -68,7 +68,7 @@ export default function EnrollButton({
   if (checking) {
     return (
       <p className="mt-4 text-sm text-slate-500">
-        جاري التحقق...
+        جارٍ التحقق...
       </p>
     );
   }
@@ -81,7 +81,7 @@ export default function EnrollButton({
         className="px-6 py-3 bg-[#087a54] hover:bg-[#066b49] disabled:opacity-50 text-white font-bold rounded-xl transition-all"
       >
         {loading
-          ? "جاري التسجيل..."
+          ? "جارٍ التسجيل..."
           : enrolled
           ? "أنت مسجل في الدورة"
           : "التسجيل في الدورة"}

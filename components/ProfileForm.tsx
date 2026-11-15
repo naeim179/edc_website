@@ -102,7 +102,7 @@ export default function ProfileForm({
             deleteOldImage
             hidePreview
             label={isArabic ? "رفع صورة" : "Upload image"}
-            uploadingLabel={isArabic ? "جاري الرفع..." : "Uploading..."}
+            uploadingLabel={isArabic ? "جارٍ الرفع..." : "Uploading..."}
           />
           {avatarUrl && (
             <button
@@ -126,7 +126,7 @@ export default function ProfileForm({
               className="text-sm font-bold text-red-600 hover:underline disabled:opacity-50"
             >
               {isRemoving
-                ? (isArabic ? "جاري الحذف..." : "Deleting...")
+                ? (isArabic ? "جارٍ الحذف..." : "Deleting...")
                 : (isArabic ? "حذف الصورة" : "Remove image")}
             </button>
           )}

@@ -63,7 +63,7 @@ export default function CompleteLessonButton({
         `}
       >
         {completed && <CheckCircleIcon width={16} height={16} />}
-        {loading ? (ar ? "جاري الحفظ..." : "Saving...") : completed ? (ar ? "تم إكمال الدرس" : "Lesson completed") : (ar ? "إكمال الدرس" : "Complete lesson")}
+        {loading ? (ar ? "جارٍ الحفظ..." : "Saving...") : completed ? (ar ? "تم إكمال الدرس" : "Lesson completed") : (ar ? "إكمال الدرس" : "Complete lesson")}
       </button>
 
 

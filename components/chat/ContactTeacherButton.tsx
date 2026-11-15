@@ -77,7 +77,7 @@ export default function ContactTeacherButton({
         </span>
 
         {loading
-          ? "جاري فتح المحادثة..."
+          ? "جارٍ فتح المحادثة..."
           : "تواصل مع المدرس"}
       </button>
 

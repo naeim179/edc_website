@@ -934,7 +934,7 @@ export default function TeacherAdminManager({
                 >
                   {busy
                     ? isArabic
-                      ? "جاري الحفظ..."
+                      ? "جارٍ الحفظ..."
                       : "Saving..."
                     : isArabic
                       ? "حفظ الملف الشخصي"
@@ -1051,7 +1051,7 @@ export default function TeacherAdminManager({
             >
               {busy
                 ? isArabic
-                  ? "جاري الحفظ..."
+                  ? "جارٍ الحفظ..."
                   : "Saving..."
                 : isArabic
                   ? "حفظ التعديلات"

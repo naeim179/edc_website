@@ -544,7 +544,7 @@ export default function ConversationList({
 
     noResultsHint:
       isArabic
-        ? "جرّب تغيير كلمات البحث أو الفلتر."
+        ? "يمكنك تعديل كلمات البحث أو معايير التصفية."
         : "Try changing your search or filter.",
 
     newMessages:
