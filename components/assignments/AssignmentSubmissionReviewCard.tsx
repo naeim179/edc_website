@@ -280,18 +280,18 @@ export default function AssignmentSubmissionReviewCard({
           ? "rtl"
           : "ltr"
       }
-      className="overflow-hidden rounded-[28px] border border-[#E0E7E3] bg-white shadow-sm"
+      className="overflow-hidden rounded-[28px] border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow-sm"
     >
-      <div className="border-b border-[#E7ECE9] bg-[#F8FAF9] p-5 sm:p-6">
+      <div className="border-b border-[var(--brand-border)] bg-[var(--brand-bg)] p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-[#24332E]">
+            <h2 className="text-xl font-bold text-[var(--brand-text)]">
               {
                 submission.studentName
               }
             </h2>
 
-            <p className="mt-1 text-sm text-[#74817B]">
+            <p className="mt-1 text-sm text-[var(--brand-text-muted)]">
               {
                 copy.attempt
               }
@@ -326,14 +326,14 @@ export default function AssignmentSubmissionReviewCard({
 
       <div className="space-y-6 p-5 sm:p-6">
         <section>
-          <h3 className="text-sm font-bold text-[#24332E]">
+          <h3 className="text-sm font-bold text-[var(--brand-text)]">
             {
               copy.writtenAnswer
             }
           </h3>
 
-          <div className="mt-2 rounded-2xl bg-[#F8FAF9] p-4">
-            <p className="whitespace-pre-wrap leading-7 text-[#3C4944]">
+          <div className="mt-2 rounded-2xl bg-[var(--brand-bg)] p-4">
+            <p className="whitespace-pre-wrap leading-7 text-[var(--brand-text)]">
               {submission.text ||
                 copy.noWrittenAnswer}
             </p>
@@ -344,7 +344,7 @@ export default function AssignmentSubmissionReviewCard({
         {submission.links.length >
           0 && (
           <section>
-            <h3 className="text-sm font-bold text-[#24332E]">
+            <h3 className="text-sm font-bold text-[var(--brand-text)]">
               {
                 copy.links
               }
@@ -379,7 +379,7 @@ export default function AssignmentSubmissionReviewCard({
         {submission.files.length >
           0 && (
           <section>
-            <h3 className="text-sm font-bold text-[#24332E]">
+            <h3 className="text-sm font-bold text-[var(--brand-text)]">
               {
                 copy.attachments
               }
@@ -394,15 +394,15 @@ export default function AssignmentSubmissionReviewCard({
                     key={
                       file.path
                     }
-                    className="rounded-xl border border-[#E0E7E3] p-3"
+                    className="rounded-xl border border-[var(--brand-border)] p-3"
                   >
-                    <p className="truncate text-sm font-bold text-[#24332E]">
+                    <p className="truncate text-sm font-bold text-[var(--brand-text)]">
                       {
                         file.name
                       }
                     </p>
 
-                    <p className="mt-1 text-xs text-[#84908B]">
+                    <p className="mt-1 text-xs text-[var(--brand-text-muted)]">
                       {readableSize(
                         file.size
                       )}
@@ -415,7 +415,7 @@ export default function AssignmentSubmissionReviewCard({
                         }
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-2 inline-block text-sm font-bold text-[#1B4B43] hover:underline"
+                        className="mt-2 inline-block text-sm font-bold text-[var(--brand-ink)] hover:underline"
                       >
                         {
                           copy.openFile
@@ -433,7 +433,7 @@ export default function AssignmentSubmissionReviewCard({
         {submission.audio.length >
           0 && (
           <section>
-            <h3 className="text-sm font-bold text-[#24332E]">
+            <h3 className="text-sm font-bold text-[var(--brand-text)]">
               {
                 copy.voiceAnswer
               }
@@ -447,7 +447,7 @@ export default function AssignmentSubmissionReviewCard({
                   key={
                     audio.path
                   }
-                  className="mt-2 rounded-2xl border border-[#DCE5E0] bg-[#FAFCFB] p-4"
+                  className="mt-2 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4"
                 >
                   {audio.url ? (
                     <audio
@@ -459,7 +459,7 @@ export default function AssignmentSubmissionReviewCard({
                       className="w-full"
                     />
                   ) : (
-                    <p className="text-sm text-[#7B8882]">
+                    <p className="text-sm text-[var(--brand-text-muted)]">
                       {
                         copy.audioUnavailable
                       }
@@ -472,8 +472,8 @@ export default function AssignmentSubmissionReviewCard({
         )}
 
 
-        <section className="rounded-2xl border border-[#E0E7E3] bg-[#FCFDFC] p-4 sm:p-5">
-          <h3 className="font-bold text-[#24332E]">
+        <section className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4 sm:p-5">
+          <h3 className="font-bold text-[var(--brand-text)]">
             {
               copy.grading
             }
@@ -481,7 +481,7 @@ export default function AssignmentSubmissionReviewCard({
 
           <div className="mt-4 grid gap-4 sm:grid-cols-[180px_1fr]">
             <label>
-              <span className="mb-2 block text-sm font-bold text-[#53615B]">
+              <span className="mb-2 block text-sm font-bold text-[var(--brand-text-muted)]">
                 {
                   copy.score
                 }
@@ -509,10 +509,10 @@ export default function AssignmentSubmissionReviewCard({
                       event.target.value
                     )
                   }
-                  className="min-w-0 flex-1 rounded-xl border border-[#D5E0DB] bg-white px-3 py-3 outline-none disabled:opacity-50"
+                  className="min-w-0 flex-1 rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface)] px-3 py-3 outline-none disabled:opacity-50"
                 />
 
-                <span className="font-bold text-[#65716C]">
+                <span className="font-bold text-[var(--brand-text-muted)]">
                   /{" "}
                   {
                     maxScore
@@ -522,7 +522,7 @@ export default function AssignmentSubmissionReviewCard({
             </label>
 
             <label>
-              <span className="mb-2 block text-sm font-bold text-[#53615B]">
+              <span className="mb-2 block text-sm font-bold text-[var(--brand-text-muted)]">
                 {
                   copy.feedback
                 }
@@ -551,7 +551,7 @@ export default function AssignmentSubmissionReviewCard({
                 placeholder={
                   copy.feedbackPlaceholder
                 }
-                className="w-full resize-y rounded-xl border border-[#D5E0DB] bg-white px-4 py-3 outline-none disabled:opacity-50"
+                className="w-full resize-y rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface)] px-4 py-3 outline-none disabled:opacity-50"
               />
             </label>
           </div>
@@ -584,7 +584,7 @@ export default function AssignmentSubmissionReviewCard({
               onClick={
                 grade
               }
-              className="rounded-xl bg-[#1B4B43] px-5 py-3 font-bold text-white disabled:opacity-40"
+              className="rounded-xl bg-[var(--brand-ink)] px-5 py-3 font-bold text-[var(--brand-on-ink)] disabled:opacity-40"
             >
               {pending
                 ? copy.saving
@@ -604,7 +604,7 @@ export default function AssignmentSubmissionReviewCard({
               onClick={
                 returnToStudent
               }
-              className="rounded-xl border border-[#C9704A] bg-white px-5 py-3 font-bold text-[#C9704A] disabled:opacity-40"
+              className="rounded-xl border border-[var(--brand-ink)] bg-[var(--brand-surface)] px-5 py-3 font-bold text-[var(--brand-ink)] disabled:opacity-40"
             >
               {
                 copy.returnToStudent
