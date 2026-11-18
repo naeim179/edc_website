@@ -75,7 +75,7 @@ export default function ChangePasswordForm() {
 
   async function handleRelogin() {
     setLoading(true);
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     router.push("/login");
   }
 

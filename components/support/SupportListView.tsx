@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUpLeft, CheckCheck, Clock3, Inbox, LifeBuoy, Plus, RefreshCw, Search } from "lucide-react";
 import { supportApi } from "@/lib/support/api";
+import { useSupportLiveUpdates } from "@/lib/support/use-live-updates";
 import { SUPPORT_CATEGORIES, SUPPORT_PRIORITIES, SUPPORT_STATUSES, type SupportAdapter, type SupportFilters, type SupportList, type SupportResult } from "@/lib/support/types";
 import { SupportBadge, supportDate, useSupportCopy } from "./SupportShared";
 
@@ -18,11 +19,8 @@ export default function SupportListView({ initial, staff = false, api = supportA
   if (seq !== sequence.current) return;
   setResult(r); setApplied(next); setBusy(false);
  },[api,staff]);
- useEffect(() => {
-  const update = () => { if (document.visibilityState === "visible") void load(applied,true); };
-  const timer = setInterval(update,30000); document.addEventListener("visibilitychange",update);
-  return () => { clearInterval(timer); document.removeEventListener("visibilitychange",update); invalidate(); };
- }, [load,applied,invalidate]);
+ useSupportLiveUpdates(api,undefined,() => load(applied,true));
+ useEffect(() => invalidate,[invalidate]);
  const value = result.ok ? result.data : null;
  const metrics = [{ key: "total",label: s.total,icon: Inbox },{ key: "active",label: s.active,icon: LifeBuoy },{ key: "waiting",label: staff ? s.waiting : s.statuses.waiting_user,icon: Clock3 },{ key: "resolved",label: s.resolved,icon: CheckCheck }] as const;
  return <div className="support-workspace">

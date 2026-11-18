@@ -18,6 +18,7 @@ export type SupportReply = { requestId: string; body: string; internal: boolean;
 export type SupportUpdate = { version: number; status: SupportStatus; priority: SupportPriority; assignee: string | null };
 export type SupportOptions = { courses: { id: string; title: string }[]; orders: { id: string; course_id: string; label: string }[] };
 export type SupportAdapter = {
+ subscribe?: (ticketId: string | undefined, onChange: () => void, onConnection: (connected: boolean) => void) => () => void;
  upload: (id: string, file: File) => Promise<SupportResult<SupportFile>>;
  removeFile: (id: string) => Promise<boolean>;
  fileUrl: (id: string) => string;

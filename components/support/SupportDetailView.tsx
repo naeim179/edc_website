@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, Check, FileText, LifeBuoy, LockKeyhole, Paperclip, RefreshCw, Send, X } from "lucide-react";
 import { supportApi } from "@/lib/support/api";
+import { useSupportLiveUpdates } from "@/lib/support/use-live-updates";
 import { MAX_SUPPORT_FILE_BYTES } from "@/lib/support/validation";
 import { SUPPORT_PRIORITIES, SUPPORT_STATUSES, type SupportAdapter, type SupportDetail, type SupportError, type SupportFile, type SupportMessage, type SupportPriority, type SupportStatus, type SupportUpdate } from "@/lib/support/types";
 import { SupportBadge, supportDate, useSupportCopy } from "./SupportShared";
@@ -17,6 +18,7 @@ export default function SupportDetailView({ initial,staff = false,api = supportA
  const requestId = useRef<string | null>(null); const fileInput = useRef<HTMLInputElement>(null); const draftFiles = useRef<SupportFile[]>([]); const draftBody = useRef(""); const alive = useRef(true); const busyRef = useRef(false); const requestSequence = useRef(0);
  const invalidate = useCallback(() => { requestSequence.current += 1; },[]);
  const latestShown = useRef(initial.messages.at(-1)?.id);
+ const lastRead = useRef<string | null>(null);
  const ticket = detail.ticket; const closed = ticket.status === "resolved" || ticket.status === "closed";
  const refresh = useCallback(async (showError = true) => {
   const seq = ++requestSequence.current;
@@ -29,20 +31,23 @@ export default function SupportDetailView({ initial,staff = false,api = supportA
    latestShown.current = r.data.messages.at(-1)?.id;
    setDetail(old => ({ ...r.data,messages: gap ? r.data.messages : mergedMessages(old.messages,r.data.messages) }));
    const latest = r.data.messages.at(-1);
-   if (latest && document.visibilityState === "visible") void api.markRead(initial.ticket.id,latest.created_at);
+   if (latest && document.visibilityState === "visible" && lastRead.current !== latest.created_at) {
+    void api.markRead(initial.ticket.id,latest.created_at).then(result => {
+     if (result.ok) lastRead.current = latest.created_at;
+    }).catch(() => {});
+   }
   } catch { if (alive.current && showError) setError("unavailable"); }
  },[api,initial.ticket.id,staff]);
+ useSupportLiveUpdates(api,initial.ticket.id,() => refresh(false));
  useEffect(() => {
   alive.current = true;
-  const latest = initial.messages.at(-1); if (latest && document.visibilityState === "visible") void api.markRead(initial.ticket.id,latest.created_at);
-  const update = () => { if (document.visibilityState === "visible") void refresh(false); };
   const beforeUnload = (event: BeforeUnloadEvent) => { if (draftBody.current.trim() || draftFiles.current.length) event.preventDefault(); };
-  const timer = setInterval(update,20000); document.addEventListener("visibilitychange",update); window.addEventListener("beforeunload",beforeUnload);
+  window.addEventListener("beforeunload",beforeUnload);
   return () => {
-   alive.current = false; invalidate(); clearInterval(timer); document.removeEventListener("visibilitychange",update); window.removeEventListener("beforeunload",beforeUnload);
+   alive.current = false; invalidate(); window.removeEventListener("beforeunload",beforeUnload);
    for (const f of draftFiles.current) void api.removeFile(f.id);
   };
- },[api,initial.ticket.id,initial.messages,refresh,invalidate]);
+ },[api,initial.ticket.id,invalidate]);
  const changeFiles = (next: SupportFile[]) => { draftFiles.current = next; setFiles(next); };
  async function updateOwn() {
   if (busyRef.current) return;
@@ -57,7 +62,7 @@ export default function SupportDetailView({ initial,staff = false,api = supportA
   {error && <p className="support-feedback" role="alert">{s.errors[error]}</p>}
   <div className="support-detail-grid"><div className="support-conversation-column"><section className="support-panel support-thread" aria-label={s.conversation}>
    <div className="support-panel-heading"><h2>{s.conversation}</h2><span className="support-private-label"><LockKeyhole size={15} />{s.nav}</span></div>
-   <div className="support-thread-messages">{hasMore && <button className="support-text-button support-older" disabled={olderBusy} onClick={async () => {
+   <div className="support-thread-messages" role="log" aria-label={s.conversation} aria-live="polite" aria-relevant="additions text">{hasMore && <button className="support-text-button support-older" disabled={olderBusy} onClick={async () => {
     setOlderBusy(true);
     try { const r = await api.detail(ticket.id,staff,detail.messages[0]?.id); if (r.ok) { setDetail(old => ({ ...old,messages: mergedMessages(r.data.messages,old.messages) })); setHasMore(r.data.hasMore); } else setError(r.error); }
     catch { setError("unavailable"); } finally { setOlderBusy(false); }
