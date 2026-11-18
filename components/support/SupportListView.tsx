@@ -11,13 +11,20 @@ export default function SupportListView({ initial, staff = false, api = supportA
  const { s, language } = useSupportCopy();
  const [result,setResult] = useState(initial); const [filters,setFilters] = useState<SupportFilters>({}); const [applied,setApplied] = useState<SupportFilters>({});
  const [busy,setBusy] = useState(false); const sequence = useRef(0);
+ const manualPending = useRef(false); const deferredRefresh = useRef(false);
  const invalidate = useCallback(() => { sequence.current += 1; },[]);
- const load = useCallback(async (next: SupportFilters, silent = false) => {
+ const load = useCallback(async function load(next: SupportFilters, silent = false): Promise<void> {
+  if (silent && manualPending.current) { deferredRefresh.current = true; return; }
+  if (!silent) { manualPending.current = true; deferredRefresh.current = false; }
   const seq = ++sequence.current; if (!silent) setBusy(true);
   let r: SupportResult<SupportList>;
   try { r = await api.list(staff,next); } catch { r = { ok: false,error: "unavailable" }; }
   if (seq !== sequence.current) return;
   setResult(r); setApplied(next); setBusy(false);
+  if (!silent) {
+   manualPending.current = false;
+   if (deferredRefresh.current) { deferredRefresh.current = false; void load(next,true); }
+  }
  },[api,staff]);
  useSupportLiveUpdates(api,undefined,() => load(applied,true));
  useEffect(() => invalidate,[invalidate]);

@@ -7,7 +7,7 @@ import ts from "typescript";
 const require = createRequire(import.meta.url);
 function load(file, mocks = {}, globals = {}) {
   const code = ts.transpileModule(fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   const loaded = { exports: {} };
   vm.runInNewContext(code, { module: loaded, exports: loaded.exports, require: name => mocks[name] ?? require(name), ...globals });
@@ -122,4 +122,34 @@ test("Normal logout revokes only this session and redirects only after a success
   redirected = false;
   mocks["@/lib/supabase/server"].createClient = async () => ({ auth: { signOut: async () => ({ error: { message: "offline" } }) } });
   await assert.rejects(load("app/actions/auth.ts", mocks).signOut(), /offline/); assert.equal(redirected, false);
+});
+
+test("A live event during a manual filter change cannot restore the previous filters or lose its refresh", async () => {
+  let manual, automatic, finish;
+  const calls = [];
+  const initial = { ok: true, data: { items: [], total: 0, page: 1, pages: 1, stats: { total: 0, active: 0, waiting: 0, resolved: 0 } } };
+  const component = load("components/support/SupportListView.tsx", {
+    react: {
+      useState: value => [value, () => {}],
+      useRef: value => ({ current: value }),
+      useEffect() {},
+      useCallback(fn) { if (fn.name === "load") manual = fn; return fn; },
+    },
+    "next/link": { default: () => null },
+    "@/lib/support/api": { supportApi: {} },
+    "@/lib/support/types": load("lib/support/types.ts"),
+    "@/lib/support/use-live-updates": { useSupportLiveUpdates(api, id, refresh) { automatic = refresh; } },
+    "./SupportShared": { useSupportCopy: () => ({ language: "en", s: { statuses: {}, categories: {}, priorities: {} } }) },
+  }).default;
+  component({ initial, api: { list: async (staff, filters) => {
+    calls.push(filters);
+    if (calls.length === 1) return await new Promise(resolve => { finish = resolve; });
+    return initial;
+  } } });
+  const requested = { query: "new search", page: 1 };
+  const pending = manual(requested);
+  await automatic(); assert.equal(calls.length, 1);
+  finish(initial); await pending;
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0], requested); assert.equal(calls[1], requested);
 });
