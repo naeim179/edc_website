@@ -173,3 +173,12 @@ do $$ begin
   or exists(select 1 from support_attachments where ticket_id=current_setting('test.support_ticket')::uuid) then raise exception 'Deleted requester support rows remain';end if;
 end $$;
 rollback;
+-- Realtime invalidation publishes permitted ticket metadata, not message bodies.
+do $$ begin
+ if not exists(select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='support_tickets') then
+  raise exception 'Support ticket invalidation is not published';
+ end if;
+ if exists(select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename in ('support_messages','support_events','support_attachments','support_reads')) then
+  raise exception 'Private support content should not be replicated';
+ end if;
+end $$;

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUpLeft, CheckCheck, Clock3, Inbox, LifeBuoy, Plus, RefreshCw, Search } from "lucide-react";
 import { supportApi } from "@/lib/support/api";
+import { useSupportLiveUpdates } from "@/lib/support/use-live-updates";
 import { SUPPORT_CATEGORIES, SUPPORT_PRIORITIES, SUPPORT_STATUSES, type SupportAdapter, type SupportFilters, type SupportList, type SupportResult } from "@/lib/support/types";
 import { SupportBadge, supportDate, useSupportCopy } from "./SupportShared";
 
@@ -10,19 +11,23 @@ export default function SupportListView({ initial, staff = false, api = supportA
  const { s, language } = useSupportCopy();
  const [result,setResult] = useState(initial); const [filters,setFilters] = useState<SupportFilters>({}); const [applied,setApplied] = useState<SupportFilters>({});
  const [busy,setBusy] = useState(false); const sequence = useRef(0);
+ const manualPending = useRef(false); const deferredRefresh = useRef(false);
  const invalidate = useCallback(() => { sequence.current += 1; },[]);
- const load = useCallback(async (next: SupportFilters, silent = false) => {
+ const load = useCallback(async function load(next: SupportFilters, silent = false): Promise<void> {
+  if (silent && manualPending.current) { deferredRefresh.current = true; return; }
+  if (!silent) { manualPending.current = true; deferredRefresh.current = false; }
   const seq = ++sequence.current; if (!silent) setBusy(true);
   let r: SupportResult<SupportList>;
   try { r = await api.list(staff,next); } catch { r = { ok: false,error: "unavailable" }; }
   if (seq !== sequence.current) return;
   setResult(r); setApplied(next); setBusy(false);
+  if (!silent) {
+   manualPending.current = false;
+   if (deferredRefresh.current) { deferredRefresh.current = false; void load(next,true); }
+  }
  },[api,staff]);
- useEffect(() => {
-  const update = () => { if (document.visibilityState === "visible") void load(applied,true); };
-  const timer = setInterval(update,30000); document.addEventListener("visibilitychange",update);
-  return () => { clearInterval(timer); document.removeEventListener("visibilitychange",update); invalidate(); };
- }, [load,applied,invalidate]);
+ useSupportLiveUpdates(api,undefined,() => load(applied,true));
+ useEffect(() => invalidate,[invalidate]);
  const value = result.ok ? result.data : null;
  const metrics = [{ key: "total",label: s.total,icon: Inbox },{ key: "active",label: s.active,icon: LifeBuoy },{ key: "waiting",label: staff ? s.waiting : s.statuses.waiting_user,icon: Clock3 },{ key: "resolved",label: s.resolved,icon: CheckCheck }] as const;
  return <div className="support-workspace">
