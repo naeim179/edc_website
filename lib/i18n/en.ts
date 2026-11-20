@@ -98,7 +98,14 @@ export const en = {
     saving: "Saving...",
     passwordUpdated: "Password updated successfully",
     backToLogin: "Back to Login",
-    resetLinkSent: "Password reset link has been sent to your email",
+    resetLinkSent: "If an account exists for this email, you will receive a password reset link. Check your spam folder too.",
+    recoveryChecking: "Verifying your recovery link...",
+    recoveryInvalid: "This recovery link is invalid or has expired. Request a new link and open it in the browser you requested it from.",
+    recoveryUnavailable: "The request could not be completed. Check your connection and try again, or contact support.",
+    recoveryRateLimited: "Too many attempts. Please wait before requesting another link.",
+    recoveryNewLink: "Request a new recovery link",
+    passwordSame: "Choose a password different from your current password.",
+    passwordWeak: "This password does not meet the security requirements. Choose a stronger password with at least 8 characters.",
 
 
     changeEmail: "Change Email",
