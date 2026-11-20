@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { translateAuthMessage } from "@/lib/i18n/auth-message";
 import { useLanguage } from "@/components/LanguageProvider";
 import { GlobeIcon } from "@/components/icons";
+import { recoveryErrorKey } from "@/lib/auth/password-recovery";
 
 export default function ForgotPasswordPage() {
   const supabase = createClient();
@@ -19,14 +20,15 @@ export default function ForgotPasswordPage() {
   const [serverError, setServerError] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
+  const pending = useRef(false);
 
   const validateForm = () => {
-    if (!email) {
+    if (!email.trim()) {
       setEmailError(t.auth.emailRequired);
       return false;
     }
 
-    if (!/\S+@\S+\.\S+/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setEmailError(t.auth.invalidEmail);
       return false;
     }
@@ -39,30 +41,27 @@ export default function ForgotPasswordPage() {
     event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
+    if (pending.current) return;
 
     setMessage(null);
     setServerError(null);
 
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-
-    const { error } = await supabase.auth.resetPasswordForEmail(
-      email,
-      {
-        redirectTo: `${window.location.origin}/reset-password`,
-      }
-    );
-
-    if (error) {
-      setServerError(error.message);
-    } else {
-      setMessage(
-        t.auth.resetLinkSent
-      );
+    if (!validateForm()) {
+      event.currentTarget.querySelector<HTMLInputElement>("#forgot-email")?.focus();
+      return;
     }
 
-    setIsLoading(false);
+    pending.current = true;
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) setServerError(t.auth[recoveryErrorKey(error)]);
+      else setMessage(t.auth.resetLinkSent);
+    } catch { setServerError(t.auth.recoveryUnavailable); }
+    finally { pending.current = false; setIsLoading(false); }
   };
 
   return (
@@ -71,13 +70,13 @@ export default function ForgotPasswordPage() {
       description={t.auth.forgotDescription}
     >
       {message && (
-        <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-3 text-center text-sm text-green-700">
+        <div role="status" className="mb-5 rounded-xl border border-green-200 bg-[#f0fdf4] p-3 text-center text-sm text-[#166534]">
           {translateAuthMessage(message, language)}
         </div>
       )}
 
       {serverError && (
-        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
+        <div role="alert" className="mb-5 rounded-xl border border-red-200 bg-[#fef2f2] p-3 text-center text-sm text-[#b91c1c]">
           {translateAuthMessage(serverError, language)}
         </div>
       )}
@@ -103,6 +102,10 @@ export default function ForgotPasswordPage() {
               id="forgot-email"
               dir="ltr"
               type="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              aria-invalid={Boolean(emailError)}
+              aria-describedby={emailError ? "forgot-email-error" : undefined}
               value={email}
               onChange={(event) =>
                 setEmail(event.target.value)
@@ -118,7 +121,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           {emailError && (
-            <p className="mt-1 text-xs text-red-500">
+            <p id="forgot-email-error" role="alert" className="mt-1 text-sm text-red-200">
               {translateAuthMessage(emailError, language)}
             </p>
           )}
