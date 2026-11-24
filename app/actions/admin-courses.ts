@@ -16,6 +16,31 @@ type PrivateSlotInput = {
   end_time: string;
 };
 
+function getMaxStudents(
+  formData: FormData,
+  courseType: CourseType
+) {
+  if (courseType === "private") {
+    return null;
+  }
+
+  const value = Number(
+    formData.get("max_students") ?? 30
+  );
+
+  if (
+    !Number.isInteger(value) ||
+    value < 1 ||
+    value > 500
+  ) {
+    throw new Error(
+      "الحد الأقصى لطلاب القروب يجب أن يكون بين 1 و500"
+    );
+  }
+
+  return value;
+}
+
 function getDiscount(
   formData: FormData
 ) {
@@ -447,6 +472,12 @@ export async function createCourse(
       isPublished
     );
 
+  const maxStudents =
+    getMaxStudents(
+      formData,
+      courseType
+    );
+
   const {
     data: createdCourse,
     error,
@@ -477,6 +508,9 @@ export async function createCourse(
 
       registration_open:
         schedule.registrationOpen,
+
+      max_students:
+        maxStudents,
 
       group_day_of_week:
         schedule.groupDay,
@@ -713,6 +747,12 @@ export async function updateCourse(
       isPublished
     );
 
+  const maxStudents =
+    getMaxStudents(
+      formData,
+      courseType
+    );
+
   const {
     error:
       updateError,
@@ -741,6 +781,9 @@ export async function updateCourse(
 
       registration_open:
         schedule.registrationOpen,
+
+      max_students:
+        maxStudents,
 
       group_day_of_week:
         schedule.groupDay,

@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       {
         algorithm: "RS256",
         keyid: keyId,
-        expiresIn: "4h",
+        expiresIn: "20m",
       }
     );
 

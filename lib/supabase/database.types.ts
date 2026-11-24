@@ -168,6 +168,7 @@ export type Database = {
           instructor_id: string | null
           is_free: boolean | null
           is_published: boolean | null
+          max_students: number | null
           price: number | null
           title: string
           updated_at: string | null
@@ -185,6 +186,7 @@ export type Database = {
           instructor_id?: string | null
           is_free?: boolean | null
           is_published?: boolean | null
+          max_students?: number | null
           price?: number | null
           title: string
           updated_at?: string | null
@@ -202,6 +204,7 @@ export type Database = {
           instructor_id?: string | null
           is_free?: boolean | null
           is_published?: boolean | null
+          max_students?: number | null
           price?: number | null
           title?: string
           updated_at?: string | null
@@ -702,6 +705,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_extend_student_subscription: {
+        Args: { p_course_id: string; p_days: number; p_student_id: string }
+        Returns: undefined
+      }
       admin_create_section: {
         Args: { p_course_id: string; p_title: string }
         Returns: Json

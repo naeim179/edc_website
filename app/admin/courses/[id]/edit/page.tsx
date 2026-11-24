@@ -30,6 +30,7 @@ export default async function EditCoursePage({
       discount_type,
       discount_value,
       registration_open,
+      max_students,
       group_day_of_week,
       group_start_time,
       group_end_time

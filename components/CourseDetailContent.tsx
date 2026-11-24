@@ -594,9 +594,13 @@ export default function CourseDetailContent({
                       : t.booking.registrationClosed}
                 </span>
               )
-            ) : !course.registration_open ? (
+            ) : !course.registration_open || registrationState === "full" ? (
               <span className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-2xl bg-[#EEEAE4] px-6 py-3.5 font-bold text-[#948B80] sm:w-auto">
-                {t.booking.registrationClosed}
+                {registrationState === "full"
+                  ? isArabic
+                    ? "اكتمل عدد طلاب القروب"
+                    : "This group is full"
+                  : t.booking.registrationClosed}
               </span>
             ) : course.is_free ? (
               <EnrollButton courseId={course.id} />

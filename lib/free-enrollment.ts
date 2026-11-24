@@ -197,6 +197,16 @@ export async function enrollInFreeCourse(
         "duplicate"
       )
   ) {
+    if (
+      insertError.message.includes(
+        "GROUP_CAPACITY_REACHED"
+      )
+    ) {
+      throw new Error(
+        "اكتمل عدد طلاب هذا القروب"
+      );
+    }
+
     throw new Error(
       insertError.message
     );

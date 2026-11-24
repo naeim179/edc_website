@@ -57,6 +57,7 @@ export default async function CheckoutPage({
       discount_value,
       course_type,
       registration_open,
+      max_students,
       group_day_of_week,
       group_start_time,
       group_end_time
@@ -111,6 +112,26 @@ export default async function CheckoutPage({
     redirect(
       `/courses/${courseId}`
     );
+  }
+
+  if (
+    !isRenewal &&
+    course.course_type === "group"
+  ) {
+    const { data: state, error: capacityError } = await supabase.rpc(
+      "course_registration_state",
+      { p_course_id: courseId }
+    );
+
+    if (capacityError) {
+      throw new Error(capacityError.message);
+    }
+
+    if (
+      state === "full"
+    ) {
+      redirect(`/courses/${courseId}`);
+    }
   }
 
   let privateBookingId:

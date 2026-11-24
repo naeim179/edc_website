@@ -31,6 +31,7 @@ type Props = {
   initialGroupDay?: number | null;
   initialGroupTime?: string | null;
   initialGroupEndTime?: string | null;
+  initialMaxStudents?: number;
   initialPrivateSlots?: PrivateSlot[];
 };
 
@@ -82,6 +83,7 @@ export default function CourseSchedulingFields({
   initialGroupDay = null,
   initialGroupTime = null,
   initialGroupEndTime = null,
+  initialMaxStudents = 30,
   initialPrivateSlots = [],
 }: Props) {
   const {
@@ -435,6 +437,33 @@ export default function CourseSchedulingFields({
       </div>
 
       <div className="p-5 sm:p-7">
+        {courseType === "group" && (
+          <div className="mb-6 rounded-2xl border border-[#DDE6E1] bg-[#F7FAF8] p-4">
+            <label
+              htmlFor="max_students"
+              className="mb-2 block font-bold text-[#1B4B43]"
+            >
+              {isArabic
+                ? "الحد الأقصى لطلاب القروب"
+                : "Maximum group students"}
+            </label>
+            <input
+              id="max_students"
+              name="max_students"
+              type="number"
+              required
+              min={1}
+              max={500}
+              defaultValue={initialMaxStudents}
+              className="w-full rounded-xl border border-[#CEDBD5] bg-white px-4 py-3 text-[#17352F] outline-none focus:border-[#1B4B43]"
+            />
+            <p className="mt-2 text-sm text-[#6D7B76]">
+              {isArabic
+                ? "يتوقف التسجيل تلقائياً عند الوصول إلى هذا العدد."
+                : "Registration closes automatically when this number is reached."}
+            </p>
+          </div>
+        )}
         {courseType ===
         "group" ? (
           <div className="space-y-6">

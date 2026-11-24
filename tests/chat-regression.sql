@@ -6,7 +6,7 @@ insert into auth.users(id,email) values
  ('c0000000-0000-4000-8000-000000000003','chat-outsider@example.test'),
  ('c0000000-0000-4000-8000-000000000004','chat-admin@example.test');
 update public.profiles set role='teacher' where id='c0000000-0000-4000-8000-000000000002';
-update public.profiles set role='admin' where id='c0000000-0000-4000-8000-000000000004';
+update public.profiles set role='admin',permissions=array['moderate_messages'] where id='c0000000-0000-4000-8000-000000000004';
 insert into public.courses(id,title,is_published,is_free,price,course_type)
  values('c1000000-0000-4000-8000-000000000001','Chat regression',true,true,0,'group');
 insert into public.course_instructors(course_id,teacher_id) values('c1000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000002');

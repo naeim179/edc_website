@@ -89,6 +89,10 @@ export default function CourseAvailabilityCard({
     courseType ===
     "group"
   ) {
+    const groupOpen =
+      registrationOpen &&
+      registrationState !== "full";
+
     const day =
       groupDayOfWeek != null
         ? DAYS[
@@ -125,22 +129,26 @@ export default function CourseAvailabilityCard({
 
           <span
             className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${
-              registrationOpen
+              groupOpen
                 ? "bg-emerald-50 text-emerald-700"
                 : "bg-red-50 text-red-600"
             }`}
           >
             <span
               className={`h-2 w-2 rounded-full ${
-                registrationOpen
+                  groupOpen
                   ? "bg-emerald-500"
                   : "bg-red-400"
               }`}
             />
 
-            {registrationOpen
-              ? copy.registrationOpen
-              : copy.registrationClosed}
+            {registrationState === "full"
+              ? isArabic
+                ? "اكتمل عدد طلاب القروب"
+                : "Group full"
+              : groupOpen
+                ? copy.registrationOpen
+                : copy.registrationClosed}
           </span>
         </div>
       </div>

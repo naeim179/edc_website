@@ -83,64 +83,32 @@ export async function extendStudentSubscription(
   }
 
   if (
-    !Number.isFinite(days) ||
-    days <= 0
+    !Number.isInteger(days) ||
+    days <= 0 ||
+    days > 3650
   ) {
     throw new Error("عدد الأيام غير صالح");
   }
 
   const supabase = await createClient();
 
-  const {
-    data: subscription,
-    error: subError,
-  } = await supabase
-    .from("subscriptions")
-    .select("id, expires_at")
-    .eq("student_id", studentId)
-    .eq("course_id", courseId)
-    .maybeSingle();
-
-  if (subError) {
-    throw new Error(subError.message);
-  }
-
-  if (!subscription) {
-    throw new Error(
-      "لا يوجد اشتراك لهذه الدورة"
-    );
-  }
-
-  const now = new Date();
-
-  const currentExpiry =
-    subscription.expires_at
-      ? new Date(subscription.expires_at)
-      : now;
-
-  const base =
-    currentExpiry > now
-      ? currentExpiry
-      : now;
-
-  const newExpiry = new Date(
-    base.getTime() +
-      days * 24 * 60 * 60 * 1000
-  );
-
   const { error: updateError } =
-    await supabase
-      .from("subscriptions")
-      .update({
-        expires_at:
-          newExpiry.toISOString(),
-        status: "active",
-        updated_at:
-          new Date().toISOString(),
-      })
-      .eq("id", subscription.id);
+    await supabase.rpc(
+      "admin_extend_student_subscription",
+      {
+        p_student_id: studentId,
+        p_course_id: courseId,
+        p_days: days,
+      }
+    );
 
   if (updateError) {
+    if (updateError.message.includes("SUBSCRIPTION_NOT_FOUND")) {
+      throw new Error("لا يوجد اشتراك لهذه الدورة");
+    }
+    if (updateError.message.includes("GROUP_CAPACITY_REACHED")) {
+      throw new Error("اكتمل عدد طلاب هذا القروب");
+    }
     throw new Error(
       updateError.message
     );

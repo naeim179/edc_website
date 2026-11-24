@@ -207,7 +207,12 @@ export async function sendMessage(
     message_type: attachment?.type ?? "text", attachment_url: attachmentPath,
     attachment_name: attachment?.name ?? null, attachment_size: attachment?.size ?? null,
   });
-  if (error) throw new Error("تعذر إرسال الرسالة");
+  if (error) {
+    if (error.message.includes("CHAT_RATE_LIMIT")) {
+      throw new Error("أرسلت رسائل كثيرة خلال وقت قصير. انتظر قليلاً ثم حاول مجدداً.");
+    }
+    throw new Error("تعذر إرسال الرسالة");
+  }
   refreshChatPaths(conversationId);
 }
 

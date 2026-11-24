@@ -25,6 +25,7 @@ type Course = {
   discount_value?: number | null;
 
   registration_open?: boolean;
+  max_students?: number | null;
   group_day_of_week?: number | null;
   group_start_time?: string | null;
   group_end_time?: string | null;
@@ -203,6 +204,9 @@ export default function CourseForm({
         }
         initialGroupEndTime={
           course?.group_end_time ?? null
+        }
+        initialMaxStudents={
+          course?.max_students ?? 30
         }
         initialPrivateSlots={
           course?.private_slots ?? []

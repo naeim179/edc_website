@@ -318,6 +318,24 @@ export async function createOrder(
     );
   }
 
+  if (
+    !isRenewal &&
+    course.course_type === "group"
+  ) {
+    const { data: registrationState, error: capacityError } =
+      await admin.rpc("course_registration_state", {
+        p_course_id: courseId,
+      });
+
+    if (capacityError) {
+      throw new Error("تعذر التحقق من سعة القروب");
+    }
+
+    if (registrationState === "full") {
+      throw new Error("اكتمل عدد طلاب هذا القروب");
+    }
+  }
+
   let validatedBookingId:
     string | null =
     null;

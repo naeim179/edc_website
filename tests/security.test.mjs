@@ -138,6 +138,7 @@ for (const preview of [true, false]) {
     const { token } = await response.json();
     const claims = jwt.verify(token, publicKey, { algorithms: ["RS256"], audience: "v" });
     assert.equal(claims.sub, "database-video");
+    assert.ok(claims.exp - claims.iat <= 20 * 60, "Mux token must be short lived");
     assert.match(response.headers.get("cache-control"), /no-store/);
   });
 }
