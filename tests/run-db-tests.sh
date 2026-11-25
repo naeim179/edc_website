@@ -47,6 +47,7 @@ SQL
 done
 psql_local < tests/security-regression.sql
 psql_local < tests/profile-privacy.sql
+psql_local < tests/zero-price-access.sql
 psql_local < tests/chat-regression.sql
 psql_local < tests/payment-regression.sql
 psql_local < tests/concurrency-regression.sql

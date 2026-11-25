@@ -195,3 +195,24 @@ test('Resuming the current PayTabs checkout reuses its hosted URL without initia
  const action=load('app/actions/orders.ts',{'@/lib/checkout-recovery-cookie':{rememberHostedCheckout:async()=>remembered++},'@/lib/paytabs-reconciliation':{reconcileOwnedPaytabsOrder:async()=> 'skipped'},'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},'next/cache':{revalidatePath(){}},'@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},'@/lib/supabase/admin':{createAdminClient:()=>admin},'@/lib/paytabs':{createPaymentPage:async()=>{throw Error('Unexpected new gateway request');}},'@/lib/free-enrollment':{calculateFinalPrice:p=>p}});
  await assert.rejects(action.createOrder('course',1,false,'paytabs'),/REDIRECT:https:\/\/provider.example\/existing/);assert.equal(remembered,1);
 });
+
+test('A course-wide zero price activates the selected term without creating an order',async()=>{
+ const calls=[];
+ const admin={rpc:async()=>({data:'open',error:null}),from:table=>({
+  select(){return this;},eq(){return this;},
+  async maybeSingle(){return {data:table==='courses'
+   ? {id:'course',title:'Promotion',price:70,is_free:false,is_published:true,registration_open:true,course_type:'group',discount_type:'percentage',discount_value:100}
+   : null};},
+  insert(){assert.fail('Zero price created a payment order');},
+ })};
+ const action=load('app/actions/orders.ts',{
+  '@/lib/checkout-recovery-cookie':{},'@/lib/paytabs-reconciliation':{},'next/cache':{revalidatePath(){}},
+  'next/navigation':{redirect:url=>{throw Error('REDIRECT:'+url);}},
+  '@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id:'student'}}})}})},
+  '@/lib/supabase/admin':{createAdminClient:()=>admin},
+  '@/lib/paytabs':{createPaymentPage:async()=>assert.fail('Zero price contacted payment provider')},
+  '@/lib/free-enrollment':{calculateFinalPrice:()=>0,activateZeroPriceCourse:async(...args)=>calls.push(args)},
+ });
+ await assert.rejects(action.createOrder('course',3,true,'paytabs'),/REDIRECT:\/courses\/course/);
+ assert.deepEqual(calls,[['student','course',3,null]]);
+});

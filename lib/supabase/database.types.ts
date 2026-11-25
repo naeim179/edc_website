@@ -724,6 +724,14 @@ export type Database = {
         Args: { p_course_id: string; p_days: number; p_student_id: string }
         Returns: undefined
       }
+      activate_zero_price_course: {
+        Args: { p_user_id: string; p_course_id: string; p_subscription_months: number | null; p_private_booking_id?: string | null }
+        Returns: undefined
+      }
+      complete_lesson_progress: {
+        Args: { p_enrollment_id: string; p_lesson_id: string }
+        Returns: undefined
+      }
       read_own_profile: {
         Args: Record<PropertyKey, never>
         Returns: {

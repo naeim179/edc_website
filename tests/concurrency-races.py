@@ -90,3 +90,17 @@ assert sql(f"select status||':'||priority from support_tickets where id='{suppor
 attachment=sql(f"set role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',false);select support_reserve_file('{support_ticket}','proof.pdf','application/pdf',8)->>'id';").splitlines()[-1]
 sql(f"set role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',false);insert into storage.objects(bucket_id,name) select 'support-files',path from support_attachments where id='{attachment}';select support_finish_file('{attachment}');")
 race('support_link_wins',f"set local role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',true);select support_reply('{support_ticket}',gen_random_uuid(),'Attached proof',false,array['{attachment}'::uuid])",f"set role authenticated;select set_config('request.jwt.claim.sub','{support_owner}',false);do $$ begin begin perform support_finish_file('{attachment}',true);raise exception 'Linked support file cancelled';exception when insufficient_privilege then null;end;end $$;")
+
+# Both retries go through the real callable boundaries, not just table SQL.
+zero_course = 'ec4c88da-59c5-45e8-bce5-570d4704e401'
+zero_section = 'ec4c88da-59c5-45e8-bce5-570d4704e402'
+zero_lesson = 'ec4c88da-59c5-45e8-bce5-570d4704e403'
+sql(f"insert into courses(id,title,price,is_free,is_published,registration_open,course_type,discount_type,discount_value,max_students) values('{zero_course}','Zero price race',25,false,true,true,'group','percentage',100,1);insert into sections(id,course_id,title,order_index) values('{zero_section}','{zero_course}','Progress',1);insert into lessons(id,section_id,title) values('{zero_lesson}','{zero_section}','Lesson');")
+race('zero_price_activation_retry',
+     f"set role service_role;select activate_zero_price_course('{student}','{zero_course}',1)",
+     f"set role service_role;select activate_zero_price_course('{student}','{zero_course}',3)")
+assert sql(f"select count(*) from subscriptions where course_id='{zero_course}' and student_id='{student}' and duration_months=1 and amount=0 and not auto_renew;") == '1'
+enrollment = sql(f"select id from enrollments where course_id='{zero_course}' and student_id='{student}';")
+mark_complete = f"set role authenticated;select set_config('request.jwt.claim.sub','{student}',false);select complete_lesson_progress('{enrollment}','{zero_lesson}')"
+race('lesson_progress_double_complete', mark_complete, mark_complete)
+assert sql(f"select count(*) from lesson_progress where enrollment_id='{enrollment}' and lesson_id='{zero_lesson}' and is_completed and completed_at=created_at;") == '1'

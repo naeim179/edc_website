@@ -53,162 +53,34 @@ export function calculateFinalPrice(
   return price;
 }
 
-export async function enrollInFreeCourse(
+export async function activateZeroPriceCourse(
   userId: string,
-  courseId: string
+  courseId: string,
+  subscriptionMonths: 1 | 3 | null = null,
+  privateBookingId: string | null = null
 ) {
-  const admin =
-    createAdminClient();
+  const { error } = await createAdminClient().rpc("activate_zero_price_course", {
+    p_user_id: userId,
+    p_course_id: courseId,
+    p_subscription_months: subscriptionMonths,
+    p_private_booking_id: privateBookingId,
+  });
+  if (!error) return;
 
-  const {
-    data: profile,
-    error:
-      profileError,
-  } = await admin
-    .from("profiles")
-    .select("role")
-    .eq(
-      "id",
-      userId
-    )
-    .maybeSingle();
-
-  if (
-    profileError
-  ) {
-    throw new Error(
-      profileError.message
-    );
+  const messages: Record<string, string> = {
+    GROUP_CAPACITY_REACHED: "اكتمل عدد طلاب هذه الدورة الجماعية",
+    ZERO_PRICE_ACCOUNT_NOT_ALLOWED: "هذا الحساب غير مخوّل بالتسجيل في الدورات",
+    ZERO_PRICE_COURSE_UNAVAILABLE: "الدورة غير متاحة",
+    ZERO_PRICE_REGISTRATION_CLOSED: "التسجيل مغلق حاليًا",
+    ZERO_PRICE_REQUIRED: "تغيّر سعر الدورة. أعد فتح صفحة التسجيل",
+    ZERO_PRICE_DURATION_REQUIRED: "اختر مدة الاشتراك من صفحة التسجيل",
+    ZERO_PRICE_PENDING_PAYMENT: "لديك طلب دفع قائم لهذه الدورة. تحقّق من الطلب أولًا",
+    ZERO_PRICE_BOOKING_REQUIRED: "يجب اختيار موعدَين قبل التسجيل في الدورة الخاصة",
+    ZERO_PRICE_BOOKING_UNAVAILABLE: "الحجز غير متاح الآن. اختر الموعدَين من جديد",
+    ZERO_PRICE_BOOKING_MISMATCH: "الحجز لا يتبع هذه الدورة",
+  };
+  if (error.code === "55P03") {
+    throw new Error("هناك طلب آخر قيد المعالجة. جرّب مرة أخرى بعد قليل");
   }
-
-  if (
-    !profile ||
-    (
-      profile.role !==
-        "student" &&
-      profile.role !==
-        "admin"
-    )
-  ) {
-    throw new Error(
-      "هذا الحساب غير مخوّل بالتسجيل بالدورات"
-    );
-  }
-
-  const {
-    data: course,
-    error:
-      courseError,
-  } = await admin
-    .from("courses")
-    .select(`
-      id,
-      price,
-      is_free,
-      is_published,
-      discount_type,
-      discount_value,
-      course_type,
-      registration_open
-    `)
-    .eq(
-      "id",
-      courseId
-    )
-    .maybeSingle();
-
-  if (
-    courseError
-  ) {
-    throw new Error(
-      courseError.message
-    );
-  }
-
-  if (
-    !course ||
-    !course.is_published
-  ) {
-    throw new Error(
-      "الدورة غير متاحة"
-    );
-  }
-
-  if (
-    !course.registration_open
-  ) {
-    throw new Error(
-      "التسجيل مغلق حالياً"
-    );
-  }
-
-  if (
-    course.course_type ===
-    "private"
-  ) {
-    throw new Error(
-      "يجب اختيار مواعيد الـPrivate قبل التسجيل"
-    );
-  }
-
-  const finalPrice =
-    calculateFinalPrice(
-      Number(
-        course.price ??
-          0
-      ),
-      course.discount_type,
-      Number(
-        course.discount_value ??
-          0
-      )
-    );
-
-  if (
-    !course.is_free &&
-    finalPrice > 0
-  ) {
-    throw new Error(
-      "هذه الدورة مدفوعة ولا يمكن التسجيل فيها مباشرة"
-    );
-  }
-
-  const {
-    error:
-      insertError,
-  } = await admin
-    .from(
-      "enrollments"
-    )
-    .insert({
-      student_id:
-        userId,
-      course_id:
-        courseId,
-    });
-
-  if (
-    insertError &&
-    insertError.code !==
-      "23505" &&
-    !insertError.message
-      .toLowerCase()
-      .includes(
-        "duplicate"
-      )
-  ) {
-    if (
-      insertError.message.includes(
-        "GROUP_CAPACITY_REACHED"
-      )
-    ) {
-      throw new Error(
-        "اكتمل عدد طلاب هذا القروب"
-      );
-    }
-
-    throw new Error(
-      insertError.message
-    );
-  }
+  throw new Error(messages[error.message] ?? "تعذّر تفعيل الوصول إلى الدورة");
 }

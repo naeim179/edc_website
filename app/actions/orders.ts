@@ -24,6 +24,7 @@ import {
 } from "@/lib/paytabs";
 
 import {
+  activateZeroPriceCourse,
   calculateFinalPrice,
 } from "@/lib/free-enrollment";
 
@@ -39,91 +40,6 @@ type PaymentMethod =
   | "paytabs"
   | "paypal"
   | "cliq";
-
-async function confirmPrivateBooking(
-  bookingId: string,
-  userId: string,
-  courseId: string
-) {
-  const admin =
-    createAdminClient();
-
-  const {
-    data: booking,
-    error,
-  } = await admin
-    .from(
-      "private_course_bookings"
-    )
-    .update({
-      status:
-        "confirmed",
-      confirmed_at:
-        new Date()
-          .toISOString(),
-      hold_expires_at:
-        null,
-    })
-    .eq(
-      "id",
-      bookingId
-    )
-    .eq(
-      "student_id",
-      userId
-    )
-    .eq(
-      "course_id",
-      courseId
-    )
-    .eq(
-      "status",
-      "pending_payment"
-    )
-    .select("id")
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(
-      error.message
-    );
-  }
-
-  if (!booking) {
-    const {
-      data:
-        existing,
-    } = await admin
-      .from(
-        "private_course_bookings"
-      )
-      .select(
-        "id,status"
-      )
-      .eq(
-        "id",
-        bookingId
-      )
-      .eq(
-        "student_id",
-        userId
-      )
-      .eq(
-        "course_id",
-        courseId
-      )
-      .maybeSingle();
-
-    if (
-      existing?.status !==
-      "confirmed"
-    ) {
-      throw new Error(
-        "تعذر تثبيت حجز الدورة"
-      );
-    }
-  }
-}
 
 function couponCheckoutError(
   message:
@@ -647,51 +563,8 @@ export async function createOrder(
       normalizedCouponCode;
   }
 
-  if (
-    course.is_free ||
-    monthlyPriceUsd ===
-      0
-  ) {
-    const {
-      error:
-        enrollError,
-    } =
-      await admin
-        .from(
-          "enrollments"
-        )
-        .upsert(
-          {
-            student_id:
-              user.id,
-            course_id:
-              courseId,
-          },
-          {
-            onConflict:
-              "student_id,course_id",
-            ignoreDuplicates:
-              true,
-          }
-        );
-
-    if (
-      enrollError
-    ) {
-      throw new Error(
-        enrollError.message
-      );
-    }
-
-    if (
-      validatedBookingId
-    ) {
-      await confirmPrivateBooking(
-        validatedBookingId,
-        user.id,
-        courseId
-      );
-    }
+  if (course.is_free || monthlyPriceUsd === 0) {
+    await activateZeroPriceCourse(user.id, courseId, subscriptionMonths, validatedBookingId);
 
     revalidatePath(
       "/my-courses"

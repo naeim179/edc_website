@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { enrollInFreeCourse } from "@/lib/free-enrollment";
+import { activateZeroPriceCourse } from "@/lib/free-enrollment";
 
 export async function checkEnrollmentStatus(courseId: string) {
   const supabase = await createClient();
@@ -56,7 +56,7 @@ export async function enrollInCourse(
   }
 
   // فحص النشر والسعر والدور بيصير جوّا الدالة المشتركة
-  await enrollInFreeCourse(user.id, courseId);
+  await activateZeroPriceCourse(user.id, courseId);
 
   return {
     success: true,
@@ -117,42 +117,10 @@ export async function completeLesson(
     throw new Error("هذا الدرس لا يتبع هذه الدورة");
   }
 
-  const { data: existingProgress, error: findError } = await supabase
-    .from("lesson_progress")
-    .select("id")
-    .eq("enrollment_id", enrollmentId)
-    .eq("lesson_id", lessonId)
-    .maybeSingle();
-
-  if (findError) {
-    throw new Error(findError.message);
-  }
-
-  if (existingProgress) {
-    const { error } = await supabase
-      .from("lesson_progress")
-      .update({
-        is_completed: true,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", existingProgress.id);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return {
-      success: true,
-    };
-  }
-
-  const { error } = await supabase
-    .from("lesson_progress")
-    .insert({
-      enrollment_id: enrollmentId,
-      lesson_id: lessonId,
-      is_completed: true,
-    });
+  const { error } = await supabase.rpc("complete_lesson_progress", {
+    p_enrollment_id: enrollmentId,
+    p_lesson_id: lessonId,
+  });
 
   if (error) {
     throw new Error(error.message);
