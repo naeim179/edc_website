@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { readPayTabsBody } from "@/lib/paytabs-request-body";
 
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 
@@ -17,7 +18,7 @@ function redirectToCheckout(
     url.searchParams.set("cancelled", "1");
     url.searchParams.set("course", cancelledCourse);
     if (cancelledOrder) url.searchParams.set("order", cancelledOrder);
-  } else if (tranRef) {
+  } else if (tranRef && tranRef.length <= 256) {
     url.searchParams.set("tranRef", tranRef);
   }
 
@@ -239,13 +240,17 @@ export async function POST(req: NextRequest) {
         "application/x-www-form-urlencoded"
       )
     ) {
+      const bytes = await readPayTabsBody(req);
+      if (bytes === null) return redirectToCheckout();
       fields = Object.fromEntries(
-        new URLSearchParams(await req.text())
+        new URLSearchParams(new TextDecoder().decode(bytes))
       );
     } else if (
       contentType.includes("multipart/form-data")
     ) {
-      const form = await req.formData();
+      const bytes = await readPayTabsBody(req);
+      if (bytes === null) return redirectToCheckout();
+      const form = await new Response(bytes, { headers: { "content-type": contentType } }).formData();
 
       fields = Object.fromEntries(
         [...form.entries()].filter(

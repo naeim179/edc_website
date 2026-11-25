@@ -13,7 +13,7 @@ function load(file, mocks = {}, env = {}, globals = {}) {
   }).outputText;
   vm.runInNewContext(code, { module: loadedModule, exports: loadedModule.exports,
     require: name => mocks[name] ?? require(name), process: {env}, URL, URLSearchParams,
-    TextEncoder, Uint8Array, crypto: webcrypto, AbortSignal, console, ...globals });
+    TextEncoder, TextDecoder, Uint8Array, Response, crypto: webcrypto, AbortSignal, console, ...globals });
   return loadedModule.exports;
 }
 const env = {PAYTABS_SERVER_KEY:'sandbox-unit-secret',PAYTABS_PROFILE_ID:'123',SITE_URL:'https://academy.example'};
@@ -72,15 +72,45 @@ for (const operation of ['createPaymentPage','queryTransaction','createRecurring
  if(operation==='createPaymentPage'){assert.equal(body.paypage_ttl,5);assert.equal(body.callback,env.SITE_URL+'/api/payments/webhook');}
 });
 const nextServer={NextResponse:{json:(body,init)=>Response.json(body,init),redirect:(url,status)=>Response.redirect(url,status)}};
+const paymentBody=load('lib/paytabs-request-body.ts');
 function webhook(valid=true,fail=false){const calls=[];const route=load('app/api/payments/webhook/route.ts',{
- 'next/server':nextServer,'@/lib/paytabs':{verifyPayTabsCallbackSignature:async()=>valid},
+ 'next/server':nextServer,'@/lib/paytabs-request-body':paymentBody,'@/lib/paytabs':{verifyPayTabsCallbackSignature:async()=>valid},
  '@/lib/payments':{fulfillPaymentByTranRef:async(...args)=>{calls.push(args);if(fail)throw Error('offline');}}
- });return {post:body=>route.POST(new Request('https://academy.example/api/payments/webhook',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)})),calls};}
+ });return {route,post:body=>route.POST(new Request('https://academy.example/api/payments/webhook',{method:'POST',headers:{'content-type':'application/json',signature:'a'.repeat(64)},body:JSON.stringify(body)})),calls};}
 test('Unsigned callback is rejected before fulfillment',async()=>{const {post,calls}=webhook(false);assert.equal((await post({tran_ref:'T1'})).status,401);assert.equal(calls.length,0);});
+test('Webhook rejects missing signatures without reading the request body',async()=>{
+ const {route,calls}=webhook();
+ const response=await route.POST({headers:new Headers(),get body(){assert.fail('Request body was read');}});
+ assert.equal(response.status,401);assert.equal(calls.length,0);
+});
+function oversizedPayTabsRequest(path, headers) {
+ const body=new ReadableStream({start(controller){
+  controller.enqueue(new Uint8Array(paymentBody.PAYTABS_BODY_LIMIT));
+  controller.enqueue(new Uint8Array(1));
+  controller.close();
+ }});
+ return new Request(env.SITE_URL+path,{method:'POST',headers,body,duplex:'half'});
+}
+test('Webhook caps streamed bodies even without Content-Length',async()=>{
+ const {route,calls}=webhook();
+ const response=await route.POST(oversizedPayTabsRequest('/api/payments/webhook',{signature:'a'.repeat(64)}));
+ assert.equal(response.status,413);assert.equal(calls.length,0);
+});
+test('Oversized browser return falls back to checkout without processing fields',async()=>{
+ const route=load('app/api/payments/return/route.ts',{'next/server':nextServer,'@/lib/paytabs-request-body':paymentBody,'@/lib/supabase/admin':{createAdminClient(){assert.fail('No database call expected');}}},env);
+ const response=await route.POST(oversizedPayTabsRequest('/api/payments/return',{'content-type':'application/x-www-form-urlencoded'}));
+ assert.equal(response.status,303);assert.equal(response.headers.get('location'),env.SITE_URL+'/checkout/success');
+});
+test('Normal multipart browser return preserves the transaction reference',async()=>{
+ const route=load('app/api/payments/return/route.ts',{'next/server':nextServer,'@/lib/paytabs-request-body':paymentBody,'@/lib/supabase/admin':{}},env);
+ const body=new FormData();body.set('tranRef','T1');
+ const response=await route.POST(new Request(env.SITE_URL+'/api/payments/return',{method:'POST',body}));
+ assert.equal(response.status,303);assert.equal(response.headers.get('location'),env.SITE_URL+'/checkout/success?tranRef=T1');
+});
 for(const ref of [null,{},[],22,' ', 'x'.repeat(257)])test(`Malformed callback reference ${typeof ref} returns 400`,async()=>{const {post,calls}=webhook();assert.equal((await post({tran_ref:ref})).status,400);assert.equal(calls.length,0);});
 test('Verified callback is acknowledged; database failure asks provider to retry',async()=>{assert.equal((await webhook().post({tran_ref:'T1'})).status,200);assert.equal((await webhook(true,true).post({tran_ref:'T1'})).status,500);});
 test('Unsigned return query never changes payment state',async()=>{
- const route=load('app/api/payments/return/route.ts',{'next/server':nextServer,'@/lib/supabase/admin':{createAdminClient(){throw Error('Must not write');}}},env);
+ const route=load('app/api/payments/return/route.ts',{'next/server':nextServer,'@/lib/paytabs-request-body':paymentBody,'@/lib/supabase/admin':{createAdminClient(){throw Error('Must not write');}}},env);
  const res=await route.GET({nextUrl:new URL('https://academy.example/api/payments/return?tran_ref=T1&respStatus=A&cancelled=1')});
  assert.equal(res.status,303);assert.equal(res.headers.get('location'),env.SITE_URL+'/checkout/success?tranRef=T1');
 });
@@ -126,7 +156,7 @@ test('Signed cancellation requires provider verification and returns the closed 
  const fields={tranRef:'C1',cartId:cart,respStatus:'C'};
  const canonical=new URLSearchParams(Object.entries(fields).sort(([a],[b])=>a.localeCompare(b))).toString();
  fields.signature=createHmac('sha256',env.PAYTABS_SERVER_KEY).update(canonical).digest('hex');
- let closed=0;const route=load('app/api/payments/return/route.ts',{'next/server':nextServer,
+ let closed=0;const route=load('app/api/payments/return/route.ts',{'next/server':nextServer,'@/lib/paytabs-request-body':paymentBody,
  '@/lib/supabase/admin':{createAdminClient:()=>({from:table=>({select(){return this;},eq(){return this;},async maybeSingle(){return {data:table==='orders'?{id:'order',course_id:'course'}:{id:cart,order_id:'order'}};}}),async rpc(){closed++;return {data:true};}})}
  },env,{fetch:async()=>({ok:true,json:async()=>[{tran_ref:'C1',cart_id:cart,payment_result:{response_status:'C'}}]})});
  const response=await route.POST(new Request('https://academy.example/api/payments/return',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams(fields)}));

@@ -10,18 +10,26 @@ import {
 import {
   verifyPayTabsCallbackSignature,
 } from "@/lib/paytabs";
+import { readPayTabsBody } from "@/lib/paytabs-request-body";
 
 export async function POST(
   req: NextRequest
 ) {
   try {
-    const rawBody =
-      await req.text();
-
     const signature =
       req.headers.get(
         "signature"
       );
+
+    if (!signature || !/^[a-f0-9]{64}$/i.test(signature)) {
+      return NextResponse.json({ ok: false, error: "Invalid signature" }, { status: 401 });
+    }
+
+    const bytes = await readPayTabsBody(req);
+    if (bytes === null) {
+      return NextResponse.json({ ok: false, error: "Payload too large" }, { status: 413 });
+    }
+    const rawBody = new TextDecoder().decode(bytes);
 
     if (
       !(await verifyPayTabsCallbackSignature(
