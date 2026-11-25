@@ -46,6 +46,12 @@ export default async function ConversationPage({
     );
 
   if (!conversation) {
+    const { data: alias } = await supabase
+      .from("chat_conversation_aliases")
+      .select("conversation_id")
+      .eq("id", id)
+      .maybeSingle();
+    if (alias) redirect(`/messages/${alias.conversation_id}`);
     notFound();
   }
 

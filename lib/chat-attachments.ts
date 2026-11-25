@@ -22,8 +22,10 @@ export function validChatFile(name: string, size: number): boolean {
   return Number.isSafeInteger(size) && size > 0 && size <= CHAT_FILE_LIMIT && /\.(png|jpe?g|webp|gif|avif|pdf|docx?|zip)$/i.test(name);
 }
 
-export async function signChatAttachments<T extends { conversation_id: string; deleted_at: string | null; attachment_url: string | null }>(supabase: SupabaseClient, messages: T[]): Promise<T[]> {
-  const paths = messages.map(message => !message.deleted_at && message.attachment_url ? chatAttachmentPath(message.attachment_url, message.conversation_id) : null);
+export async function signChatAttachments<T extends { conversation_id: string; attachment_conversation_id?: string | null; deleted_at: string | null; attachment_url: string | null }>(supabase: SupabaseClient, messages: T[]): Promise<T[]> {
+  const paths = messages.map(message => !message.deleted_at && message.attachment_url
+    ? chatAttachmentPath(message.attachment_url, message.attachment_conversation_id ?? message.conversation_id)
+    : null);
   const unique = [...new Set(paths.filter((path): path is string => path !== null))];
   if (!unique.length) return messages.map(message => ({ ...message, attachment_url: null }));
   const { data, error } = await supabase.storage.from("chat-files").createSignedUrls(unique, 3600);

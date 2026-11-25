@@ -37,6 +37,12 @@ do $$ begin
 end $$;
 SQL
   fi
+  if [[ "$migration" == *unify_teacher_student_conversations.sql ]]; then
+    docker_local exec "$db_container" createdb -U postgres -T postgres edc_legacy_chat
+    psql_local -q --dbname=edc_legacy_chat -v seed=true < tests/chat-merge.sql
+    psql_local -q -1 --dbname=edc_legacy_chat < "$migration"
+    psql_local -q --dbname=edc_legacy_chat -v seed=false < tests/chat-merge.sql
+  fi
   psql_local -q -1 < "$migration"
 done
 psql_local < tests/security-regression.sql

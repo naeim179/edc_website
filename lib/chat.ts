@@ -51,21 +51,12 @@ type ProfileRow = {
 };
 
 
-type CourseRow = {
-  title:
-    | string
-    | null;
-};
-
-
 type ConversationRow = {
   id: string;
 
   student_id: string;
 
   teacher_id: string;
-
-  course_id: string;
 
   last_message_at:
     | string
@@ -83,9 +74,6 @@ type ConversationRow = {
     | number
     | null;
 
-  course?:
-    Relation<CourseRow>;
-
   student?:
     Relation<ProfileRow>;
 
@@ -100,8 +88,6 @@ export interface ConversationListItem {
   student_id: string;
 
   teacher_id: string;
-
-  course_id: string;
 
   last_message_at:
     | string
@@ -127,6 +113,8 @@ export interface ChatMessage {
   id: string;
 
   conversation_id: string;
+
+  attachment_conversation_id?: string | null;
 
   sender_id: string;
 
@@ -171,9 +159,6 @@ function mapConversation(
     | "student"
     | "teacher"
 ): ConversationListItem {
-  const course =
-    one(row.course);
-
   const student =
     one(row.student);
 
@@ -196,9 +181,6 @@ function mapConversation(
     teacher_id:
       row.teacher_id,
 
-    course_id:
-      row.course_id,
-
     last_message_at:
       row.last_message_at,
 
@@ -212,9 +194,7 @@ function mapConversation(
         : row.teacher_unread_count ??
           0,
 
-    course_title:
-      course?.title ??
-      "الدورة",
+    course_title: "",
 
     other_party_name:
       role === "student"
@@ -260,15 +240,10 @@ export async function getConversationsForUser(
       id,
       student_id,
       teacher_id,
-      course_id,
       last_message_at,
       last_message_preview,
       student_unread_count,
       teacher_unread_count,
-
-      course:courses (
-        title
-      ),
 
       student:profiles!conversations_student_id_fkey (
         full_name,
@@ -343,15 +318,10 @@ export async function getAllConversationsForAdmin(
       id,
       student_id,
       teacher_id,
-      course_id,
       last_message_at,
       last_message_preview,
       student_unread_count,
       teacher_unread_count,
-
-      course:courses (
-        title
-      ),
 
       student:profiles!conversations_student_id_fkey (
         full_name,
@@ -398,9 +368,6 @@ export async function getAllConversationsForAdmin(
     (
       row
     ) => {
-      const course =
-        one(row.course);
-
       const student =
         one(row.student);
 
@@ -417,9 +384,6 @@ export async function getAllConversationsForAdmin(
         teacher_id:
           row.teacher_id,
 
-        course_id:
-          row.course_id,
-
         last_message_at:
           row.last_message_at,
 
@@ -429,9 +393,7 @@ export async function getAllConversationsForAdmin(
         unread_count:
           0,
 
-        course_title:
-          course?.title ??
-          "الدورة",
+        course_title: "",
 
         other_party_name:
           `${student?.full_name ?? "طالب"} ↔ ${teacher?.full_name ?? "مدرس"}`,
@@ -460,12 +422,6 @@ export async function getConversationById(
       id,
       student_id,
       teacher_id,
-      course_id,
-
-      course:courses (
-        title
-      ),
-
       student:profiles!conversations_student_id_fkey (
         full_name,
         avatar_url
@@ -496,9 +452,6 @@ export async function getConversationById(
   const row =
     data as unknown as ConversationRow;
 
-  const course =
-    one(row.course);
-
   const student =
     one(row.student);
 
@@ -524,16 +477,6 @@ export async function getConversationById(
 
     teacher_id:
       row.teacher_id,
-
-    course_id:
-      row.course_id,
-
-    course:
-      course
-        ? [
-            course,
-          ]
-        : [],
 
     student:
       student
@@ -580,16 +523,17 @@ export async function getMessages(
 ): Promise<
   ChatMessage[]
 > {
-  const {
-    data,
-    error,
-  } = await supabase
+  const messages: ChatMessage[] = [];
+  const pageSize = 500;
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await supabase
     .from(
       "messages"
     )
     .select(`
       id,
       conversation_id,
+      attachment_conversation_id,
       sender_id,
       content,
       created_at,
@@ -605,26 +549,21 @@ export async function getMessages(
       "conversation_id",
       conversationId
     )
-    .order(
-      "created_at",
-      {
-        ascending:
-          true,
-      }
-    );
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(offset, offset + pageSize - 1);
 
-  if (error) {
-    console.error(
-      "getMessages error:",
-      error.message
-    );
-
-    throw new Error(
-      "تعذر تحميل الرسائل"
-    );
+    if (error) {
+      console.error("getMessages error:", error.message);
+      throw new Error("تعذر تحميل الرسائل");
+    }
+    const page = (data ?? []) as ChatMessage[];
+    messages.push(...page.map(message => message.deleted_at
+      ? { ...message, content: "", attachment_url: null, attachment_name: null, attachment_size: null }
+      : message));
+    if (page.length < pageSize) break;
   }
 
-  const messages = ((data ?? []) as ChatMessage[]).map(message => message.deleted_at ? { ...message, content: "", attachment_url: null, attachment_name: null, attachment_size: null } : message);
   return signChatAttachments(supabase, messages);
 }
 

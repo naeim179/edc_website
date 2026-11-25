@@ -39,9 +39,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_conversation_aliases: {
+        Row: { id: string; conversation_id: string }
+        Insert: { id: string; conversation_id: string }
+        Update: { id?: string; conversation_id?: string }
+        Relationships: [{
+          foreignKeyName: "chat_conversation_aliases_conversation_id_fkey"
+          columns: ["conversation_id"]
+          isOneToOne: false
+          referencedRelation: "conversations"
+          referencedColumns: ["id"]
+        }]
+      }
       conversations: {
         Row: {
-          course_id: string
+          course_id: string | null
           created_at: string
           id: string
           student_id: string
@@ -49,7 +61,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          course_id: string
+          course_id?: string | null
           created_at?: string
           id?: string
           student_id: string
@@ -57,7 +69,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          course_id?: string
+          course_id?: string | null
           created_at?: string
           id?: string
           student_id?: string
@@ -370,6 +382,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment_conversation_id: string | null
           conversation_id: string
           created_at: string
           id: string
@@ -378,6 +391,7 @@ export type Database = {
           sender_id: string
         }
         Insert: {
+          attachment_conversation_id?: string | null
           conversation_id: string
           created_at?: string
           id?: string
@@ -386,6 +400,7 @@ export type Database = {
           sender_id: string
         }
         Update: {
+          attachment_conversation_id?: string | null
           conversation_id?: string
           created_at?: string
           id?: string

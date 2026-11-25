@@ -245,7 +245,7 @@ export async function deleteMessage(messageId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("يجب تسجيل الدخول");
   const { data: message, error: lookupError } = await supabase.from("messages")
-    .select("conversation_id,attachment_url").eq("id", messageId).eq("sender_id", user.id)
+    .select("conversation_id,attachment_conversation_id,attachment_url").eq("id", messageId).eq("sender_id", user.id)
     .is("deleted_at", null).maybeSingle();
   if (lookupError || !message) throw new Error("تعذر حذف الرسالة أو لم تعد متاحة");
   const { data, error } = await supabase.from("messages")
@@ -254,7 +254,7 @@ export async function deleteMessage(messageId: string) {
     .select("id").maybeSingle();
   if (error || !data) throw new Error("تعذر حذف الرسالة أو لم تعد متاحة");
   if (message.attachment_url) {
-    const path = chatAttachmentPath(message.attachment_url, message.conversation_id);
+    const path = chatAttachmentPath(message.attachment_url, message.attachment_conversation_id ?? message.conversation_id);
     if (path) {
       const { error: removalError } = await supabase.storage.from("chat-files").remove([path]);
       if (removalError) console.error("Chat attachment cleanup failed:", removalError.message);
