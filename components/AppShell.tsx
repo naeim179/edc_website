@@ -31,9 +31,8 @@ export default async function AppShell({
 
   if (user) {
     const { data: profile } = await supabase
-      .from("profiles")
+      .rpc("read_own_profile")
       .select("full_name, role, avatar_url, is_super_admin, permissions")
-      .eq("id", user.id)
       .maybeSingle();
 
     fullName = profile?.full_name ?? null;

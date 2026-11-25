@@ -6,7 +6,7 @@ export async function requireSupportUser(staff = false) {
  const { data: { user },error } = await db.auth.getUser();
  if (error || !user) redirect("/login");
  if (staff) {
-  const { data: p } = await db.from("profiles").select("role,is_super_admin,permissions").eq("id",user.id).maybeSingle();
+  const { data: p } = await db.rpc("read_own_profile").select("role,is_super_admin,permissions").maybeSingle();
   if (!p || p.role!=="admin" || (!p.is_super_admin && !p.permissions?.includes("manage_support"))) redirect("/");
  }
  return { db,user };

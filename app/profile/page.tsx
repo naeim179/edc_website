@@ -15,7 +15,7 @@ export default async function ProfilePage() {
   }
 
   const { data: profile, error } = await supabase
-    .from("profiles")
+    .rpc("read_own_profile")
     .select(`
       full_name,
       phone,
@@ -23,7 +23,6 @@ export default async function ProfilePage() {
       role,
       username
     `)
-    .eq("id", user.id)
     .maybeSingle();
 
   if (error) {

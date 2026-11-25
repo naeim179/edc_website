@@ -724,6 +724,18 @@ export type Database = {
         Args: { p_course_id: string; p_days: number; p_student_id: string }
         Returns: undefined
       }
+      read_own_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          full_name: string | null
+          phone: string | null
+          avatar_url: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          username: string | null
+          is_super_admin: boolean
+          permissions: string[]
+        }[]
+      }
       admin_create_section: {
         Args: { p_course_id: string; p_title: string }
         Returns: Json

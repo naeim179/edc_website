@@ -13,9 +13,8 @@ export async function canManageCourse(courseId: string) {
   }
 
   const { data: profile, error: profileError } = await supabase
-    .from("profiles")
+    .rpc("read_own_profile")
     .select("role, is_super_admin, permissions")
-    .eq("id", user.id)
     .single();
 
   if (profileError || !profile) {

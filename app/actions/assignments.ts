@@ -36,16 +36,12 @@ async function requireAssignmentManager(
     data: profile,
   } =
     await supabase
-      .from("profiles")
+      .rpc("read_own_profile")
       .select(`
         role,
         is_super_admin,
         permissions
       `)
-      .eq(
-        "id",
-        user.id
-      )
       .maybeSingle();
 
   if (

@@ -31,13 +31,19 @@ function courseAccess({ user = { id: "assigned-teacher" }, profile = { role: "te
   const state = { user, profile, assigned, authError, profileError, assignmentError };
   const client = {
     auth: { getUser: async () => ({ data: { user: state.user }, error: state.authError }) },
+    rpc(name) {
+      assert.equal(name, "read_own_profile");
+      return {
+        select() { return this; },
+        async single() { return { data: state.profile, error: state.profileError }; },
+      };
+    },
     from(table) {
       const builder = {
         select() { return this; }, eq() { return this; },
-        async single() { return { data: state.profile, error: state.profileError }; },
         async maybeSingle() { return { data: state.assigned ? { id: "old-assignment" } : null, error: state.assignmentError }; },
       };
-      assert.ok(["profiles", "course_instructors"].includes(table));
+      assert.equal(table, "course_instructors");
       return builder;
     },
   };

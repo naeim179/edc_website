@@ -8,9 +8,8 @@ export async function getAdminAccess() {
   if (!user) return null;
 
   const { data: p } = await supabase
-    .from("profiles")
+    .rpc("read_own_profile")
     .select("role, is_super_admin, permissions")
-    .eq("id", user.id)
     .maybeSingle();
 
   if (!p || p.role !== "admin") return null;

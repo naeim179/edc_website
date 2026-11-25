@@ -46,6 +46,7 @@ SQL
   psql_local -q -1 < "$migration"
 done
 psql_local < tests/security-regression.sql
+psql_local < tests/profile-privacy.sql
 psql_local < tests/chat-regression.sql
 psql_local < tests/payment-regression.sql
 psql_local < tests/concurrency-regression.sql
