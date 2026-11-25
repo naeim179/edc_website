@@ -4,11 +4,15 @@ begin;
 insert into auth.users(id,email,raw_user_meta_data) values
  ('00000000-0000-4000-8000-000000000001','one@example.test','{"username":"Student.One"}'),
  ('00000000-0000-4000-8000-000000000002','two@example.test','{"username":"Student.Two"}'),
- ('00000000-0000-4000-8000-000000000003','teacher@example.test','{}');
-update public.profiles set role='teacher' where id='00000000-0000-4000-8000-000000000003';
+ ('00000000-0000-4000-8000-000000000003','teacher@example.test','{}'),
+ ('00000000-0000-4000-8000-000000000004','legacy-teacher@example.test','{}');
+update public.profiles set role='teacher'
+where id in ('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000004');
 insert into public.courses(id,title,is_published,is_free,price,course_type) values
  ('10000000-0000-4000-8000-000000000001','Paid',true,false,20,'group'),
  ('10000000-0000-4000-8000-000000000002','Draft',false,false,20,'group');
+update public.courses set instructor_id='00000000-0000-4000-8000-000000000004'
+ where id='10000000-0000-4000-8000-000000000001';
 insert into public.sections(id,course_id,title,order_index) values
  ('20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','One',1),
  ('20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002','Draft',1);
@@ -72,6 +76,39 @@ end $$;
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000003',true);
 do $$ begin
   if (select count(*) from public.lessons) <> 2 then raise exception 'Assigned teacher lost content access'; end if;
+end $$;
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000004',true);
+do $$ begin
+  if (select count(*) from public.lessons) <> 2 then raise exception 'Legacy assigned teacher lost content access'; end if;
+end $$;
+
+-- Existing assignments and user IDs survive demotion. Only permission
+-- derived from the obsolete teacher role disappears.
+reset role;
+select set_config('request.jwt.claim.sub','',true);
+update public.profiles set role='student'
+where id in ('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000004');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000003',true);
+do $$ begin
+  if public.can_read_lesson('20000000-0000-4000-8000-000000000001',false)
+     or (select count(*) from public.lessons) <> 1 then
+    raise exception 'Old course assignment retained teacher read privileges';
+  end if;
+end $$;
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000004',true);
+do $$ begin
+  if public.can_read_lesson('20000000-0000-4000-8000-000000000001',false)
+     or (select count(*) from public.lessons) <> 1 then
+    raise exception 'Legacy instructor link retained teacher read privileges';
+  end if;
+end $$;
+reset role;
+insert into public.subscriptions(student_id,course_id,duration_months,amount,currency,status,expires_at) values
+ ('00000000-0000-4000-8000-000000000004','10000000-0000-4000-8000-000000000001',1,20,'USD','active',now()+interval '1 month');
+set local role authenticated;
+do $$ begin
+  if (select count(*) from public.lessons) <> 2 then raise exception 'Valid student subscription denied after demotion'; end if;
 end $$;
 reset role;
 do $$ begin
