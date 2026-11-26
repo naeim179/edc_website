@@ -264,6 +264,33 @@ html[data-theme] body.yw-design-system .yw-auth-language {
 html[data-theme] body.yw-design-system .yw-auth-language > button[aria-pressed="true"] { background: #f8fafc; color: #0b1f3a; }
 .yw-auth-language > button:hover { text-decoration: underline; text-underline-offset: 4px; }
 .yw-auth-language > button:focus-visible { outline: 2px solid #e7c47c; outline-offset: 2px; }
+
+/* The MFA page uses the account palette on a light card, independent of the workspace theme. */
+.yw-admin-mfa {
+  --calm-surface: #fff;
+  --calm-soft: #eaf1f8;
+  --calm-border: #687b91;
+  --calm-text: #0b1f3a;
+  --calm-muted: #41566d;
+  --calm-accent: #124b8a;
+  --calm-hover: #0d3b6e;
+  --calm-on-accent: #fff;
+}
+html[data-theme] body.yw-design-system .yw-admin-mfa .yw-auth-language {
+  margin: 0 0 1.5rem;
+  border-color: transparent;
+  background: var(--calm-soft);
+  color: var(--calm-text);
+}
+html[data-theme] body.yw-design-system .yw-admin-mfa .yw-auth-language > button[aria-pressed="true"] {
+  background: var(--calm-accent);
+  color: var(--calm-on-accent);
+}
+html[data-theme] body.yw-design-system .yw-admin-mfa :is(a, button, input, summary):focus-visible {
+  outline: 2px solid var(--calm-accent);
+  outline-offset: 3px;
+}
+
 @media (max-width: 767px) {
   html[data-theme] body.yw-design-system .yw-display-trigger { font-size: 12px; padding-inline: 10px; }
 }

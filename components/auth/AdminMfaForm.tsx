@@ -12,7 +12,7 @@ type Enrollment = { id: string; qr: string; secret: string };
 const copy = {
   ar: {
     title: "المصادقة الثنائية للإدارة",
-    setup: "اربط حسابك بتطبيق مصادقة على هاتفك، مثل Google Authenticator أو Microsoft Authenticator.",
+    setup: "اربط حسابك بتطبيق مصادقة مثل Google Authenticator. ستستخدم رمزه عند تسجيل الدخول مجددًا إلى لوحة الإدارة.",
     verify: "أدخل الرمز الحالي من تطبيق المصادقة لإكمال الدخول إلى لوحة الإدارة.",
     scan: "امسح رمز الاستجابة السريعة أو أدخل مفتاح الإعداد يدويًا، ثم اكتب الرمز الذي يظهر في التطبيق.",
     ready: "تحقّقت المصادقة الثنائية لهذه الجلسة.",
@@ -32,7 +32,7 @@ const copy = {
   },
   en: {
     title: "Admin two-factor authentication",
-    setup: "Link your account to an authenticator app on your phone, such as Google Authenticator or Microsoft Authenticator.",
+    setup: "Link your account to an authenticator app such as Google Authenticator. You’ll use its code the next time you sign in to the admin dashboard.",
     verify: "Enter the current code from your authenticator app to access the admin dashboard.",
     scan: "Scan the QR code or enter the setup key manually, then enter the code shown in the app.",
     ready: "Two-factor authentication is verified for this session.",
@@ -52,7 +52,7 @@ const copy = {
   },
 };
 
-const button = "w-full rounded-xl bg-[#124b8a] px-4 py-3 font-semibold text-white hover:bg-[#0b3869] disabled:opacity-60";
+const button = "w-full rounded-xl bg-[var(--calm-accent)] px-4 py-3 font-semibold text-[var(--calm-on-accent)] hover:bg-[var(--calm-hover)] disabled:opacity-60";
 const factorName = "Your Way Academy";
 
 export default function AdminMfaForm({ status }: { status: Status }) {
@@ -138,11 +138,11 @@ export default function AdminMfaForm({ status }: { status: Status }) {
   }
 
   return (
-    <main dir={language === "ar" ? "rtl" : "ltr"} className="grid min-h-screen place-items-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4 [color-scheme:light]">
-      <section className="w-full max-w-md rounded-2xl bg-[#fff] p-6 text-slate-950 shadow-lg sm:p-8">
-        <div className="mb-5 rounded-xl bg-[#124b8a] p-2"><AuthLanguageSwitcher /></div>
+    <main dir={language === "ar" ? "rtl" : "ltr"} className="yw-admin-mfa grid min-h-screen place-items-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4 [color-scheme:light]">
+      <section className="min-w-0 w-full max-w-md rounded-2xl bg-[var(--calm-surface)] p-6 text-[var(--calm-text)] shadow-lg sm:p-8">
+        <AuthLanguageSwitcher />
         <h1 className="text-2xl font-bold">{t.title}</h1>
-        <p className="my-4 text-sm leading-6 text-slate-700">
+        <p className="my-4 text-base leading-relaxed text-[var(--calm-muted)]">
           {verified ? t.ready : status === "recovery" ? t.recovery : enrollment ? t.scan : canEnroll ? t.setup : t.verify}
         </p>
         {error && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</p>}
@@ -165,13 +165,13 @@ export default function AdminMfaForm({ status }: { status: Status }) {
           <form onSubmit={verify} className="space-y-3">
             <label htmlFor="admin-mfa-code" className="block text-sm font-semibold">{t.label}</label>
             <input id="admin-mfa-code" name="code" dir="ltr" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
-              className="w-full rounded-xl border border-slate-400 p-3 text-center" required />
+              className="w-full rounded-xl border border-[var(--calm-border)] p-3 text-center text-base" required />
             <button type="submit" disabled={busy} className={button}>{busy ? t.working : t.submit}</button>
           </form>
         )}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-[#124b8a]">
-          {status === "optional" && !verified && <Link href="/admin" className="underline">{t.later}</Link>}
-          <button type="button" disabled={busy} className="underline" onClick={() => void run(async () => {
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 text-sm font-semibold text-[var(--calm-accent)]">
+          {status === "optional" && !verified && <Link href="/admin" className="inline-flex min-h-11 items-center underline underline-offset-4">{t.later}</Link>}
+          <button type="button" disabled={busy} className="inline-flex min-h-11 items-center underline underline-offset-4" onClick={() => void run(async () => {
             const { error } = await createClient().auth.signOut({ scope: "local" });
             if (error) throw error;
             window.location.replace("/login");
