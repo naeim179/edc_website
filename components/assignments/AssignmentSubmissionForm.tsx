@@ -1007,10 +1007,11 @@ export default function AssignmentSubmissionForm({
       uploaded =
         built.uploadedPaths;
 
-      await saveAssignmentDraft(
+      const result = await saveAssignmentDraft(
         assignment.id,
         built.content
       );
+      if (!result.success) throw new Error(copy.subscriptionRequired);
 
       await removeOldObjects();
 
@@ -1143,6 +1144,7 @@ export default function AssignmentSubmissionForm({
           assignment.id,
           built.content
         );
+      if (!result.success) throw new Error(copy.subscriptionRequired);
 
       await removeOldObjects();
 

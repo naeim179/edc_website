@@ -11,9 +11,8 @@ import {
   createClient,
 } from "@/lib/supabase/server";
 
-import {
-  createAdminClient,
-} from "@/lib/supabase/admin";
+import AssignmentHistoryContent from "@/components/assignments/AssignmentHistoryContent";
+import { readStudentAssignmentHistory } from "@/lib/student-assignment-history";
 
 
 type StoredFile = {
@@ -191,122 +190,32 @@ export default async function AssignmentPage({
     redirect("/");
   }
 
-  const admin =
-    createAdminClient();
+  const { data: assignment, error: assignmentError } = await supabase
+    .from("assignments")
+    .select(`
+      id, course_id, title, instructions, due_at, max_score, allow_late, max_attempts,
+      course:courses(title)
+    `)
+    .eq("id", id)
+    .eq("is_published", true)
+    .maybeSingle();
 
-  const {
-    data: assignment,
-    error:
-      assignmentError,
-  } =
-    await admin
-      .from(
-        "assignments"
-      )
-      .select(`
-        id,
-        course_id,
-        title,
-        instructions,
-        due_at,
-        max_score,
-        allow_late,
-        max_attempts,
-        is_published
-      `)
-      .or(`target_student_id.is.null,target_student_id.eq.${user.id}`)
-      .eq(
-        "id",
-        id
-      )
-      .eq(
-        "is_published",
-        true
-      )
-      .maybeSingle();
-
-  if (
-    assignmentError ||
-    !assignment
-  ) {
-    notFound();
+  if (assignmentError?.code === "22P02") notFound();
+  if (assignmentError) throw new Error("Unable to load assignment");
+  if (!assignment) {
+    const [result] = await readStudentAssignmentHistory(supabase, id);
+    if (!result) notFound();
+    return <AppShell><AssignmentHistoryContent result={result} /></AppShell>;
   }
 
-  const [
-    enrollmentResult,
-    courseResult,
-    submissionResult,
-  ] =
-    await Promise.all([
-      admin
-        .from(
-          "enrollments"
-        )
-        .select("id")
-        .eq(
-          "course_id",
-          assignment.course_id
-        )
-        .eq(
-          "student_id",
-          user.id
-        )
-        .maybeSingle(),
-
-      admin
-        .from("courses")
-        .select(`
-          id,
-          title
-        `)
-        .eq(
-          "id",
-          assignment.course_id
-        )
-        .maybeSingle(),
-
-      admin
-        .from(
-          "assignment_submissions"
-        )
-        .select(`
-          status,
-          attempt_number,
-          content_json,
-          score,
-          feedback
-        `)
-        .eq(
-          "assignment_id",
-          assignment.id
-        )
-        .eq(
-          "student_id",
-          user.id
-        )
-        .maybeSingle(),
-    ]);
-
-  if (
-    !enrollmentResult.data
-  ) {
-    notFound();
-  }
-
-  if (
-    courseResult.error ||
-    !courseResult.data
-  ) {
-    notFound();
-  }
-
-  if (
-    submissionResult.error
-  ) {
-    throw new Error(
-      submissionResult.error.message
-    );
-  }
+  const course = Array.isArray(assignment.course) ? assignment.course[0] : assignment.course;
+  const submissionResult = await supabase
+    .from("assignment_submissions")
+    .select("status, attempt_number, content_json, score, feedback")
+    .eq("assignment_id", assignment.id)
+    .eq("student_id", user.id)
+    .maybeSingle();
+  if (submissionResult.error) throw new Error("Unable to load submission");
 
   const content =
     objectValue(
@@ -338,7 +247,7 @@ export default async function AssignmentPage({
             const {
               data,
             } =
-              await admin.storage
+              await supabase.storage
                 .from(
                   "assignment-files"
                 )
@@ -385,7 +294,7 @@ export default async function AssignmentPage({
             assignment.course_id,
 
           courseTitle:
-            courseResult.data.title,
+            course?.title ?? "—",
 
           title:
             assignment.title,

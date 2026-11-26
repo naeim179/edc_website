@@ -45,7 +45,13 @@ teacher = 'e0000000-0000-4000-8000-000000000002'
 race('review_race', f"select review_assignment_submission('{assignment}','{submission}','{teacher}',{revision},true,null,'Try again')", f"do $$ begin begin perform review_assignment_submission('{assignment}','{submission}','{teacher}',{revision},false,90,'stale');raise exception 'Stale grade accepted';exception when others then if sqlerrm<>'Submission changed; refresh and try again' then raise;end if;end;end $$;")
 sub = 'e3000000-0000-4000-8000-000000000001'
 nonce = 'e4000000-0000-4000-8000-000000000001'
-sql(f"insert into subscriptions(id,student_id,course_id,duration_months,amount,currency,status,expires_at,auto_renew,renewal_claim_id) values('{sub}','{student}','{course}',1,25,'USD','active',now()+interval '1 hour',true,'{nonce}');insert into subscription_payment_tokens(subscription_id,token,token_tran_ref) values('{sub}','fake-token','fake-ref');")
+race('assignment_access_expires_during_write',
+     f"update subscriptions set expires_at=clock_timestamp()-interval '1 second' where id='{sub}'",
+     f"do $$ begin begin perform write_assignment_submission('{assignment}','{student}','{{\"text\":\"stale access\"}}',true);"
+     "raise exception 'Expired subscription was accepted';exception when insufficient_privilege then "
+     "if sqlerrm<>'ASSIGNMENT_ACCESS_REQUIRED' then raise; end if; end; end $$;")
+sql(f"update subscriptions set expires_at=now()+interval '1 hour' where id='{sub}';")
+sql(f"update subscriptions set renewal_claim_id='{nonce}' where id='{sub}';insert into subscription_payment_tokens(subscription_id,token,token_tran_ref) values('{sub}','fake-token','fake-ref');")
 race('optout_wins', f"select set_config('request.jwt.claim.sub','{student}',true);select disable_subscription_auto_renew('{course}')", f"do $$ begin if begin_subscription_renewal('{sub}','{nonce}') is not null then raise exception 'Cancelled claim started'; end if; end $$;")
 assert sql("select count(*) from orders where source='auto_renew';") == '0'
 sql(f"update subscriptions set auto_renew=true,renewal_claim_id='{nonce}' where id='{sub}';insert into subscription_payment_tokens(subscription_id,token,token_tran_ref) values('{sub}','fake-token','fake-ref');")

@@ -36,6 +36,12 @@ alter table storage.objects enable row level security;
 create function storage.foldername(name text) returns text[] language sql immutable as $$
   select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1];
 $$;
+create function storage.allow_any_operation(expected text[]) returns boolean language sql stable as $$
+  select coalesce(
+    regexp_replace(current_setting('storage.operation', true), '^storage\.', '') = any(expected),
+    false
+  );
+$$;
 grant usage on schema auth, storage, public to anon, authenticated, service_role;
 grant select, insert, update, delete on storage.objects to authenticated, service_role;
 grant all on auth.users, storage.buckets to service_role;

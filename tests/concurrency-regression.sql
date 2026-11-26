@@ -6,6 +6,8 @@ insert into courses(id,title,price,is_published,course_type) values('e1000000-00
 insert into enrollments(student_id,course_id) values('e0000000-0000-4000-8000-000000000001','e1000000-0000-4000-8000-000000000001');
 insert into course_instructors(course_id,teacher_id) values('e1000000-0000-4000-8000-000000000001','e0000000-0000-4000-8000-000000000002');
 insert into assignments(id,course_id,title,max_attempts) values('e2000000-0000-4000-8000-000000000001','e1000000-0000-4000-8000-000000000001','Atomic assignment',1);
+insert into subscriptions(id,student_id,course_id,duration_months,amount,currency,status,expires_at,auto_renew)
+values('e3000000-0000-4000-8000-000000000001','e0000000-0000-4000-8000-000000000001','e1000000-0000-4000-8000-000000000001',1,25,'USD','active',now()+interval '1 hour',true);
 do $$ declare result jsonb; sid uuid; rev bigint; nonce uuid; started jsonb; expiry timestamptz;
 begin
  result:=write_assignment_submission('e2000000-0000-4000-8000-000000000001','e0000000-0000-4000-8000-000000000001','{"text":"answer","files":[],"audio":[],"links":[]}',true);
@@ -21,7 +23,7 @@ begin
  update assignments set allow_late=true where id='e2000000-0000-4000-8000-000000000001';
  result:=write_assignment_submission('e2000000-0000-4000-8000-000000000001','e0000000-0000-4000-8000-000000000001','{"text":"late"}',true);
  if result->>'status'<>'late' then raise exception 'Late status incorrect'; end if;
- insert into subscriptions(student_id,course_id,duration_months,amount,currency,status,expires_at,auto_renew) values('e0000000-0000-4000-8000-000000000001','e1000000-0000-4000-8000-000000000001',1,25,'USD','active',now()+interval '1 hour',true) returning id into sid;
+ sid:='e3000000-0000-4000-8000-000000000001';
  insert into subscription_payment_tokens(subscription_id,token,token_tran_ref) values(sid,'fake-token','fake-ref');
  select claim_id into nonce from claim_subscription_renewals_v2(50) where subscription_id=sid;
  perform set_config('request.jwt.claim.sub','e0000000-0000-4000-8000-000000000001',true);

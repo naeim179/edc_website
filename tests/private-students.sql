@@ -10,6 +10,9 @@ begin
   student:=('f2000000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid;
   insert into auth.users(id,email) values(student,'private-'||i||'@test.invalid');
   insert into enrollments(course_id,student_id) values('f1000000-0000-4000-8000-000000000001',student),('f1000000-0000-4000-8000-000000000002',student);
+  insert into subscriptions(course_id,student_id,duration_months,amount,currency,status,expires_at)
+  select id,student,1,25,'USD','active',now()+interval '1 day' from courses
+  where id in ('f1000000-0000-4000-8000-000000000001','f1000000-0000-4000-8000-000000000002');
   insert into private_course_availability(course_id,day_of_week,start_time,end_time,is_active) values('f1000000-0000-4000-8000-000000000001',i,'10:00','11:00',true),('f1000000-0000-4000-8000-000000000001',i,'14:00','15:00',true);
   select array_agg(id) into slots from private_course_availability where course_id='f1000000-0000-4000-8000-000000000001' and day_of_week=i;
   perform set_config('request.jwt.claim.sub',student::text,true);

@@ -252,91 +252,18 @@ async function getStudentAssignment(
     );
   }
 
-  const admin =
-    createAdminClient();
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (profile?.role !== "student") throw new Error("Forbidden");
 
-  const {
-    data: profile,
-  } =
-    await admin
-      .from("profiles")
-      .select("role")
-      .eq(
-        "id",
-        user.id
-      )
-      .maybeSingle();
+  const { data: assignment, error } = await supabase.from("assignments")
+    .select("id, course_id")
+    .eq("id", assignmentId)
+    .eq("is_published", true)
+    .maybeSingle();
+  if (error) throw new Error("Unable to load assignment");
+  if (!assignment) return null;
 
-  if (
-    profile?.role !==
-    "student"
-  ) {
-    throw new Error(
-      "Forbidden"
-    );
-  }
-
-  const {
-    data: assignment,
-    error:
-      assignmentError,
-  } =
-    await admin
-      .from(
-        "assignments"
-      )
-      .select(`
-        id,
-        course_id,
-        due_at,
-        allow_late,
-        max_attempts,
-        is_published
-      `)
-      .or(`target_student_id.is.null,target_student_id.eq.${user.id}`)
-      .eq(
-        "id",
-        assignmentId
-      )
-      .maybeSingle();
-
-  if (
-    assignmentError ||
-    !assignment ||
-    !assignment.is_published
-  ) {
-    throw new Error(
-      "Assignment not found"
-    );
-  }
-
-  const {
-    data: enrollment,
-  } =
-    await admin
-      .from("enrollments")
-      .select("id")
-      .eq(
-        "course_id",
-        assignment.course_id
-      )
-      .eq(
-        "student_id",
-        user.id
-      )
-      .maybeSingle();
-
-  if (!enrollment) {
-    throw new Error(
-      "Forbidden"
-    );
-  }
-
-  return {
-    user,
-    assignment,
-    admin,
-  };
+  return { user, assignment, admin: createAdminClient() };
 }
 
 
@@ -365,14 +292,9 @@ export async function saveAssignmentDraft(
   assignmentId: string,
   rawContent: SubmissionContent
 ) {
-  const {
-    user,
-    assignment,
-    admin,
-  } =
-    await getStudentAssignment(
-      assignmentId
-    );
+  const access = await getStudentAssignment(assignmentId);
+  if (!access) return { success: false, error: "access_required" } as const;
+  const { user, assignment, admin } = access;
 
   const expectedPrefix =
     `submissions/${assignment.course_id}/${assignment.id}/${user.id}/`;
@@ -386,18 +308,22 @@ export async function saveAssignmentDraft(
   const { data, error } = await admin.rpc("write_assignment_submission", {
     p_assignment_id: assignment.id, p_student_id: user.id, p_content: content, p_submit: false,
   });
+  if (error?.message === "ASSIGNMENT_ACCESS_REQUIRED") return { success: false, error: "access_required" } as const;
   if (error) throw new Error(error.message);
   refresh(assignmentId);
-  return { success: true, status: data.status as string };
+  return { success: true, status: data.status as string } as const;
 }
 
 export async function submitAssignment(assignmentId: string, rawContent: SubmissionContent) {
-  const { user, assignment, admin } = await getStudentAssignment(assignmentId);
+  const access = await getStudentAssignment(assignmentId);
+  if (!access) return { success: false, error: "access_required" } as const;
+  const { user, assignment, admin } = access;
   const content = normalizeContent(rawContent, `submissions/${assignment.course_id}/${assignment.id}/${user.id}/`);
   const { data, error } = await admin.rpc("write_assignment_submission", {
     p_assignment_id: assignment.id, p_student_id: user.id, p_content: content, p_submit: true,
   });
+  if (error?.message === "ASSIGNMENT_ACCESS_REQUIRED") return { success: false, error: "access_required" } as const;
   if (error) throw new Error(error.message);
   refresh(assignmentId);
-  return { success: true, status: data.status as string, attemptNumber: Number(data.attempt_number) };
+  return { success: true, status: data.status as string, attemptNumber: Number(data.attempt_number) } as const;
 }

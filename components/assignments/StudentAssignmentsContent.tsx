@@ -14,12 +14,13 @@ import {
 type Assignment = {
   id: string;
   title: string;
-  instructions: string;
+  instructions: string | null;
   due_at: string | null;
   max_score: number;
   courseTitle: string;
   status: string | null;
   score: number | null;
+  historyOnly: boolean;
 };
 
 
@@ -144,8 +145,9 @@ export default function StudentAssignmentsContent({
 
                 <p className="mt-2 line-clamp-3 text-sm leading-7 text-[var(--brand-text-muted)]">
                   {
-                    assignment.instructions ||
-                    copy.noInstructions
+                    assignment.historyOnly
+                      ? copy.assignmentUnavailable
+                      : assignment.instructions || copy.noInstructions
                   }
                 </p>
 
@@ -157,14 +159,11 @@ export default function StudentAssignmentsContent({
                     {copy.points}
                   </span>
 
-                  <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
-                    {assignment.due_at
-                      ? formatAssignmentDate(
-                          assignment.due_at,
-                          language
-                        )
-                      : copy.noDeadline}
-                  </span>
+                  {!assignment.historyOnly && (
+                    <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                      {assignment.due_at ? formatAssignmentDate(assignment.due_at, language) : copy.noDeadline}
+                    </span>
+                  )}
 
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
                     {statusLabel(
@@ -194,9 +193,10 @@ export default function StudentAssignmentsContent({
 
                 <Link
                   href={`/assignments/${assignment.id}`}
+                  prefetch={false}
                   className="mt-5 flex items-center justify-center rounded-xl bg-[#1B4B43] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#123F39]"
                 >
-                  {copy.openAssignment}
+                  {assignment.historyOnly ? copy.openSubmissionHistory : copy.openAssignment}
                 </Link>
               </article>
             )

@@ -1,259 +1,62 @@
-import {
-  redirect,
-} from "next/navigation";
-
+import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
-
 import StudentAssignmentsContent from "@/components/assignments/StudentAssignmentsContent";
-
-import {
-  createClient,
-} from "@/lib/supabase/server";
-
-import {
-  createAdminClient,
-} from "@/lib/supabase/admin";
-
-
-function firstOf<T>(
-  value:
-    | T
-    | T[]
-    | null
-    | undefined
-): T | null {
-  if (
-    Array.isArray(value)
-  ) {
-    return (
-      value[0] ??
-      null
-    );
-  }
-
-  return value ?? null;
-}
-
+import { createClient } from "@/lib/supabase/server";
+import { readStudentAssignmentHistory } from "@/lib/student-assignment-history";
 
 export default async function AssignmentsPage() {
-  const supabase =
-    await createClient();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-  const {
-    data: {
-      user,
-    },
-  } =
-    await supabase.auth.getUser();
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (profile?.role !== "student") redirect("/");
 
-  if (!user) {
-    redirect("/login");
-  }
-
-  const {
-    data: profile,
-  } =
-    await supabase
-      .from("profiles")
-      .select("role")
-      .eq(
-        "id",
-        user.id
-      )
-      .maybeSingle();
-
-  if (
-    profile?.role !==
-    "student"
-  ) {
-    redirect("/");
-  }
-
-  const db =
-    createAdminClient();
-
-  const {
-    data:
-      enrollmentRows,
-  } =
-    await db
-      .from("enrollments")
-      .select("course_id")
-      .eq(
-        "student_id",
-        user.id
-      );
-
-  const courseIds =
-    (
-      enrollmentRows ??
-      []
-    ).map(
-      (row) =>
-        row.course_id
-    );
-
-  if (
-    courseIds.length ===
-    0
-  ) {
-    return (
-      <AppShell>
-        <StudentAssignmentsContent
-          assignments={[]}
-        />
-      </AppShell>
-    );
-  }
-
-  const {
-    data:
-      assignmentRows,
-    error:
-      assignmentsError,
-  } =
-    await db
-      .from("assignments")
+  const [active, history] = await Promise.all([
+    supabase.from("assignments")
       .select(`
-        id,
-        course_id,
-        title,
-        instructions,
-        due_at,
-        max_score,
-        course:courses (
-          title
-        )
+        id, title, instructions, due_at, max_score,
+        course:courses(title), submissions:assignment_submissions(status, score)
       `)
-      .or(`target_student_id.is.null,target_student_id.eq.${user.id}`)
-      .in(
-        "course_id",
-        courseIds
-      )
-      .eq(
-        "is_published",
-        true
-      )
-      .order(
-        "due_at",
-        {
-          ascending:
-            true,
-          nullsFirst:
-            false,
-        }
-      );
+      .eq("is_published", true)
+      .eq("submissions.student_id", user.id)
+      .order("due_at", { ascending: true, nullsFirst: false }),
+    readStudentAssignmentHistory(supabase),
+  ]);
+  if (active.error) throw new Error("Unable to load assignments");
 
-  if (
-    assignmentsError
-  ) {
-    throw new Error(
-      assignmentsError.message
-    );
-  }
+  const assignments = (active.data ?? []).map(row => {
+    const course = Array.isArray(row.course) ? row.course[0] : row.course;
+    const submission = row.submissions?.[0];
+    return {
+      id: row.id,
+      title: row.title,
+      instructions: row.instructions,
+      due_at: row.due_at,
+      max_score: Number(row.max_score),
+      courseTitle: course?.title ?? "—",
+      status: submission?.status ?? null,
+      score: submission?.score == null ? null : Number(submission.score),
+      historyOnly: false,
+    };
+  });
 
-  const assignmentIds =
-    (
-      assignmentRows ??
-      []
-    ).map(
-      (row) =>
-        row.id
-    );
-
-  const {
-    data:
-      submissionRows,
-  } =
-    assignmentIds.length >
-    0
-      ? await db
-          .from(
-            "assignment_submissions"
-          )
-          .select(`
-            assignment_id,
-            status,
-            score
-          `)
-          .eq(
-            "student_id",
-            user.id
-          )
-          .in(
-            "assignment_id",
-            assignmentIds
-          )
-      : {
-          data: [],
-        };
-
-  const submissionMap =
-    new Map(
-      (
-        submissionRows ??
-        []
-      ).map(
-        (row) => [
-          row.assignment_id,
-          row,
-        ]
-      )
-    );
-
-  const assignments =
-    (
-      assignmentRows ??
-      []
-    ).map(
-      (row) => {
-        const course =
-          firstOf(
-            row.course
-          );
-
-        const submission =
-          submissionMap.get(
-            row.id
-          );
-
-        return {
-          id:
-            row.id,
-          title:
-            row.title,
-          instructions:
-            row.instructions,
-          due_at:
-            row.due_at,
-          max_score:
-            Number(
-              row.max_score
-            ),
-          courseTitle:
-            course?.title ??
-            "—",
-          status:
-            submission?.status ??
-            null,
-          score:
-            submission?.score ==
-            null
-              ? null
-              : Number(
-                  submission.score
-                ),
-        };
-      }
-    );
+  const activeIds = new Set(assignments.map(assignment => assignment.id));
+  const historyCards = history.filter(row => !activeIds.has(row.assignment_id)).map(row => ({
+    id: row.assignment_id,
+    title: row.assignment_title,
+    instructions: null,
+    due_at: null,
+    max_score: Number(row.max_score),
+    courseTitle: row.course_title,
+    status: row.status,
+    score: row.score == null ? null : Number(row.score),
+    historyOnly: true,
+  }));
 
   return (
     <AppShell>
-      <StudentAssignmentsContent
-        assignments={
-          assignments
-        }
-      />
+      <StudentAssignmentsContent assignments={[...assignments, ...historyCards]} />
     </AppShell>
   );
 }
