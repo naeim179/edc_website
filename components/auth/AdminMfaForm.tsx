@@ -59,7 +59,6 @@ export default function AdminMfaForm({ status }: { status: Status }) {
   const { language } = useLanguage();
   const t = copy[language === "ar" ? "ar" : "en"];
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
-  const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [verified, setVerified] = useState(status === "ready");
@@ -113,7 +112,8 @@ export default function AdminMfaForm({ status }: { status: Status }) {
 
   function verify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const digits = code.trim().replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) & 15));
+    const code = new FormData(event.currentTarget).get("code");
+    const digits = String(code ?? "").trim().replace(/[\u0660-\u0669\u06f0-\u06f9]/g, digit => String(digit.charCodeAt(0) & 15));
     if (!/^\d{6}$/.test(digits)) {
       setError(t.invalid);
       return;
@@ -131,7 +131,6 @@ export default function AdminMfaForm({ status }: { status: Status }) {
         setError(t.rejected);
         return;
       }
-      setCode("");
       setEnrollment(null);
       setVerified(true);
       await finish();
@@ -139,8 +138,8 @@ export default function AdminMfaForm({ status }: { status: Status }) {
   }
 
   return (
-    <main dir={language === "ar" ? "rtl" : "ltr"} className="yw-login-original grid min-h-screen place-items-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4">
-      <section className="w-full max-w-md rounded-2xl bg-white p-6 text-slate-950 shadow-lg sm:p-8">
+    <main dir={language === "ar" ? "rtl" : "ltr"} className="grid min-h-screen place-items-center bg-gradient-to-br from-[#0b1f3a] via-[#124b8a] to-[#d6b56c] p-4 [color-scheme:light]">
+      <section className="w-full max-w-md rounded-2xl bg-[#fff] p-6 text-slate-950 shadow-lg sm:p-8">
         <div className="mb-5 rounded-xl bg-[#124b8a] p-2"><AuthLanguageSwitcher /></div>
         <h1 className="text-2xl font-bold">{t.title}</h1>
         <p className="my-4 text-sm leading-6 text-slate-700">
@@ -165,8 +164,7 @@ export default function AdminMfaForm({ status }: { status: Status }) {
         {!verified && (status === "verify" || enrollment) && (
           <form onSubmit={verify} className="space-y-3">
             <label htmlFor="admin-mfa-code" className="block text-sm font-semibold">{t.label}</label>
-            <input id="admin-mfa-code" dir="ltr" inputMode="numeric" autoComplete="one-time-code"
-              value={code} onChange={event => setCode(event.target.value)} maxLength={6}
+            <input id="admin-mfa-code" name="code" dir="ltr" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
               className="w-full rounded-xl border border-slate-400 p-3 text-center" required />
             <button type="submit" disabled={busy} className={button}>{busy ? t.working : t.submit}</button>
           </form>
