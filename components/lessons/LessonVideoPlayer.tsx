@@ -1,8 +1,120 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import MuxPlayer from "@mux/mux-player-react";
+import { useEffect, useRef, useState } from "react";
+import MuxPlayer, { type MuxPlayerRefAttributes } from "@mux/mux-player-react";
 import { useLanguage } from "@/components/LanguageProvider";
+import { createMuxPlaybackSession, fetchMuxPlaybackGrant } from "@/lib/mux-playback-session";
+
+function VideoFeedback({ failed }: { failed: boolean }) {
+  const { t } = useLanguage();
+  return (
+    <div className="aspect-video flex items-center justify-center rounded-xl bg-black p-6 text-center text-white" role={failed ? "alert" : "status"}>
+      {failed ? t.lessonVideo.playbackError : t.lessonVideo.playbackLoading}
+    </div>
+  );
+}
+
+function BunnyLessonVideo({ lessonId, title }: { lessonId: string; title: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/bunny/playback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lessonId }),
+      signal: controller.signal,
+    }).then(async response => {
+      if (!response.ok) throw new Error("Playback request failed");
+      const result = await response.json();
+      if (typeof result?.url !== "string") throw new Error("Invalid playback URL");
+      if (!controller.signal.aborted) setUrl(result.url);
+    }).catch(() => {
+      if (!controller.signal.aborted) setFailed(true);
+    });
+    return () => controller.abort();
+  }, [lessonId]);
+
+  if (!url) return <VideoFeedback failed={failed} />;
+
+  return (
+    <div className="aspect-video overflow-hidden rounded-xl bg-black">
+      <iframe
+        src={url}
+        title={title}
+        className="h-full w-full"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allow="autoplay; fullscreen"
+        allowFullScreen
+      />
+    </div>
+  );
+}
+
+function MuxLessonVideo({ lessonId, playbackId, title }: { lessonId: string; playbackId: string; title: string }) {
+  const player = useRef<MuxPlayerRefAttributes>(null);
+  const session = useRef<ReturnType<typeof createMuxPlaybackSession> | null>(null);
+  const [access, setAccess] = useState<{
+    token: string;
+    startTime?: number;
+    autoPlay?: boolean;
+    volume?: number;
+    muted?: boolean;
+    playbackRate?: number;
+  } | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const manager = createMuxPlaybackSession({
+      load: signal => fetchMuxPlaybackGrant(lessonId, signal),
+      isPlaying: () => Boolean(player.current && !player.current.paused && !player.current.ended),
+      accept: token => {
+        const current = player.current;
+        setAccess({
+          token,
+          startTime: current && Number.isFinite(current.currentTime) ? Math.max(0, current.currentTime) : undefined,
+          autoPlay: current ? !current.paused && !current.ended : undefined,
+          volume: current?.volume,
+          muted: current?.muted,
+          playbackRate: current?.playbackRate,
+        });
+      },
+      unavailable: () => {
+        setAccess(null);
+        setFailed(true);
+      },
+    });
+    session.current = manager;
+    return () => {
+      session.current = null;
+      manager.stop();
+    };
+  }, [lessonId]);
+
+  if (!access) return <VideoFeedback failed={failed} />;
+
+  return (
+    <div className="aspect-video overflow-hidden rounded-xl bg-black">
+      <MuxPlayer
+        key={access.token}
+        ref={player}
+        playbackId={playbackId}
+        tokens={{ playback: access.token }}
+        startTime={access.startTime}
+        autoPlay={access.autoPlay}
+        volume={access.volume}
+        muted={access.muted}
+        playbackRate={access.playbackRate}
+        title={title}
+        streamType="on-demand"
+        className="h-full w-full"
+        onPlay={() => void session.current?.refreshIfNeeded()}
+        onError={() => void session.current?.refreshIfNeeded()}
+      />
+    </div>
+  );
+}
 
 type Props = {
   lessonId: string;
@@ -24,44 +136,6 @@ export default function LessonVideoPlayer({
   title,
 }: Props) {
   const { t } = useLanguage();
-  const [muxAccess, setMuxAccess] = useState<{
-    lessonId: string;
-    token?: string;
-    error?: boolean;
-  } | null>(null);
-
-  useEffect(() => {
-    if (
-      provider !== "mux" ||
-      !muxPlaybackId
-    ) {
-      return;
-    }
-
-    const controller = new AbortController();
-    fetch("/api/mux/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        lessonId,
-      }),
-      signal: controller.signal,
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Video access unavailable");
-        return res.json();
-      })
-      .then((data) => {
-        if (typeof data.token !== "string") throw new Error("Missing video token");
-        if (!controller.signal.aborted) setMuxAccess({ lessonId, token: data.token });
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setMuxAccess({ lessonId, error: true });
-      });
-    return () => controller.abort();
-  }, [provider, muxPlaybackId, lessonId]);
 
   if (!provider) {
     return (
@@ -91,36 +165,7 @@ export default function LessonVideoPlayer({
     provider === "mux" &&
     muxPlaybackId
   ) {
-    const currentAccess = muxAccess?.lessonId === lessonId ? muxAccess : null;
-    const muxToken = currentAccess?.token;
-    if (currentAccess?.error) {
-      return (
-        <div className="aspect-video flex items-center justify-center rounded-xl bg-black p-6 text-center text-white" role="alert">
-          {t.lessonVideo.playbackError}
-        </div>
-      );
-    }
-    if (!muxToken) {
-      return (
-        <div className="aspect-video flex items-center justify-center rounded-xl bg-black text-white">
-          {t.lessonVideo.playbackLoading}
-        </div>
-      );
-    }
-
-    return (
-      <div className="aspect-video overflow-hidden rounded-xl bg-black">
-        <MuxPlayer
-          playbackId={muxPlaybackId}
-          tokens={{
-            playback: muxToken,
-          }}
-          title={title}
-          streamType="on-demand"
-          className="h-full w-full"
-        />
-      </div>
-    );
+    return <MuxLessonVideo key={`${lessonId}:${muxPlaybackId}`} lessonId={lessonId} playbackId={muxPlaybackId} title={title} />;
   }
 
   if (
@@ -128,17 +173,7 @@ export default function LessonVideoPlayer({
     bunnyLibraryId &&
     bunnyVideoId
   ) {
-    return (
-      <div className="aspect-video overflow-hidden rounded-xl bg-black">
-        <iframe
-          src={`https://iframe.mediadelivery.net/embed/${bunnyLibraryId}/${bunnyVideoId}`}
-          title={title}
-          className="h-full w-full"
-          allow="autoplay; fullscreen"
-          allowFullScreen
-        />
-      </div>
-    );
+    return <BunnyLessonVideo key={`${lessonId}:${bunnyLibraryId}:${bunnyVideoId}`} lessonId={lessonId} title={title} />;
   }
 
   return (

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { createRequire } from "node:module";
-import { generateKeyPairSync } from "node:crypto";
+import { createHash, generateKeyPairSync, webcrypto } from "node:crypto";
 import ts from "typescript";
 import jwt from "jsonwebtoken";
 
@@ -18,7 +18,7 @@ function load(file, mocks = {}, env = {}, globals = {}) {
   vm.runInNewContext(output, {
     module: loadedModule, exports: loadedModule.exports,
     require: name => mocks[name] ?? (name === "next/server" ? { NextResponse: Response } : require(name)),
-    process: { env }, URL, Response,Request,TextDecoder,AbortSignal,btoa, console: { ...console, error() {} }, ...globals,
+    process: { env }, URL, Response,Request,TextDecoder,TextEncoder,AbortSignal,btoa, console: { ...console, error() {} }, ...globals,
   }, { filename: file });
   return loadedModule.exports;
 }
@@ -116,11 +116,32 @@ test("A demoted teacher cannot invoke a lesson edit or prepare an upload with an
 const lessonId = "30000000-0000-4000-8000-000000000001";
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const muxEnv = { MUX_SIGNING_KEY_ID: "test-key", MUX_SIGNING_PRIVATE_KEY: privateKey.export({ type: "pkcs8", format: "pem" }) };
-function muxRoute({ lesson = null, allowed = false, rpcError = null } = {}) {
-  return load("app/api/mux/token/route.ts", {
+function lessonPlayback(provider, { lesson = null, allowed = false, rpcError = null } = {}) {
+  return load("lib/lesson-playback-access.ts", {
     "@/lib/supabase/server": { createClient: async () => ({
-      from: () => query({ data: lesson }), rpc: async () => ({ data: allowed, error: rpcError }),
+      from(table) {
+        assert.equal(table, "lessons");
+        return {
+          select() { return this; },
+          eq(column, value) {
+            assert.equal(value, { id: lessonId, video_provider: provider }[column]);
+            return this;
+          },
+          async maybeSingle() { return { data: lesson }; },
+        };
+      },
+      async rpc(name, args) {
+        assert.equal(name, "can_read_lesson");
+        assert.equal(args.p_section_id, lesson.section_id);
+        assert.equal(args.p_is_free_preview, Boolean(lesson.is_free_preview));
+        return { data: allowed, error: rpcError };
+      },
     }) },
+  });
+}
+function muxRoute(options) {
+  return load("app/api/mux/token/route.ts", {
+    "@/lib/lesson-playback-access": lessonPlayback("mux", options),
   }, muxEnv).POST;
 }
 test("Mux refuses the old arbitrary playbackId contract", async () => {
@@ -141,16 +162,151 @@ for (const preview of [true, false]) {
     const post = muxRoute({ allowed: true, lesson: { section_id: "section", is_free_preview: preview, mux_playback_id: "database-video" } });
     const response = await post({ json: async () => ({ lessonId, playbackId: "injected-video" }) });
     assert.equal(response.status, 200);
-    const { token } = await response.json();
+    const { token, expiresInSeconds } = await response.json();
     const claims = jwt.verify(token, publicKey, { algorithms: ["RS256"], audience: "v" });
     assert.equal(claims.sub, "database-video");
-    assert.ok(claims.exp - claims.iat <= 20 * 60, "Mux token must be short lived");
+    assert.equal(expiresInSeconds, 20 * 60);
+    assert.equal(claims.exp - claims.iat, expiresInSeconds);
     assert.match(response.headers.get("cache-control"), /no-store/);
   });
 }
 test("Mux fails closed when the access check fails", async () => {
   const post = muxRoute({ lesson: { section_id: "section", mux_playback_id: "private" }, rpcError: { message: "db offline" } });
   assert.equal((await post({ json: async () => ({ lessonId }) })).status, 500);
+});
+
+const bunnyVideo = "30000000-0000-4000-8000-000000000002";
+const bunnyLesson = { section_id: "section", bunny_library_id: "123", bunny_video_id: bunnyVideo };
+const bunnyEnv = { BUNNY_TOKEN_AUTH_KEY: "embed-key", BUNNY_API_KEY: "upload-key", BUNNY_LIBRARY_ID: "123" };
+const signedAt = 1_800_000_000;
+
+function bunnyRoute(options, env = bunnyEnv) {
+  return load("app/api/bunny/playback/route.ts", {
+    "@/lib/lesson-playback-access": lessonPlayback("bunny", options),
+  }, env, { crypto: webcrypto, Date: { now: () => signedAt * 1000 } }).POST;
+}
+
+test("Bunny signs the authorized database video with its separate embed key", async () => {
+  const post = bunnyRoute({ lesson: bunnyLesson, allowed: true });
+  const response = await post({ json: async () => ({ lessonId, videoId: "injected", libraryId: "999" }) });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("cache-control"), /no-store/);
+  const { url } = await response.json();
+  const embed = new URL(url);
+  const expires = signedAt + 600;
+  assert.equal(embed.origin, "https://player.mediadelivery.net");
+  assert.equal(embed.pathname, `/embed/123/${bunnyVideo}`);
+  assert.equal(embed.searchParams.get("expires"), String(expires));
+  assert.equal(embed.searchParams.get("token"), createHash("sha256").update(`embed-key${bunnyVideo}${expires}`).digest("hex"));
+  assert.ok(!url.includes("embed-key"));
+});
+
+test("Bunny refuses links for inaccessible lessons, unconfigured signing, and foreign libraries", async () => {
+  for (const [options, env, status] of [
+    [{}, bunnyEnv, 403],
+    [{ lesson: bunnyLesson }, bunnyEnv, 403],
+    [{ lesson: bunnyLesson, allowed: true }, { ...bunnyEnv, BUNNY_TOKEN_AUTH_KEY: "" }, 503],
+    [{ lesson: { ...bunnyLesson, bunny_library_id: "999" }, allowed: true }, bunnyEnv, 503],
+  ]) {
+    const response = await bunnyRoute(options, env)({ json: async () => ({ lessonId }) });
+    assert.equal(response.status, status);
+    assert.equal((await response.json()).url, undefined);
+  }
+});
+
+function muxSessionClock(loadGrant) {
+  let now = 0;
+  let playing = true;
+  let requests = 0;
+  let failures = 0;
+  let signal;
+  const tokens = [];
+  const timers = new Map();
+  const { createMuxPlaybackSession } = load("lib/mux-playback-session.ts", {}, {}, {
+    AbortController,
+    Date: { now: () => now },
+    setTimeout(callback, delay) {
+      const id = Symbol();
+      timers.set(id, { at: now + delay, callback });
+      return id;
+    },
+    clearTimeout(id) { timers.delete(id); },
+  });
+  const session = createMuxPlaybackSession({
+    load(requestSignal) {
+      signal = requestSignal;
+      try {
+        return Promise.resolve(loadGrant(++requests));
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    },
+    isPlaying: () => playing,
+    accept: token => tokens.push(token),
+    unavailable: () => failures++,
+  });
+  return {
+    session, tokens,
+    set playing(value) { playing = value; },
+    get requests() { return requests; },
+    get failures() { return failures; },
+    get aborted() { return signal.aborted; },
+    async at(time) {
+      now = time;
+      for (const [id, timer] of timers) {
+        if (timer.at <= now) {
+          timers.delete(id);
+          timer.callback();
+        }
+      }
+      await new Promise(resolve => setImmediate(resolve));
+    },
+  };
+}
+
+test("Playing Mux lessons renew before expiry and stop when authorization is denied", async () => {
+  const clock = muxSessionClock(request => request < 3 ? { token: `token-${request}`, expiresInSeconds: 1200 } : null);
+  await clock.at(0);
+  await clock.at(1_079_999);
+  assert.deepEqual(clock.tokens, ["token-1"]);
+  await clock.at(1_080_000);
+  assert.deepEqual(clock.tokens, ["token-1", "token-2"]);
+  await clock.at(2_160_000);
+  assert.equal(clock.failures, 1);
+  assert.equal(clock.aborted, true);
+  await clock.session.refreshIfNeeded();
+  assert.equal(clock.requests, 3);
+});
+
+test("Paused Mux lessons renew on resume and retry temporary errors until expiry", async () => {
+  const clock = muxSessionClock(request => {
+    if (request === 1) return { token: "original", expiresInSeconds: 1200 };
+    throw new Error("Network offline");
+  });
+  await clock.at(0);
+  clock.playing = false;
+  await clock.at(1_080_000);
+  assert.equal(clock.requests, 1);
+  clock.playing = true;
+  await Promise.all([clock.session.refreshIfNeeded(), clock.session.refreshIfNeeded()]);
+  assert.equal(clock.requests, 2);
+  assert.equal(clock.failures, 0);
+  await clock.at(1_100_000);
+  assert.equal(clock.requests, 3);
+  assert.deepEqual(clock.tokens, ["original"]);
+  await clock.at(1_200_000);
+  assert.equal(clock.failures, 1);
+  assert.equal(clock.aborted, true);
+});
+
+test("Leaving a Mux lesson aborts pending playback authorization", async () => {
+  let resolveGrant;
+  const clock = muxSessionClock(() => new Promise(resolve => { resolveGrant = resolve; }));
+  clock.session.stop();
+  resolveGrant({ token: "late", expiresInSeconds: 1200 });
+  await clock.at(0);
+  assert.equal(clock.aborted, true);
+  assert.deepEqual(clock.tokens, []);
 });
 
 test("Legacy Bunny upload targets cannot bypass size reservations, even with old ownership",async()=>{

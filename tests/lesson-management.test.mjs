@@ -183,15 +183,18 @@ for (const language of ["ar", "en"]) {
   test(`Video player feedback follows ${language} without making provider requests`, () => {
     const Player = load("components/lessons/LessonVideoPlayer.tsx", {
       "@/components/LanguageProvider": { useLanguage: () => ({ language, t: i18n[language] }) },
+      "@/lib/mux-playback-session": {},
       "@mux/mux-player-react": { __esModule: true, default: () => null },
     }).default;
     for (const [props, message] of [
       [{ provider: null }, "noVideo"],
       [{ provider: "mux", muxPlaybackId: "playback" }, "playbackLoading"],
       [{ provider: "bunny" }, "incomplete"],
+      [{ provider: "bunny", bunnyLibraryId: "123", bunnyVideoId: "video" }, "playbackLoading"],
     ]) {
       const html = renderToStaticMarkup(React.createElement(Player, { lessonId: "lesson", title: "Lesson", ...props }));
       assert.ok(html.includes(i18n[language].lessonVideo[message]));
+      assert.doesNotMatch(html, /<iframe/);
     }
   });
 }
