@@ -299,6 +299,7 @@ export const en = {
   admin: {
     dashboard: "Dashboard",
     dashboardDescription: "Manage Your Way platform and track student and course performance.",
+    twoFactorAuth: "Two-factor authentication",
     courses: "Courses",
     totalCourses: "Total educational courses",
     students: "Students",

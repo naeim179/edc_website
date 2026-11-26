@@ -13,6 +13,7 @@ import {
   CloseIcon,
   DashboardIcon,
   HomeIcon,
+  LockIcon,
   ReceiptIcon,
   UserIcon,
   UsersIcon,
@@ -162,6 +163,11 @@ export default function Sidebar({
           href: "/profile",
           label: text.profile,
           icon: <UserIcon />,
+        },
+        {
+          href: "/admin-security",
+          label: t.admin.twoFactorAuth,
+          icon: <LockIcon />,
         },
       ]
     : isTeacher

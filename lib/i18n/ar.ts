@@ -287,6 +287,7 @@ export const ar = {
   admin: {
     dashboard: "لوحة التحكم",
     dashboardDescription: "إدارة منصة Your Way ومتابعة أداء الطلاب والدورات.",
+    twoFactorAuth: "المصادقة الثنائية",
     courses: "الدورات",
     totalCourses: "إجمالي الدورات التعليمية",
     students: "الطلاب",
