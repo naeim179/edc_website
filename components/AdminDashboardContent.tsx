@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type Card = {
@@ -88,6 +89,9 @@ export default function AdminDashboardContent({
         <p className="mt-3 text-blue-100">
           {t.admin.dashboardDescription}
         </p>
+        <Link href="/admin-security" className="mt-5 inline-block rounded-xl border border-white/50 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10">
+          {isArabic ? "المصادقة الثنائية" : "Two-factor authentication"}
+        </Link>
       </section>
 
 

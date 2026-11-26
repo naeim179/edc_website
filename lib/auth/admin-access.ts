@@ -7,6 +7,13 @@ export async function getAdminAccess() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const { data: mfa, error } = await supabase.rpc("current_admin_mfa_status");
+  if (error || !mfa) return null;
+  if (mfa === "verify" || mfa === "setup" || mfa === "recovery") {
+    redirect("/admin-security");
+  }
+  if (mfa !== "ready" && mfa !== "optional") return null;
+
   const { data: p } = await supabase
     .rpc("read_own_profile")
     .select("role, is_super_admin, permissions")

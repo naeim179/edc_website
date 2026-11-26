@@ -3,12 +3,14 @@
 create role anon nologin;
 create role authenticated nologin;
 create role service_role nologin bypassrls;
+create role authenticator nologin;
 create schema auth;
 create schema storage;
 create table auth.users (
   id uuid primary key default gen_random_uuid(), email text,
   raw_user_meta_data jsonb default '{}', created_at timestamptz default now(),
-  banned_until timestamptz, last_sign_in_at timestamptz, is_anonymous boolean default false
+  banned_until timestamptz, last_sign_in_at timestamptz, deleted_at timestamptz,
+  is_anonymous boolean default false
 );
 create function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
@@ -16,6 +18,14 @@ $$;
 create function auth.role() returns text language sql stable as $$
   select nullif(current_setting('request.jwt.claim.role', true), '');
 $$;
+create function auth.jwt() returns jsonb language sql stable as $$
+  select coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb, '{}'::jsonb);
+$$;
+create table auth.mfa_factors (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  status text not null
+);
 create table storage.buckets (id text primary key, name text, public boolean,
   file_size_limit bigint, allowed_mime_types text[]);
 create table storage.objects (

@@ -22,5 +22,10 @@ export async function loginWithIdentifier(
     .eq("id", data.user.id)
     .maybeSingle();
 
+  if (!profile) {
+    const { data: mfa } = await supabase.rpc("current_admin_mfa_status");
+    if (mfa) return { role: "admin" };
+  }
+
   return { role: (profile?.role as string | undefined) ?? undefined };
 }

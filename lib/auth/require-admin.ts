@@ -1,10 +1,8 @@
 import { redirect } from "next/navigation";
-import { getUserRole } from "@/lib/auth/get-user-role";
+import { getAdminAccess } from "@/lib/auth/admin-access";
 
 export async function requireAdmin() {
-  const role = await getUserRole();
-
-  if (role !== "admin") {
+  if (!await getAdminAccess()) {
     redirect("/");
   }
 

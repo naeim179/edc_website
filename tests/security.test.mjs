@@ -27,6 +27,39 @@ function query(result) {
     ? async () => result : () => query(result) });
 }
 
+test("An administrator is sent to MFA before privileged profile data is read", async () => {
+  const calls = [];
+  const { getAdminAccess } = load("lib/auth/admin-access.ts", {
+    "@/lib/supabase/server": { createClient: async () => ({
+      auth: { getUser: async () => ({ data: { user: { id: "admin" } } }) },
+      async rpc(name) {
+        calls.push(name);
+        return { data: "verify" };
+      },
+    }) },
+    "next/navigation": {
+      redirect(path) { throw Object.assign(new Error("redirect"), { path }); },
+    },
+  });
+  await assert.rejects(getAdminAccess(), error => error.path === "/admin-security");
+  assert.deepEqual(calls, ["current_admin_mfa_status"]);
+});
+
+test("Admin login recognizes a session whose profile is blocked until MFA", async () => {
+  const { loginWithIdentifier } = load("app/actions/login.ts", {
+    "@/lib/resolve-login-identifier": { resolveLoginIdentifier: async () => "admin@example.test" },
+    "@/lib/supabase/server": { createClient: async () => ({
+      auth: { signInWithPassword: async () => ({ data: { user: { id: "admin" } } }) },
+      from: () => query({ data: null, error: { code: "42501" } }),
+      async rpc(name) {
+        assert.equal(name, "current_admin_mfa_status");
+        return { data: "verify" };
+      },
+    }) },
+  });
+  assert.equal((await loginWithIdentifier("admin", "fixture")).role, "admin");
+});
+
 function courseAccess({ user = { id: "assigned-teacher" }, profile = { role: "teacher" }, assigned = true, authError = null, profileError = null, assignmentError = null } = {}) {
   const state = { user, profile, assigned, authError, profileError, assignmentError };
   const client = {
