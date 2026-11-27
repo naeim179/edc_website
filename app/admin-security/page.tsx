@@ -11,5 +11,11 @@ export default async function AdminSecurityPage() {
   if (status !== "optional" && status !== "setup" && status !== "verify"
       && status !== "ready" && status !== "recovery") redirect("/");
 
+  if (status === "ready" || status === "verify") {
+    const { data, error } = await supabase.rpc("list_admin_authenticators");
+    if (error) throw new Error("Unable to load authenticators");
+    return <AdminMfaForm status={status} authenticators={data ?? []} />;
+  }
+
   return <AdminMfaForm status={status} />;
 }

@@ -24,7 +24,10 @@ $$;
 create table auth.mfa_factors (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  status text not null
+  status text not null,
+  factor_type text not null default 'totp',
+  friendly_name text,
+  created_at timestamptz not null default now()
 );
 create table storage.buckets (id text primary key, name text, public boolean,
   file_size_limit bigint, allowed_mime_types text[]);
