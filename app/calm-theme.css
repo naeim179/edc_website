@@ -184,6 +184,10 @@ html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) {
 html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) :is(h1,label) { color: #fff; }
 html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) [class*="text-white/"] { color: #d9e7e5; }
 html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) a { color: #e7c47c; }
+.yw-login-original .yw-login-links {
+  background-color: #102b4b;
+  color: #edf3fa;
+}
 html[data-theme] body.yw-design-system :is(.yw-auth-page,.yw-login-original) button[type="submit"] {
   background: #124b8a; color: #fff; border-radius: 12px; box-shadow: none;
 }

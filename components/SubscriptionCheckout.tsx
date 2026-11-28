@@ -420,10 +420,9 @@ export default function SubscriptionCheckout({
         <section className="min-w-0 rounded-[26px] border border-[#E8E1D4] bg-white p-5 sm:p-7">
           <div className="border-b border-[#F0EBE1] pb-6">
             <p className="text-xs font-bold text-[#C9704A]">
-              {courseType ===
-              "private"
-                ? "PRIVATE 1-TO-1"
-                : "GROUP COURSE"}
+              {courseType === "private"
+                ? (isArabic ? "دورة خاصة" : "Private 1-to-1 course")
+                : (isArabic ? "دورة جماعية" : "Group course")}
             </p>
 
             <h1 className="mt-2 text-2xl font-bold text-[#2A2420] md:text-3xl">
@@ -441,12 +440,12 @@ export default function SubscriptionCheckout({
             "group" &&
             groupDayOfWeek !=
               null && (
-              <div className="mt-6 rounded-2xl border border-[#E3EAE6] bg-[#FAFCFB] p-5">
-                <p className="text-xs font-bold text-[#A06A45]">
+              <div className="mt-6 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-ink-soft)] p-5">
+                <p className="text-xs font-bold text-[var(--brand-text)]">
                   {isArabic ? "موعد الدورة" : "Course Schedule"}
                 </p>
 
-                <p className="mt-2 text-lg font-bold text-[#24332E]">
+                <p className="mt-2 text-lg font-bold text-[var(--brand-text)]">
                   {
                     days[
                       groupDayOfWeek
@@ -454,7 +453,7 @@ export default function SubscriptionCheckout({
                   }
                 </p>
 
-                <p className="mt-1 text-sm text-[#66736E]">
+                <p className="mt-1 text-sm text-[var(--brand-text)]">
                   {formatTime(groupStartTime, isArabic)}{" "}
                   →{" "}
                   {formatTime(groupEndTime, isArabic)}
@@ -463,15 +462,15 @@ export default function SubscriptionCheckout({
             )}
 
           {privateNewBooking && (
-            <div className="mt-6 rounded-2xl border border-[#DCE7E2] bg-[#F8FBF9] p-5">
+            <div className="mt-6 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-ink-soft)] p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold text-[#A06A45]">
+                  <p className="text-xs font-bold text-[var(--brand-text)]">
                     {isArabic ? "المواعيد المختارة" : "Selected Appointments"}
                   </p>
 
-                  <h2 className="mt-1 font-bold text-[#24332E]">
-                    {isArabic ? "حجز Private 1-to-1" : "Private 1-to-1 Booking"}
+                  <h2 className="mt-1 font-bold text-[var(--brand-text)]">
+                    {isArabic ? "حجز المواعيد الخاصة" : "Private 1-to-1 booking"}
                   </h2>
                 </div>
 
@@ -498,15 +497,15 @@ export default function SubscriptionCheckout({
                   ) => (
                     <div
                       key={`${slot.day_of_week}-${slot.start_time}-${slot.end_time}`}
-                      className="rounded-xl border border-[#E3EAE6] bg-white p-4"
+                      className="rounded-xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4"
                     >
-                      <p className="text-xs font-bold text-[#A06A45]">
+                      <p className="text-xs font-bold text-[var(--brand-text-muted)]">
                         {isArabic ? "الموعد" : "Appointment"}{" "}
                         {index +
                           1}
                       </p>
 
-                      <p className="mt-1 font-bold text-[#24332E]">
+                      <p className="mt-1 font-bold text-[var(--brand-text)]">
                         {
                           days[
                             slot
@@ -515,7 +514,7 @@ export default function SubscriptionCheckout({
                         }
                       </p>
 
-                      <p className="mt-1 text-sm text-[#66736E]">
+                      <p className="mt-1 text-sm text-[var(--brand-text-muted)]">
                         {formatTime(slot.start_time, isArabic)}{" "}
                         →{" "}
                         {formatTime(slot.end_time, isArabic)}
@@ -554,6 +553,7 @@ export default function SubscriptionCheckout({
                         plan.value
                       }
                       type="button"
+                      aria-pressed={active}
                       onClick={() => {
                         setMonths(
                           plan.value
@@ -579,29 +579,30 @@ export default function SubscriptionCheckout({
                           ""
                         );
                       }}
-                      className={`rounded-2xl border p-5 text-right transition ${
+                      className={`rounded-2xl border p-5 text-start transition ${
                         active
-                          ? "border-[#1B4B43] bg-[#F7F3EC] ring-2 ring-[#1B4B43]/15"
-                          : "border-[#E8E1D4] hover:border-[#D9CDB6]"
+                          ? "border-[var(--brand-ink)] bg-[var(--brand-ink-soft)]"
+                          : "border-[var(--brand-border)] hover:border-[var(--brand-ink)]"
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#2A2420]">
+                        <span className="font-bold text-[var(--brand-text)]">
                           {
                             plan.label
                           }
                         </span>
 
                         <span
-                          className={`h-5 w-5 rounded-full border-2 ${
+                          aria-hidden="true"
+                          className={`h-5 w-5 rounded-full border-2 border-[var(--brand-ink)] ${
                             active
-                              ? "border-[#1B4B43] bg-[#1B4B43]"
-                              : "border-[#D9CDB6]"
+                              ? "bg-[var(--brand-ink)]"
+                              : ""
                           }`}
                         />
                       </div>
 
-                      <p className="mt-2 text-sm text-[#8A3F2A]">
+                      <p className="mt-2 text-sm font-semibold text-[var(--brand-text)]">
                         {
                           plan.totalLabel
                         }
