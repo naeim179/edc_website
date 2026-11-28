@@ -137,11 +137,22 @@ for(const options of [{status:'P'},{status:'H'},{status:'A'},{mismatch:true},{th
  const {calls,run}=renewal(options);assert.equal((await run()).status,200);assert.ok(calls.includes('RENEWAL_RESULT_UNCERTAIN'));assert.ok(!calls.includes('mark-failed'));assert.ok(!calls.includes('record_subscription_renewal_failure'));
 });
 
-function checkoutResult({closed=false,owner=true,signedIn=true}={}) {
+const checkoutTranslations = {
+ ar: load('lib/i18n/ar.ts').ar,
+ en: load('lib/i18n/en.ts').en,
+};
+function checkoutResult({closed=false,owner=true,signedIn=true,language}={}) {
  const filters={};const client={auth:{getUser:async()=>({data:{user:signedIn?{id:'student'}:null}})},from:()=>({
   select(){return this;},eq(key,value){filters[key]=value;return this;},async maybeSingle(){return {data:owner&&closed?{course_id:'course',paytabs_closed_cancelled_at:'2026-11-07'}:null};}
  })};
- const page=load('app/checkout/success/page.tsx',{'@/lib/supabase/server':{createClient:async()=>client},'@/lib/payments':{},'@/components/CliqPaymentUpload':{__esModule:true,default:()=>null},'next/link':{__esModule:true,default:()=>null}}).default;
+ const page=load('app/checkout/success/page.tsx',{
+  '@/lib/supabase/server': {createClient:async()=>client},
+  '@/lib/payments': {},
+  '@/lib/i18n': {translations:checkoutTranslations},
+  '@/components/CliqPaymentUpload': {__esModule:true,default:()=>null},
+  'next/headers': {cookies:async()=>({get:()=>language?{value:language}:undefined})},
+  'next/link': {__esModule:true,default:()=>null},
+ }).default;
  return {filters,render:()=>page({searchParams:Promise.resolve({cancelled:'1',order:'order',course:'course'})})};
 }
 function jsxText(node){if(node==null||typeof node==='boolean')return '';if(typeof node==='string'||typeof node==='number')return String(node);if(Array.isArray(node))return node.map(jsxText).join(' ');return jsxText(node.props?.children);}
@@ -150,6 +161,14 @@ for(const options of [{},{closed:true,owner:false},{closed:true,signedIn:false}]
 });
 test('Confirmed cancellation is shown only after owner and closed-state lookup',async()=>{
  const {render,filters}=checkoutResult({closed:true});assert.ok(jsxText(await render()).includes('تم تأكيد الإلغاء'));assert.equal(filters.user_id,'student');assert.equal(filters.status,'failed');assert.equal(filters.payment_method,'paytabs');
+});
+test('Checkout results honor the selected English locale and direction',async()=>{
+ const verified=await checkoutResult({closed:true,language:'en'}).render();
+ const unconfirmed=await checkoutResult({language:'en'}).render();
+ assert.equal(verified.props.dir,'ltr');
+ assert.match(jsxText(verified),/Payment cancelled/);
+ assert.equal(unconfirmed.props.dir,'ltr');
+ assert.match(jsxText(unconfirmed),/Payment not confirmed/);
 });
 
 test('Signed cancellation requires provider verification and returns the closed order identity',async()=>{
