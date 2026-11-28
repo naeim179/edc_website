@@ -207,7 +207,7 @@ export default function LoginPage() {
             <div className="mt-2 text-left">
               <Link
                 href="/forgot-password"
-                className="text-sm font-semibold text-[#d6b56c] hover:underline"
+                className="yw-login-links inline-block rounded-lg px-3 py-2 text-sm font-semibold underline underline-offset-4"
               >
                 {t.auth.forgotPassword}
               </Link>
@@ -225,16 +225,19 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-white/70">
-          {t.auth.noAccount}{" "}
-          <Link
-            href="/register"
-            className="font-bold text-[#d6b56c] hover:underline"
-          >
-            {t.auth.createAccount}
-          </Link>
+        <div className="yw-login-links mt-6 space-y-2 rounded-xl px-4 py-3 text-center text-sm leading-relaxed">
+          <p>
+            {t.auth.noAccount}{" "}
+            <Link href="/register" className="font-bold underline underline-offset-4">
+              {t.auth.createAccount}
+            </Link>
+          </p>
+          <p>
+            <Link href="/contact" className="underline underline-offset-4">
+              {isArabic ? "هل تواجه مشكلة في تسجيل الدخول؟ تواصل معنا" : "Trouble signing in? Contact us"}
+            </Link>
+          </p>
         </div>
-        <p className="mt-4 text-center text-sm text-white/80"><Link href="/contact" className="underline decoration-[#d6b56c] underline-offset-4">{isArabic ? "هل تواجه مشكلة في تسجيل الدخول؟ تواصل معنا" : "Trouble signing in? Contact us"}</Link></p>
       </div>
     </div>
   );

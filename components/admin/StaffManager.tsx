@@ -25,11 +25,11 @@ function PermissionChecks({ value, onChange }: { value: string[]; onChange: (v: 
             type="checkbox"
             checked={value.includes(k)}
             onChange={() => toggle(k)}
-            className="mt-1 size-4 accent-[#1B4B43]"
+            className="mt-1 size-4 shrink-0 accent-[var(--brand-ink)]"
           />
           <span>
             <span className="block text-sm font-medium">{t.staff.permissions[k].label}</span>
-            <span className="block text-xs text-[#1B4B43]/60">{t.staff.permissions[k].hint}</span>
+            <span className="block text-xs text-[var(--brand-text-muted)]">{t.staff.permissions[k].hint}</span>
           </span>
         </label>
       ))}
@@ -59,7 +59,7 @@ function AdminRow({ admin }: { admin: Admin }) {
   };
 
   return (
-    <li className="border-t border-[#1B4B43]/15 py-5">
+    <li className="border-t border-[var(--brand-border)] py-5">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -68,9 +68,9 @@ function AdminRow({ admin }: { admin: Admin }) {
       >
         <span>
           <span className="block font-medium">{admin.fullName || s.noName}</span>
-          <span className="block break-all text-xs text-[#1B4B43]/60" dir="ltr">{admin.email}</span>
+          <span className="block break-all text-xs text-[var(--brand-text-muted)]" dir="ltr">{admin.email}</span>
         </span>
-        <span className="text-xs text-[#C9704A]">
+        <span className="text-xs text-[var(--brand-ink)]">
           {perms.length ? `${perms.length} ${s.sectionsOpen}` : s.noSections}
         </span>
       </button>
@@ -83,14 +83,14 @@ function AdminRow({ admin }: { admin: Admin }) {
               type="button"
               onClick={save}
               disabled={!dirty || pending}
-              className="rounded-lg bg-[#1B4B43] px-4 py-2 text-sm text-[#F7F3EC] disabled:opacity-40"
+              className="rounded-lg bg-[var(--brand-ink)] px-4 py-2 text-sm text-[var(--brand-on-ink)] enabled:hover:bg-[var(--brand-ink-hover)] disabled:opacity-40"
             >
               {pending ? s.saving : s.savePermissions}
             </button>
-            <button type="button" onClick={revoke} disabled={pending} className="text-sm text-[#C9704A] hover:underline">
+            <button type="button" onClick={revoke} disabled={pending} className="text-sm text-[var(--brand-danger)] hover:underline">
               {s.revoke}
             </button>
-            {msg && <span role="status" className="text-xs text-[#1B4B43]/70">{msg}</span>}
+            {msg && <span role="status" className="text-xs text-[var(--brand-text-muted)]">{msg}</span>}
           </div>
         </div>
       )}
@@ -114,20 +114,20 @@ export default function StaffManager({ admins }: { admins: Admin[] }) {
     });
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-10 text-[#1B4B43]">
+    <div className="mx-auto max-w-3xl px-5 py-10 text-[var(--brand-text)]">
       <h1 className="text-2xl font-bold">{s.title}</h1>
-      <p className="mt-2 text-sm text-[#1B4B43]/70">{s.subtitle}</p>
+      <p className="mt-2 text-sm text-[var(--brand-text-muted)]">{s.subtitle}</p>
 
       <ul className="mt-8">
         {admins.length === 0 && (
-          <li className="border-t border-[#1B4B43]/15 py-5 text-sm text-[#1B4B43]/60">{s.emptyList}</li>
+          <li className="border-t border-[var(--brand-border)] py-5 text-sm text-[var(--brand-text-muted)]">{s.emptyList}</li>
         )}
         {admins.map((a) => <AdminRow key={a.id} admin={a} />)}
       </ul>
 
-      <section className="mt-6 border-t border-[#1B4B43]/15 pt-8">
+      <section className="mt-6 border-t border-[var(--brand-border)] pt-8">
         <h2 className="text-lg font-bold">{s.addTitle}</h2>
-        <p className="mt-1 text-xs text-[#1B4B43]/60">{s.addHint}</p>
+        <p className="mt-1 text-xs text-[var(--brand-text-muted)]">{s.addHint}</p>
 
         <input
           aria-label={s.emailPlaceholder}
@@ -136,7 +136,7 @@ export default function StaffManager({ admins }: { admins: Admin[] }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={s.emailPlaceholder}
-          className="mt-4 w-full rounded-lg border border-[#1B4B43]/25 bg-transparent px-3 py-2 text-sm placeholder:text-[#1B4B43]/40 focus:outline-2 focus:outline-[#C9704A]"
+          className="mt-4 w-full rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] px-3 py-2 text-sm placeholder:text-[var(--brand-text-muted)] focus:outline-2 focus:outline-[var(--brand-ink)]"
         />
         <div className="mt-5"><PermissionChecks value={perms} onChange={setPerms} /></div>
 
@@ -145,11 +145,11 @@ export default function StaffManager({ admins }: { admins: Admin[] }) {
             type="button"
             onClick={add}
             disabled={!email.includes("@") || pending}
-            className="rounded-lg bg-[#C9704A] px-4 py-2 text-sm text-white disabled:opacity-40"
+            className="rounded-lg bg-[var(--brand-ink)] px-4 py-2 text-sm text-[var(--brand-on-ink)] enabled:hover:bg-[var(--brand-ink-hover)] disabled:opacity-40"
           >
             {pending ? s.adding : s.addButton}
           </button>
-          {msg && <span role="status" className="text-xs text-[#1B4B43]/70">{msg}</span>}
+          {msg && <span role="status" className="text-xs text-[var(--brand-text-muted)]">{msg}</span>}
         </div>
       </section>
     </div>

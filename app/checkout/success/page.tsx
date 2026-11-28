@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { fulfillPaymentByTranRef } from "@/lib/payments";
 import CliqPaymentUpload from "@/components/CliqPaymentUpload";
+import { translations } from "@/lib/i18n";
 
 type SearchParams = {
   tranRef?: string;
@@ -16,8 +18,9 @@ export default async function CheckoutSuccessPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const params =
-    await searchParams;
+  const [params, cookieStore] = await Promise.all([searchParams, cookies()]);
+  const language = cookieStore.get("app-language")?.value === "en" ? "en" : "ar";
+  const copy = translations[language].checkoutResult;
 
   let isCliq = false;
   let cliqCancelled = false;
@@ -150,39 +153,39 @@ export default async function CheckoutSuccessPage({
 
   return (
     <div
-      className="mx-4 mt-6 max-w-lg rounded-[26px] border bg-white p-5 text-center shadow-sm sm:mx-auto sm:mt-20 sm:p-8"
-      dir="rtl"
+      className="mx-4 my-6 max-w-lg rounded-[26px] border border-[var(--brand-border)] bg-[var(--brand-surface)] p-5 text-center shadow-sm sm:mx-auto sm:my-20 sm:p-8"
+      dir={language === "ar" ? "rtl" : "ltr"}
     >
       {cliqCancelled ? (
         <>
-          <h1 className="mb-4 text-2xl font-bold">تم إلغاء طلب CliQ</h1>
-          <p className="mb-5">يمكنك العودة واختيار طريقة دفع أخرى. إلغاء الطلب لا يعيد أي مبلغ حوّلته خارج الموقع.</p>
-          <Link href={courseId ? `/checkout/${courseId}?method=cliq` : "/courses"} className="inline-block rounded-xl bg-[#124b8a] px-6 py-3 font-bold text-white">العودة للدفع</Link>
+          <h1 className="mb-4 text-2xl font-bold">{copy.cliqCancelledTitle}</h1>
+          <p className="mb-5">{copy.cliqCancelledDescription}</p>
+          <Link href={courseId ? `/checkout/${courseId}?method=cliq` : "/courses"} className="inline-block rounded-xl bg-[#124b8a] px-6 py-3 font-bold text-white">{copy.backToCheckout}</Link>
         </>
       ) : isCliq ? (
         <>
-          <h1 className="text-2xl font-bold text-[#087a54] mb-4">
-            الدفع عبر CliQ
+          <h1 className="text-2xl font-bold text-[var(--brand-ink)] mb-4">
+            {copy.cliqTitle}
           </h1>
           {cliqAmount && <p dir="ltr" className="mb-4 text-xl font-bold">{cliqAmount}</p>}
-          <p className="mb-4 text-sm text-slate-600">هذا طلب CliQ الحالي لهذه الدورة. لاختيار طريقة دفع أخرى، ألغِ الطلب أولًا إذا لم تحوّل المبلغ.</p>
+          <p className="mb-4 text-sm text-slate-600">{copy.cliqDescription}</p>
 
           <p className="text-slate-600 mb-4">
-            {cliqReady ? "قم بتحويل المبلغ إلى حساب CliQ التالي ثم ارفع إثبات التحويل." : "الدفع عبر CliQ غير متاح حاليًا. يرجى اختيار طريقة دفع أخرى."}
+            {cliqReady ? copy.cliqInstructions : copy.cliqUnavailable}
           </p>
 
           {cliqReady && (
-          <div className="bg-slate-50 rounded-xl p-5 text-right mb-5">
+          <div className="bg-slate-50 rounded-xl p-5 text-start mb-5">
             <p className="font-bold">
-              اسم الحساب: {cliqAccountName}
+              {copy.accountName} <bdi>{cliqAccountName}</bdi>
             </p>
 
             <p className="mt-2">
-              معرّف CliQ: {cliqAlias}
+              {copy.cliqAlias} <bdi>{cliqAlias}</bdi>
             </p>
 
             <p className="mt-2 text-sm text-slate-500">
-              سيتم تفعيل الدورة بعد مراجعة التحويل.
+              {copy.cliqReviewDescription}
             </p>
           </div>
           )}
@@ -198,14 +201,14 @@ export default async function CheckoutSuccessPage({
       ) : cancelled ? (
         <div className="py-3">
 
-          <div className="mx-auto mb-7 flex h-20 w-20 items-center justify-center rounded-full bg-[#E9F4ED] ring-8 ring-[#F5F9F5]">
+          <div className="mx-auto mb-7 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--brand-success-bg)] text-[var(--brand-success)] ring-8 ring-[var(--brand-ink-soft)]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="42"
               height="42"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#1D7058"
+              stroke="currentColor"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -216,30 +219,28 @@ export default async function CheckoutSuccessPage({
             </svg>
           </div>
 
-          <span className="inline-flex rounded-full border border-[#D7EADD] bg-[#F0F8F2] px-4 py-1.5 text-xs font-bold text-[#277151]">
-            تم تأكيد الإلغاء
+          <span className="inline-flex rounded-full border border-[var(--brand-border)] bg-[var(--brand-ink-soft)] px-4 py-1.5 text-xs font-bold text-[var(--brand-text)]">
+            {copy.cancelledBadge}
           </span>
 
-          <h1 className="mt-5 text-2xl font-extrabold leading-relaxed text-[#193C35] sm:text-3xl">
-            تم إلغاء عملية الدفع
+          <h1 className="mt-5 text-2xl font-extrabold leading-relaxed text-[var(--brand-text)] sm:text-3xl">
+            {copy.cancelledTitle}
           </h1>
 
-          <p className="mx-auto mt-4 max-w-sm text-sm leading-8 text-[#75817C] sm:text-base">
-            تم التحقق من إلغاء محاولة الدفع بنجاح،
-            ولم يتم تفعيل اشتراك جديد.
-            يمكنك إعادة المحاولة في أي وقت.
+          <p className="mx-auto mt-4 max-w-sm text-sm leading-8 text-[var(--brand-text-muted)] sm:text-base">
+            {copy.cancelledDescription}
           </p>
 
-          <div className="mt-7 rounded-2xl border border-[#F0DFC6] bg-[#FFF8EB] p-4 text-right">
+          <div className="mt-7 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-ink-soft)] p-4 text-start">
             <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F9E9CB]">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-surface)] text-[var(--brand-ink)]">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="19"
                   height="19"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#B87535"
+                  stroke="currentColor"
                   strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -252,12 +253,11 @@ export default async function CheckoutSuccessPage({
               </div>
 
               <div>
-                <p className="font-bold text-[#644A30]">
-                  هل ترغب في المحاولة مجددًا؟
+                <p className="font-bold text-[var(--brand-text)]">
+                  {copy.retryTitle}
                 </p>
-                <p className="mt-1 text-sm leading-7 text-[#967E60]">
-                  بإمكانك بدء محاولة دفع جديدة.
-                  وإذا كانت الدورة خاصة، اختر مواعيدك مجددًا.
+                <p className="mt-1 text-sm leading-7 text-[var(--brand-text)]">
+                  {copy.retryDescription}
                 </p>
               </div>
             </div>
@@ -266,9 +266,9 @@ export default async function CheckoutSuccessPage({
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Link
               href={retryHref}
-              className="flex min-h-13 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#C9704C] px-5 py-3.5 font-bold text-white shadow-sm transition hover:bg-[#B7603F]"
+              className="flex min-h-13 flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--brand-ink)] px-5 py-3.5 font-bold text-[var(--brand-on-ink)] shadow-sm transition hover:bg-[var(--brand-ink-hover)]"
             >
-              إعادة المحاولة
+              {copy.retry}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="18"
@@ -288,46 +288,44 @@ export default async function CheckoutSuccessPage({
 
             <Link
               href={courseId ? "/courses/" + courseId : "/courses"}
-              className="flex min-h-13 flex-1 items-center justify-center rounded-2xl border border-[#DDD3BE] bg-[#FFFCF5] px-5 py-3.5 font-bold text-[#38554A] transition hover:bg-[#F4ECDD]"
+              className="flex min-h-13 flex-1 items-center justify-center rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] px-5 py-3.5 font-bold text-[var(--brand-text)] transition hover:bg-[var(--brand-ink-soft)]"
             >
-              العودة للدورة
+              {copy.backToCourse}
             </Link>
           </div>
 
-          <p className="mt-6 text-xs text-[#A5A89C]">
-            شكرًا لاستخدامك Your Way
+          <p className="mt-6 text-xs text-[var(--brand-text-muted)]">
+            {copy.thankYou}
           </p>
         </div>
       ) : paid ? (
         <>
-          <h1 className="text-2xl font-bold text-[#087a54] mb-4">
-            تم الدفع وتفعيل الاشتراك
+          <h1 className="text-2xl font-bold text-[var(--brand-ink)] mb-4">
+            {copy.paidTitle}
           </h1>
 
           <p className="text-slate-500 mb-4">
-            تم تسجيلك بالدورة بنجاح.
+            {copy.paidDescription}
           </p>
 
           {expiresAt && (
             <div className="bg-slate-50 rounded-xl p-4 mb-4">
               <p className="text-sm text-slate-500">
-                الاشتراك صالح حتى
+                {copy.validUntil}
               </p>
 
               <p className="font-bold text-slate-800 mt-1">
-                {new Date(
-                  expiresAt
-                ).toLocaleDateString(
-                  "ar-JO"
-                )}
+                {new Date(expiresAt).toLocaleDateString(language === "ar" ? "ar-JO" : "en-GB", {
+                  timeZone: "Asia/Amman",
+                })}
               </p>
             </div>
           )}
 
           <p className="text-sm text-slate-500 mb-6">
             {autoRenew
-              ? "التجديد التلقائي مفعّل لهذا الاشتراك."
-              : "التجديد يدوي. يمكنك تجديد الاشتراك لاحقًا."}
+              ? copy.autoRenew
+              : copy.manualRenew}
           </p>
 
           {courseId && (
@@ -335,25 +333,25 @@ export default async function CheckoutSuccessPage({
               href={`/courses/${courseId}`}
               className="inline-block bg-[#124b8a] text-white px-6 py-3 rounded-xl font-bold"
             >
-              الذهاب للدورة
+              {copy.goToCourse}
             </Link>
           )}
         </>
       ) : (
         <>
-          <h1 className="text-2xl font-bold text-red-600 mb-4">
-            لم يتم تأكيد الدفع
+          <h1 className="text-2xl font-bold text-[var(--brand-danger)] mb-4">
+            {copy.unconfirmedTitle}
           </h1>
 
           <p className="text-slate-500 mb-6">
-            لم يتم تفعيل الاشتراك. إذا تم خصم المبلغ بالفعل، انتظر قليلًا ثم تحقق مرة أخرى أو تواصل معنا.
+            {copy.unconfirmedDescription}
           </p>
 
           <Link
             href="/"
             className="inline-block bg-slate-100 px-6 py-3 rounded-xl font-bold"
           >
-            الرئيسية
+            {copy.home}
           </Link>
         </>
       )}
